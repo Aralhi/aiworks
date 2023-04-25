@@ -6,4 +6,7 @@ module.exports = {
   async redirects() {
     return [];
   },
+  exclude: [
+    '/api/*'
+  ]
 };
