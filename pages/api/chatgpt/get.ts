@@ -1,4 +1,4 @@
-import { OpenAIStream, OpenAIStreamPayload } from "../../utils/OpenAIStream";
+import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -9,7 +9,6 @@ export const config = {
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('...req', req)
   const { prompt } = (await req.json()) as {
     prompt?: string;
   };
