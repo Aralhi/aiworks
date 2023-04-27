@@ -78,6 +78,15 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
     });
     return stream;
   } else {
-    return await res.text()
+    const chunks = [];
+    const reader = (res.body as any).getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      chunks.push(value);
+    }
+    return new TextDecoder('utf-8').decode(Buffer.concat(chunks));
   }
 }
