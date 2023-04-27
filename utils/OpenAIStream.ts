@@ -39,7 +39,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
     method: "POST",
     body: JSON.stringify(payload),
   });
-
+  let data = ''
   const stream = new ReadableStream({
     async start(controller) {
       // callback
@@ -73,32 +73,13 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
       const parser = createParser(onParse);
       // https://web.dev/streams/#asynchronous-iteration
       for await (const chunk of res.body as any) {
-        parser.feed(decoder.decode(chunk));
+        if (isStream) {
+          parser.feed(decoder.decode(chunk));
+        } else {
+          data += decoder.decode(chunk)
+        }
       }
     },
   });
-  if (isStream) {
-    return stream;
-  } else {
-    const reader = stream.getReader();
-    return new Promise((resolve, reject) => {
-      let data = '';
-      function read() {
-        reader.read().then(({ done, value }) => {
-          if (done) {
-            resolve(data);
-            return;
-          }
-          if (data.length >= MAX_STRING_LENGTH) {
-            stream.cancel();
-            resolve(data);
-            return;
-          }
-          data += decoder.decode(value);
-          read();
-        }).catch(reject);
-      }
-      read();
-    });
-  }
+  return isStream ? stream : data
 }
