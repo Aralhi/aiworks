@@ -3,7 +3,6 @@ import {
   ParsedEvent,
   ReconnectInterval,
 } from "eventsource-parser";
-import { start } from "repl";
 
 const MAX_STRING_LENGTH = 2 * 1024 // 2K
 
