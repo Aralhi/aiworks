@@ -39,48 +39,50 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
     method: "POST",
     body: JSON.stringify(payload),
   });
-  let data = ''
-  const stream = new ReadableStream({
-    async start(controller) {
-      // callback
-      function onParse(event: ParsedEvent | ReconnectInterval) {
-        if (event.type === "event") {
-          const data = event.data;
-          // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
-          if (data === "[DONE]") {
-            controller.close();
-            return;
-          }
-          try {
-            const json = JSON.parse(data);
-            const text = json.choices[0].delta?.content || "";
-            if (counter < 2 && (text.match(/\n/) || []).length) {
-              // this is a prefix character (i.e., "\n\n"), do nothing
+  if (isStream) {
+    const stream = new ReadableStream({
+      async start(controller) {
+        // callback
+        function onParse(event: ParsedEvent | ReconnectInterval) {
+          if (event.type === "event") {
+            const data = event.data;
+            // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
+            if (data === "[DONE]") {
+              controller.close();
               return;
             }
-            const queue = encoder.encode(text);
-            controller.enqueue(queue);
-            counter++;
-          } catch (e) {
-            // maybe parse error
-            controller.error(e);
+            try {
+              const json = JSON.parse(data);
+              const text = json.choices[0].delta?.content || "";
+              if (counter < 2 && (text.match(/\n/) || []).length) {
+                // this is a prefix character (i.e., "\n\n"), do nothing
+                return;
+              }
+              const queue = encoder.encode(text);
+              controller.enqueue(queue);
+              counter++;
+            } catch (e) {
+              // maybe parse error
+              controller.error(e);
+            }
           }
         }
-      }
-
-      // stream response (SSE) from OpenAI may be fragmented into multiple chunks
-      // this ensures we properly read chunks and invoke an event for each SSE event stream
-      const parser = createParser(onParse);
-      // https://web.dev/streams/#asynchronous-iteration
-      for await (const chunk of res.body as any) {
-        console.log('...data', decoder.decode(chunk))
-        if (isStream) {
+  
+        // stream response (SSE) from OpenAI may be fragmented into multiple chunks
+        // this ensures we properly read chunks and invoke an event for each SSE event stream
+        const parser = createParser(onParse);
+        // https://web.dev/streams/#asynchronous-iteration
+        for await (const chunk of res.body as any) {
           parser.feed(decoder.decode(chunk));
-        } else {
-          data += decoder.decode(chunk)
         }
-      }
-    },
-  });
-  return isStream ? stream : data
+      },
+    });
+    return stream
+  } else {
+    let result = "";
+    for await (const chunk of res.body as any) {
+      result += decoder.decode(chunk);
+    }
+    return result;
+  }
 }
