@@ -78,6 +78,6 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
     });
     return stream;
   } else {
-    return res.body
+    return res.text()
   }
 }
