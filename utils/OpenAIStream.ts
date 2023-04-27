@@ -73,6 +73,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
       const parser = createParser(onParse);
       // https://web.dev/streams/#asynchronous-iteration
       for await (const chunk of res.body as any) {
+        console.log('...data', data)
         if (isStream) {
           parser.feed(decoder.decode(chunk));
         } else {
