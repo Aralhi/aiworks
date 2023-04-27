@@ -3,6 +3,9 @@ import {
   ParsedEvent,
   ReconnectInterval,
 } from "eventsource-parser";
+import { start } from "repl";
+
+const MAX_STRING_LENGTH = 2 * 1024 // 2K
 
 export type ChatGPTAgent = "user" | "system";
 
@@ -38,63 +41,65 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
     body: JSON.stringify(payload),
   });
 
-  if (isStream) {
-    const stream = new ReadableStream({
-      async start(controller) {
-        // callback
-        function onParse(event: ParsedEvent | ReconnectInterval) {
-          if (event.type === "event") {
-            const data = event.data;
-            // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
-            if (data === "[DONE]") {
-              controller.close();
+  const stream = new ReadableStream({
+    async start(controller) {
+      // callback
+      function onParse(event: ParsedEvent | ReconnectInterval) {
+        if (event.type === "event") {
+          const data = event.data;
+          // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
+          if (data === "[DONE]") {
+            controller.close();
+            return;
+          }
+          try {
+            const json = JSON.parse(data);
+            const text = json.choices[0].delta?.content || "";
+            if (counter < 2 && (text.match(/\n/) || []).length) {
+              // this is a prefix character (i.e., "\n\n"), do nothing
               return;
             }
-            try {
-              const json = JSON.parse(data);
-              const text = json.choices[0].delta?.content || "";
-              if (counter < 2 && (text.match(/\n/) || []).length) {
-                // this is a prefix character (i.e., "\n\n"), do nothing
-                return;
-              }
-              const queue = encoder.encode(text);
-              controller.enqueue(queue);
-              counter++;
-            } catch (e) {
-              // maybe parse error
-              controller.error(e);
-            }
+            const queue = encoder.encode(text);
+            controller.enqueue(queue);
+            counter++;
+          } catch (e) {
+            // maybe parse error
+            controller.error(e);
           }
         }
-  
-        // stream response (SSE) from OpenAI may be fragmented into multiple chunks
-        // this ensures we properly read chunks and invoke an event for each SSE event stream
-        const parser = createParser(onParse);
-        // https://web.dev/streams/#asynchronous-iteration
-        for await (const chunk of res.body as any) {
-          parser.feed(decoder.decode(chunk));
-        }
-      },
-    });
+      }
+
+      // stream response (SSE) from OpenAI may be fragmented into multiple chunks
+      // this ensures we properly read chunks and invoke an event for each SSE event stream
+      const parser = createParser(onParse);
+      // https://web.dev/streams/#asynchronous-iteration
+      for await (const chunk of res.body as any) {
+        parser.feed(decoder.decode(chunk));
+      }
+    },
+  });
+  if (isStream) {
     return stream;
   } else {
-    const chunks = [];
-    const reader = (res.body as any).getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
+    const reader = stream.getReader();
+    return new Promise((resolve, reject) => {
+      let data = '';
+      function read() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            resolve(data);
+            return;
+          }
+          if (data.length >= MAX_STRING_LENGTH) {
+            stream.cancel();
+            resolve(data);
+            return;
+          }
+          data += decoder.decode(value);
+          read();
+        }).catch(reject);
       }
-      const json = JSON.parse(value);
-      const text = json.choices[0].delta?.content || "";
-      if (counter < 2 && (text.match(/\n/) || []).length) {
-        // this is a prefix character (i.e., "\n\n"), do nothing
-        return;
-      }
-      chunks.push(text);
-    }
-    const str = new TextDecoder('utf-8').decode(Buffer.concat(chunks));
-    console.log('...', isStream, str)
-    return str
+      read();
+    });
   }
 }
