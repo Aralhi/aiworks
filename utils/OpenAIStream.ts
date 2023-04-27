@@ -81,13 +81,17 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
   } else {
     let result = "";
     for await (const chunk of res.body as any) {
-      const json = JSON.parse(chunk);
-      const text = json.choices[0].delta?.content || "";
-      if (counter < 2 && (text.match(/\n/) || []).length) {
-        // this is a prefix character (i.e., "\n\n"), do nothing
-        return;
+      try {
+        const json = JSON.parse(chunk);
+        const text = json.choices[0].delta?.content || "";
+        if (counter < 2 && (text.match(/\n/) || []).length) {
+          // this is a prefix character (i.e., "\n\n"), do nothing
+          return;
+        }
+        result += decoder.decode(text);
+      } catch (e) {
+        console.log('....e', chunk)
       }
-      result += decoder.decode(text);
     }
     return result;
   }
