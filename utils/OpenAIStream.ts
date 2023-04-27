@@ -3,7 +3,6 @@ import {
   ParsedEvent,
   ReconnectInterval,
 } from "eventsource-parser";
-import streamToBuffer from 'stream-to-buffer';
 
 const MAX_STRING_LENGTH = 2 * 1024 // 2K
 
@@ -80,18 +79,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
     });
     return stream
   } else {
-    return await (res.body && streamToString(res.body))
+    const value = res.json()
+    console.log('...value', value)
   }
-}
-
-async function streamToString(stream: ReadableStream<Uint8Array>): Promise<string> {
-  return new Promise((resolve, reject) => {
-    streamToBuffer(stream, (err: Error | null, buffer: Buffer) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(buffer.toString());
-      }
-    });
-  });
 }
