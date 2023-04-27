@@ -87,6 +87,8 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
       }
       chunks.push(value);
     }
-    return new TextDecoder('utf-8').decode(Buffer.concat(chunks));
+    const str = new TextDecoder('utf-8').decode(Buffer.concat(chunks));
+    console.log('...', isStream, str)
+    return str
   }
 }
