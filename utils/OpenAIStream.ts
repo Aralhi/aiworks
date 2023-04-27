@@ -79,7 +79,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
     });
     return stream
   } else {
-    const value = await res.json()
+    const value = await res.text()
     console.log('...value', value)
   }
 }
