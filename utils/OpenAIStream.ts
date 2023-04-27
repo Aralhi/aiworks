@@ -85,7 +85,13 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, isStream: boole
       if (done) {
         break;
       }
-      chunks.push(value);
+      const json = JSON.parse(value);
+      const text = json.choices[0].delta?.content || "";
+      if (counter < 2 && (text.match(/\n/) || []).length) {
+        // this is a prefix character (i.e., "\n\n"), do nothing
+        return;
+      }
+      chunks.push(text);
     }
     const str = new TextDecoder('utf-8').decode(Buffer.concat(chunks));
     console.log('...', isStream, str)
