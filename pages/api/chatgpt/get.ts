@@ -30,9 +30,23 @@ const handler = async (req: Request): Promise<Response> => {
     n: 1,
   };
 
-  const stream = await OpenAIStream(payload, isStream);
-  console.log('...stream', stream)
-  return new Response(stream);
+  const stream = await OpenAIStream(payload);
+  if (isStream) {
+    return new Response(stream);
+  }
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let result = '';
+  let { done, value } = await reader.read();
+  result += value;
+  while (!done) {
+    const temp = await reader.read();
+    done = temp.done;
+    value = decoder.decode(temp.value);
+    result += value;
+  }
+  console.info('not stream res:', result);
+  return new Response(result)
 };
 
 export default handler;
