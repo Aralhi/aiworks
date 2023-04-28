@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
   return new Response(result, {
     status: 200,
     headers: {
-      'content-type': 'text/plain;charset=UTF-8'
+      'content-type': 'application/json'
     }
   })
 };
