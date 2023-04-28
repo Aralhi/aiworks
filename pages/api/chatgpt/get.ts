@@ -45,8 +45,12 @@ const handler = async (req: Request): Promise<Response> => {
     value = decoder.decode(temp.value);
     result += value;
   }
-  console.info('not stream res:', result);
-  return new Response(result)
+  return new Response(result, {
+    status: 200,
+    headers: {
+      'content-type': 'text/plain;charset=UTF-8'
+    }
+  })
 };
 
 export default handler;
