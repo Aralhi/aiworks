@@ -45,6 +45,7 @@ const handler = async (req: Request): Promise<Response> => {
     value = decoder.decode(temp.value);
     result += value;
   }
+  console.log('...result', result)
   return new Response(result, {
     status: 200,
     headers: {
