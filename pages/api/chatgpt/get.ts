@@ -29,9 +29,10 @@ const handler = async (req: Request): Promise<Response> => {
     stream: true,
     n: 1,
   };
-
+  const startTime = Date.now();
   const stream = await OpenAIStream(payload);
   if (isStream) {
+    console.log('chatgpt response:', isStream, Date.now() - startTime)
     return new Response(stream);
   }
   const reader = stream.getReader();
@@ -45,7 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
     value = decoder.decode(temp.value);
     result += value;
   }
-  console.log('...result', result)
+  console.log('chatgpt response:', isStream, Date.now() - startTime, result)
   return new Response(result, {
     status: 200,
     headers: {
