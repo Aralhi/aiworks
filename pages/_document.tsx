@@ -8,12 +8,12 @@ class MyDocument extends Document {
           <link rel="icon" href="/favicon.ico" />
           <meta
             name="description"
-            content="AIworks，让AI触手可得。"
+            content="AIworks，让AI触手可及。"
           />
           <meta property="og:site_name" content="aiworks.club" />
           <meta
             property="og:description"
-            content="AIworks，让AI触手可得。"
+            content="AIworks，让AI触手可及。"
           />
           <meta property="og:title" content="AIworks" />
         </Head>
