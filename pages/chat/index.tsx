@@ -340,8 +340,10 @@ function chat() {
                     className="m-0 w-full resize-none border-0 bg-transparent p-0 pr-7 focus:ring-0 focus-visible:ring-0 dark:bg-transparent pl-2 md:pl-0"
                     data-listener-added_516abbe0="true"
                   ></textarea>
-                  <button
+
+                  <div
                     className="absolute p-1 rounded-md text-gray-500 bottom-1.5 md:bottom-2.5 hover:bg-gray-100 enabled:dark:hover:text-gray-400 dark:hover:bg-gray-900 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent right-1 md:right-2 disabled:opacity-40"
+                    style={{ cursor: "pointer" }} 
                     onClick={sendConversation}
                   >
                     <svg
@@ -359,7 +361,7 @@ function chat() {
                       <line x1="22" y1="2" x2="11" y2="13"></line>
                       <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
-                  </button>
+                  </div>
                 </div>
               </div>
             </form>
