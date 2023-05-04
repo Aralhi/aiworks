@@ -6,6 +6,7 @@ import { Toaster, toast } from "react-hot-toast";
 import Footer from "../components/Footer";
 import LoadingDots from "../components/LoadingDots";
 import Link from "next/link";
+import { ChatDesc } from "../components/ChatDesc";
 
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
@@ -68,12 +69,12 @@ const Home: NextPage = () => {
           AI生产力工具伴随您的日常工作与生活
         </h2>
       </div>
-      <div id="chatgpt" className="md:flex items-center md:h-[400px] lg:h-[700px]" style={{
+      <div id="chatgpt" className="md:flex items-center md:h-[400px]" style={{
         margin: '20px',
         backgroundColor: 'hsla(210, 8.33%, 95.29%, 1)'
       }}>
-        <div className="bg-[url('/chatgpt-desc.png')] h-full min-h-[200px] bg-container md:w-2/3 bg-size: 100% 100%" style={{ backgroundSize: '100% 100%' }}></div>
-        <div className="flex justify-center items-center flex-col gap-4 p-4 md:w-1/3">
+        <div className="md:w-2/3 p-6"><ChatDesc isHome={true} /></div>
+        <div className="flex h-full justify-center items-center flex-col gap-4 p-4 md:w-1/3 bg-white">
           <h1 className="text-4xl w-full font-bold mb-4 text-center" style={{ color: 'rgb(52, 0, 104)' }}>chatGPT</h1>
           <p style={{ color: 'rgb(52, 0, 104)' }}>全球最强大的人工智能，在创作、文案编辑、编码、美食配方等方面可以给你惊人的灵感和效率，更可以作为AIGC工具强大的prompt生成器。</p>
           <Link className="text-green-400 underline" href={'/chat'}>{mjText}</Link>

@@ -8,12 +8,6 @@ interface HistoryChat {
   name: string
 }
 
-const EXAMPLES = [
-  '用简单的术语解释量子计算',
-  '10岁生日有什么创意吗？',
-  '如何用JavaScript发送一个HTTP请求？'
-]
-
 function chat() {
   const [init, setInit] = useState(true)
   const [isOpen, setIsOpen] = useState(false);
@@ -34,8 +28,8 @@ function chat() {
     setIsOpen(!isOpen);
   };
 
-  function selectExample(index: number) {
-    setContent(EXAMPLES[index])
+  function selectExample(item: string) {
+    setContent(item)
   }
 
   function newChat() {
@@ -189,7 +183,7 @@ function chat() {
         </div> */}
         <div className="relative text-gray-800 w-full h-full md:flex md:flex-col px-6 dark:text-gray-100">
           {init && (
-            <ChatDesc examples={EXAMPLES} onExampleClick={selectExample} />
+            <ChatDesc onExampleClick={selectExample} />
           )}
           {!init && completion && (
             <div className="text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex lg:px-0 m-auto">

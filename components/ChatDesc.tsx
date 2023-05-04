@@ -1,10 +1,28 @@
+import { useRouter } from "next/router";
+
+const EXAMPLES = [
+  '用简单的术语解释量子计算',
+  '10岁生日有什么创意吗？',
+  '如何用JavaScript发送一个HTTP请求？'
+]
+
 export function ChatDesc(props: any) {
-  const { examples, onExampleClick } = props;
+  const { isHome = false, onExampleClick } = props;
+  const router = useRouter();
+
+  function handleClick(item: string) {
+    if (isHome) {
+      router.push('/chat')
+      return
+    }
+    onExampleClick(item)
+  }
+
   return (
     <>
-      <h1 className="text-4xl font-semibold text-center mt-6 sm:mt-[20vh] ml-auto mr-auto mb-10 sm:mb-16 flex gap-2 items-center justify-center">
+      {!isHome && <h1 className="text-4xl font-semibold text-center mt-6 sm:mt-[20vh] ml-auto mr-auto mb-10 sm:mb-16 flex gap-2 items-center justify-center">
         ChatGPT
-      </h1>
+      </h1>}
       <div className="md:flex items-start text-center gap-3.5">
         <div
           id="examples"
@@ -36,17 +54,17 @@ export function ChatDesc(props: any) {
             举例
           </h2>
           <ul className="flex flex-col gap-3.5 w-full sm:max-w-md m-auto">
-            <button className="w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-900"
-              onClick={() => onExampleClick(0)}>
-              "{examples[0]}" →
+            <button className={`w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md ${isHome ? '' : 'hover:bg-gray-200 dark:hover:bg-gray-900'}`}
+              onClick={() => handleClick(EXAMPLES[0])}>
+              "{EXAMPLES[0]}" →
             </button>
-            <button className="w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-900"
-              onClick={() => onExampleClick(1)}>
-              "{examples[1]}" →
+            <button className={`w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md ${isHome ? '' : 'hover:bg-gray-200 dark:hover:bg-gray-900'}`}
+              onClick={() => handleClick(EXAMPLES[1])}>
+              "{EXAMPLES[1]}" →
             </button>
-            <button className="w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-900"
-              onClick={() => onExampleClick(2)}>
-              "{examples[2]}" →
+            <button className={`w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md ${isHome ? '' : 'hover:bg-gray-200 dark:hover:bg-gray-900'}`}
+              onClick={() => handleClick(EXAMPLES[2])}>
+              "{EXAMPLES[2]}" →
             </button>
           </ul>
         </div>
