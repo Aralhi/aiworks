@@ -186,7 +186,7 @@ function chat() {
             <ChatDesc onExampleClick={selectExample} />
           )}
           {!init && completion && (
-            <div className="text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex lg:px-0 m-auto">
+            <div className="text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex lg:px-0 m-auto" style={{ overflow: "auto" }}>
               <div className="w-[30px] flex flex-col relative items-end">
                 <div
                   className="relative h-[30px] w-[30px] p-1 rounded-sm text-white flex items-center justify-center"
