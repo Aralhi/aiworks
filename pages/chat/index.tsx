@@ -1,4 +1,5 @@
 import { ChangeEvent, useEffect, useState, useRef } from 'react';
+import ScrollToBottom from 'react-scroll-to-bottom';
 // import { FaIndent, FaComments, FaPlus, FaSun, FaBolt, FaExclamationTriangle } from "react-icons/fa";
 import { isPC } from '../../utils';
 import { ChatDesc } from '../../components/ChatDesc';
@@ -18,15 +19,12 @@ function chat() {
   const [showRegenerateBtn, setShowRegenerateBtn] = useState(false)
   const [content, setContent] = useState('')
   const [completion, setCompletion] = useState('')
+  const [loading, setLoading] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setIsOpen(isPC() ? true : false)
   }, [])
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
 
   function selectExample(item: string) {
     setContent(item)
@@ -74,13 +72,13 @@ function chat() {
 
 
   async function sendConversation() {
-    if (!content) {
+    if (!content || loading) {
       return
     }
     setInit(false)
-    setCompletion("");
+    setLoading(true)
     try {
-      const response = await fetch("/api/chatgpt/get", {
+      const response = await fetch(`/api/chatgpt/get${process.env.NODE_ENV === 'development' ? '_local' : ''}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,6 +88,7 @@ function chat() {
         }),
       })
       if (!response.ok) {
+        setLoading(false);
         throw new Error(response.statusText);
       }
   
@@ -109,19 +108,19 @@ function chat() {
         const chunkValue = decoder.decode(value);
         setCompletion((prev) => prev + chunkValue);
       }
-      // scrollToBios();
-      // setLoading(false);
+      setLoading(false);
     } catch (e) {
       console.error('fetch failed', e)
+      setLoading(false);
     }
   }
 
   return (
-    <div className="h-screen flex overflow-hidden">
+    <div className="h-screen flex overflow-hidden dark:bg-gray-800">
       {/* 左侧菜单栏 */}
       <div
         className={`${
-          isOpen ? "md:w-[400px] p-4" : "w-0 overflow-hidden"
+          isOpen ? "md:w-[400px] pt-[60px]" : "w-0 overflow-hidden"
         } transition-all duration-300 ease-in-out bg-black text-white`}
       >
         <a
@@ -176,17 +175,13 @@ function chat() {
           ))}
         </ol>
       </div>
-      <main className="h-full w-full dark:bg-gray-800">
-        {/* 切换菜单按钮 */}
-        {/* <div onClick={toggleSidebar}>
-          <FaIndent className="text-white cursor-pointer w-6 h-6 mt-2 ml-2" />
-        </div> */}
+      <main className="h-full w-full">
         <div className="relative text-gray-800 w-full h-full md:flex md:flex-col px-6 dark:text-gray-100">
           {init && (
             <ChatDesc onExampleClick={selectExample} />
           )}
           {!init && completion && (
-            <div className="text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex lg:px-0 m-auto" style={{ overflow: "auto" }}>
+            <div className="text-base gap-4 md:gap-6 p-4 flex justify-center lg:px-0 overflow-hidden">
               <div className="w-[30px] flex flex-col relative items-end">
                 <div
                   className="relative h-[30px] w-[30px] p-1 rounded-sm text-white flex items-center justify-center"
@@ -198,7 +193,7 @@ function chat() {
                     viewBox="0 0 41 41"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     className="h-6 w-6"
                     role="img"
                   >
@@ -213,78 +208,80 @@ function chat() {
                   </svg>
                 </div>
               </div>
-              <div className="relative flex w-[calc(100%-50px)] flex-col gap-1 md:gap-3 lg:w-[calc(100%-115px)]">
-                <div className="flex flex-grow flex-col gap-3">
-                  <div className="min-h-[20px] flex flex-col items-start gap-4 whitespace-pre-wrap break-words">
-                    <div className="markdown prose w-full break-words dark:prose-invert light">
-                      <p>{completion}</p>
+              <ScrollToBottom scrollViewClassName="overflow-hidden">
+                <div className="relative flex flex-col gap-1 md:gap-3">
+                  <div className="flex flex-grow flex-col gap-3">
+                    <div className="min-h-[20px] flex flex-col items-start gap-4 whitespace-pre-wrap break-words">
+                      <div className="markdown prose w-full break-words dark:prose-invert light">
+                        <p>{completion}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex justify-between lg:block">
-                  <div className="text-gray-400 flex self-end lg:self-center justify-center mt-2 gap-2 md:gap-3 lg:gap-1 lg:absolute lg:top-0 lg:translate-x-full lg:right-0 lg:mt-0 lg:pl-2 visible">
-                    <button className="flex ml-auto gap-2 h-full w-full rounded-md p-1 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400">
-                      <svg
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-width="2"
-                        viewBox="0 0 24 24"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="h-4 w-4"
-                        height="1em"
-                        width="1em"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                        <rect
-                          x="8"
-                          y="2"
-                          width="8"
-                          height="4"
-                          rx="1"
-                          ry="1"
-                        ></rect>
-                      </svg>
-                    </button>
-                    <button className="p-1 rounded-md hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400">
-                      <svg
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-width="2"
-                        viewBox="0 0 24 24"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="h-4 w-4"
-                        height="1em"
-                        width="1em"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                      </svg>
-                    </button>
-                    <button className="p-1 rounded-md hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400">
-                      <svg
-                        stroke="currentColor"
-                        fill="none"
-                        stroke-width="2"
-                        viewBox="0 0 24 24"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        className="h-4 w-4"
-                        height="1em"
-                        width="1em"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
-                      </svg>
-                    </button>
+                  <div className="flex justify-between lg:block">
+                    {/* <div className="text-gray-400 flex self-end lg:self-center justify-center mt-2 gap-2 md:gap-3 lg:gap-1 lg:absolute lg:top-0 lg:translate-x-full lg:right-0 lg:mt-0 lg:pl-2 visible">
+                      <button className="flex ml-auto gap-2 h-full w-full rounded-md p-1 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400">
+                        <svg
+                          stroke="currentColor"
+                          fill="none"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                          height="1em"
+                          width="1em"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                          <rect
+                            x="8"
+                            y="2"
+                            width="8"
+                            height="4"
+                            rx="1"
+                            ry="1"
+                          ></rect>
+                        </svg>
+                      </button>
+                      <button className="p-1 rounded-md hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400">
+                        <svg
+                          stroke="currentColor"
+                          fill="none"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                          height="1em"
+                          width="1em"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                        </svg>
+                      </button>
+                      <button className="p-1 rounded-md hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400">
+                        <svg
+                          stroke="currentColor"
+                          fill="none"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                          height="1em"
+                          width="1em"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                        </svg>
+                      </button>
+                    </div> */}
                   </div>
                 </div>
-              </div>
+              </ScrollToBottom>
             </div>
           )}
-          <div className="mt-16 w-full border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent dark:md:bg-vert-dark-gradient pt-2">
+          <div className="w-full absolute bottom-0 left-0 border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent dark:md:bg-vert-dark-gradient pt-2">
             <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
               <div className="relative flex h-full flex-1 items-stretch md:flex-col">
                 <div className="">
@@ -337,7 +334,7 @@ function chat() {
 
                   <div
                     className="absolute p-1 rounded-md text-gray-500 bottom-1.5 md:bottom-2.5 hover:bg-gray-100 enabled:dark:hover:text-gray-400 dark:hover:bg-gray-900 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent right-1 md:right-2 disabled:opacity-40"
-                    style={{ cursor: "pointer" }} 
+                    style={{ cursor: "pointer" }}
                     onClick={sendConversation}
                   >
                     <svg
