@@ -23,7 +23,7 @@ export function ChatDesc(props: any) {
       {!isHome && <h1 className="text-4xl font-semibold text-center mt-6 sm:mt-[20vh] ml-auto mr-auto mb-10 sm:mb-16 flex gap-2 items-center justify-center">
         ChatGPT
       </h1>}
-      <div className="md:flex items-start text-center gap-3.5">
+      <div className="md:flex items-start text-center gap-3.5 md:my-10">
         <div
           id="examples"
           className="flex flex-col mb-8 md:mb-auto gap-3.5 flex-1"

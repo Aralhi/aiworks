@@ -5,40 +5,38 @@ const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABBwAAAEcCAIAA
 
 export default function Header() {
   return (
-    <header className="bg-black shadow">
-      <div className="container mx-auto">
-        <nav className="flex justify-between items-center py-4">
-          <a href="/">
-            <Image width={120} height={100} alt="logo" src={LOGO_BASE64} />
-          </a>
-          <div className="navigation text-white ">
-            <ul className="flex">
-              <li className="mr-6 flex items-center">
-                <Link href={"./chat"}>Chat</Link>
-              </li>
-              <li className="mr-6 flex items-center">
-                <Link href={"./midjourney"}>Midjourney</Link>
-                <a href="#"></a>
-              </li>
-              <li className="mr-6 flex items-center">
-                <Link href={"./tutorial"}>教程</Link>
-              </li>
-              <li className="mr-6 flex items-center">
-                <Link href={"./pricing"}>价格</Link>
-              </li>
-              <li className="hidden md:block">
-                <a href="#">
-                  <img
-                    src="https://via.placeholder.com/50"
-                    alt="Avatar"
-                    className="rounded-full w-8 h-8"
-                  />
-                </a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
+    <header className="w-full bg-black shadow fixed z-10 md:px-6 h-[60px]">
+      <nav className="flex justify-between items-center h-full">
+        <a href="/">
+          <Image width={120} height={100} alt="logo" src={LOGO_BASE64} />
+        </a>
+        <div className="navigation text-white ">
+          <ul className="flex">
+            <li className="mr-6 flex items-center">
+              <Link href={"./chat"}>Chat</Link>
+            </li>
+            <li className="mr-6 flex items-center">
+              <Link href={"./midjourney"}>Midjourney</Link>
+              <a href="#"></a>
+            </li>
+            <li className="mr-6 flex items-center">
+              <Link href={"./tutorial"}>教程</Link>
+            </li>
+            <li className="mr-6 flex items-center">
+              <Link href={"./pricing"}>价格</Link>
+            </li>
+            <li className="hidden md:block">
+              <a href="#">
+                <img
+                  src="https://via.placeholder.com/50"
+                  alt="Avatar"
+                  className="rounded-full w-8 h-8"
+                />
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
     </header>
   );
 }

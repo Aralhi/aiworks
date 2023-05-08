@@ -61,8 +61,8 @@ export default function Footer() {
         <svg
           version="1.1"
           xmlns="http://www.w3.org/2000/svg"
-          fill-rule="evenodd"
-          clip-rule="evenodd"
+          fillRule="evenodd"
+          clipRule="evenodd"
           height="24"
           width="24"
           viewBox="0 0 1024 1024"
