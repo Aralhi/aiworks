@@ -18,9 +18,11 @@
     "baseUrl": ".",
     "paths": {
       "@/lib/*": ["lib/*"],
+      "@/utils/*": ["utils/*"],
+      "@/models/*": ["models/*"],
       "@/components/*": ["components/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "utils/index.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "utils/index.js", "pages/api/sms/sendCode.js"],
   "exclude": ["node_modules"]
 }
