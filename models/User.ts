@@ -2,7 +2,7 @@ import { USERNAME_LENGTH } from '@/utils/constants'
 import { Schema, model, Document, models } from 'mongoose'
 import { IPricing } from './Pricing';
 
-export interface IUser extends Document {
+export interface IUser {
   name: string;
   userCode: string;
   phone: string;

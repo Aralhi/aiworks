@@ -1,7 +1,7 @@
 import { USERNAME_LENGTH } from '@/utils/constants'
-import { Schema, model, Document, models } from 'mongoose'
+import { Schema, model, models } from 'mongoose'
 
-export interface IPricing extends Document {
+export interface IPricing {
   name: string;
   queryCount: number;
 }

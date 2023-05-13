@@ -77,7 +77,7 @@ function chat() {
     setInit(false)
     setLoading(true)
     try {
-      const response = await fetch(`/api/chatgpt/get${process.env.NODE_ENV === 'development' ? '_local' : ''}`, {
+      const response = await fetch(`/api/chatgpt/get`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,7 +175,7 @@ function chat() {
           ))}
         </ol>
       </div>
-      <main className="h-full w-full">
+      <main className="h-full w-full pt-[60px]">
         <div className="relative text-gray-800 w-full h-full md:flex md:flex-col px-6 dark:text-gray-100">
           {init && (
             <ChatDesc onExampleClick={selectExample} />
