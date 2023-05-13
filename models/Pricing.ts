@@ -28,4 +28,4 @@ const PricingSchema = new Schema({
   }
 })
 
-export default models.Pricing ||  model('Pricing', PricingSchema)
+export default models.Pricing ||  model('Pricing', PricingSchema, 'pricing')
