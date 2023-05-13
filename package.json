@@ -6,6 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^3.4.1",
     "@headlessui/react": "^1.7.7",
     "@headlessui/tailwindcss": "^0.1.2",
     "@heroicons/react": "^2.0.13",
@@ -29,8 +30,7 @@
     "react-scroll-to-bottom": "^4.2.0",
     "react-use-measure": "^2.1.1",
     "swr": "^2.1.5",
-    "tencentcloud-sdk-nodejs": "^4.0.594",
-    "web-streams-polyfill": "^3.2.1"
+    "tencentcloud-sdk-nodejs": "^4.0.594"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.194",
