@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose'
+import { Schema, model, Document, models } from 'mongoose'
 
 export interface ICompletion extends Document {
   prompt: String;
@@ -33,4 +33,4 @@ const CompletionSchema = new Schema({
   }
 })
 
-export default model('Completion', CompletionSchema)
+export default models.Completion ||  model('Completion', CompletionSchema)

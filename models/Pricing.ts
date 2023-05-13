@@ -1,5 +1,5 @@
 import { USERNAME_LENGTH } from '@/utils/constants'
-import { Schema, model, Document } from 'mongoose'
+import { Schema, model, Document, models } from 'mongoose'
 
 export interface IPricing extends Document {
   name: string;
@@ -28,4 +28,4 @@ const PricingSchema = new Schema({
   }
 })
 
-export default model('Pricing', PricingSchema)
+export default models.Pricing ||  model('Pricing', PricingSchema)
