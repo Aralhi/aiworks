@@ -1,4 +1,6 @@
 import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
+import { sessionOptions } from "@/lib/session";
+import { getIronSession } from "iron-session/edge";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -8,7 +10,8 @@ export const config = {
   runtime: "edge",
 };
 
-const handler = async (req: Request): Promise<Response> => {
+const handler = async (req: Request, res: Response): Promise<Response> => {
+  const session = await getIronSession(req, res, sessionOptions)
   const { prompt, isStream = true } = (await req.json()) as {
     prompt?: string;
     isStream?: boolean
@@ -25,14 +28,13 @@ const handler = async (req: Request): Promise<Response> => {
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
-    max_tokens: 200,
+    max_tokens: 1000,
     stream: true,
     n: 1,
   };
-  const startTime = Date.now();
-  const stream = await OpenAIStream(payload);
+  //TODO WX调用需要传用户信息
+  const stream = await OpenAIStream(payload, session.user);
   if (isStream) {
-    console.log('chatgpt response:', isStream, Date.now() - startTime)
     return new Response(stream);
   }
   const reader = stream.getReader();
@@ -46,7 +48,6 @@ const handler = async (req: Request): Promise<Response> => {
     value = decoder.decode(temp.value);
     result += value;
   }
-  console.log('chatgpt response:', isStream, Date.now() - startTime, result)
   return new Response(result, {
     status: 200,
     headers: {

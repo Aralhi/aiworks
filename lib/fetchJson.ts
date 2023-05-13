@@ -1,4 +1,5 @@
 import { API_TIMEOUT } from "@/utils/constants";
+import { getFingerprint } from "../utils";
 
 export interface CustomResponseType {
   status: string;
@@ -9,12 +10,18 @@ export default async function fetchJson<CustomResponseType>(
   input: RequestInfo,
   init?: RequestInit,
 ): Promise<CustomResponseType> {
+  const headers = new Headers(init?.headers);
   if (init && !init.headers) {
-    init.headers = {
-      'Content-Type': 'application/json'
-    }
+    headers.append('Content-Type', 'application/json')
   }
-  const response = await fetch(input, Object.assign({ timeout: API_TIMEOUT }, init));
+  const start = Date.now()
+  const fingerprint = await getFingerprint()
+  console.log('fingerprint', fingerprint, Date.now() - start)
+  headers.append('x-fingerprint', fingerprint)
+  const response = await fetch(input, Object.assign({
+    headers,
+    timeout: API_TIMEOUT
+  }, init));
 
   // if the server replies, there's always some data in json
   // if there's a network error, it will throw at the previous line

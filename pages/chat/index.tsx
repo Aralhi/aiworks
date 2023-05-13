@@ -1,7 +1,6 @@
 import { ChangeEvent, useEffect, useState, useRef } from 'react';
 import ScrollToBottom from 'react-scroll-to-bottom';
-// import { FaIndent, FaComments, FaPlus, FaSun, FaBolt, FaExclamationTriangle } from "react-icons/fa";
-import { isPC } from '../../utils';
+import { getFingerprint, isPC } from '../../utils';
 import { ChatDesc } from '../../components/ChatDesc';
 
 
@@ -82,6 +81,7 @@ function chat() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'x-fingerprint': await getFingerprint()
         },
         body: JSON.stringify({
           prompt: content,

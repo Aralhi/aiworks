@@ -9,10 +9,10 @@ export default function PriceCard() {
 
   return (
     <div
-      className="text-black w-full min-h-[300px] rounded-3xl flex justify-center gap-5 p-6 flex-wrap"
+      className="text-black w-full min-h-[300px] rounded-3xl flex justify-center items-center py-6 gap-5 flex-wrap"
       style={{ backgroundColor: "rgba(56,114,224,.04)" }}
     >
-      <div className="bg-white rounded-3xl md:min-w-[250px] flex flex-col items-center justify-center p-4 gap-3">
+      <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <h1 className="text-base" style={{ color: "#637381" }}>
           {PRICING_PLAN["1"].name}
         </h1>
@@ -60,7 +60,7 @@ export default function PriceCard() {
           </p>
         </div>
       </div>
-      <div className="bg-white rounded-3xl md:min-w-[250px] flex flex-col items-center justify-center p-4 gap-3">
+      <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <h1 className="text-lg text-indigo-700">{PRICING_PLAN["2"].name}</h1>
         <p className="flex items-center">
           <span className="font-bold text-2xl">
@@ -106,7 +106,7 @@ export default function PriceCard() {
           </p>
         </div>
       </div>
-      <div className="relative bg-white rounded-3xl md:min-w-[250px] flex flex-col items-center justify-center p-4 gap-3">
+      <div className="relative bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <Image className="absolute top-0 left-0" src="/pro.svg" width={64} height={64} alt="logo" />
         <h1 className="text-lg text-violet-700">{PRICING_PLAN["3"].name}</h1>
         <p className="flex items-center">
@@ -138,8 +138,8 @@ export default function PriceCard() {
           </p>
           <p className="flex items-center">
             <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span className="font-bold mr-1">无上限</span>
-            <span style={{ color: "#000000a6" }}>查询</span>
+            <span className="font-bold mr-1">9999</span>
+            <span style={{ color: "#000000a6" }}>次查询</span>
           </p>
           <p className="flex items-center">
             <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
@@ -149,6 +149,10 @@ export default function PriceCard() {
             <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">三个月</span><span style={{ color: "#000000a6" }}>无限畅玩</span>
           </p>
+          <div className="flex items-start justify-center flex-col">
+            <p className="flex items-center" style={{ color: "#000000a6" }}><FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />专业玩家，支持设置</p>
+            <p className="text-sm" style={{ color: "#000000a6" }}>role、max_token、temperature等</p>
+          </div>
         </div>
       </div>
     </div>

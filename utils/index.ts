@@ -1,3 +1,5 @@
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
+
 export function isPC() {
   const userAgentInfo = navigator.userAgent;
   const Agents = [
@@ -16,4 +18,15 @@ export function isPC() {
     }
   }
   return flag;
+}
+
+export async function getFingerprint() {
+  const fingerprint = localStorage.getItem('aiworks_fingerprint')
+  if (fingerprint) {
+    return fingerprint
+  }
+  const fp = await FingerprintJS.load()
+  const result = await fp.get()
+  localStorage.setItem('aiworks_fingerprint', result.visitorId)
+  return result.visitorId
 }

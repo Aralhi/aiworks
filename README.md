@@ -10,13 +10,15 @@ headlessui
 
 ## 查询规则
 
-- 免费：每天10次上限，根据浏览器cna判断
+- 免费：未登录体验三次，然后引导登录
+
+- 免费：登录每天10次上限，根据fingerpoint判断
 
 - 尝鲜版：一周500次，根据用户ID判断
 
 - 尊享版：一个月200次，根据用户ID判断
 
-- 季卡版：会员期上线9999次，根据用户ID判断
+- 季卡版：会员期上线9999次，根据用户ID判断，支持设置[temperature](https://platform.openai.com/docs/api-reference/completions/create#completions/create-temperature)，[max_token](https://platform.openai.com/docs/api-reference/completions/create#completions/create-max_tokens)等参数
 
 PRICING_PLAN: 套餐信息
 
