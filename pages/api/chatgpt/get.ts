@@ -1,24 +1,14 @@
+import { withIronSessionApiRoute } from 'iron-session/next';
 import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
 import { sessionOptions } from "@/lib/session";
-import { getIronSession } from "iron-session/edge";
+import { NextApiRequest, NextApiResponse } from "next";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
 }
 
-export const config = {
-  runtime: "edge",
-  unstable_allowDynamic: [
-    '/node_modules/mongoose/dist/browser.umd.js'
-  ]
-};
-
-const handler = async (req: Request, res: Response): Promise<Response> => {
-  const session = await getIronSession(req, res, sessionOptions)
-  const { prompt, isStream = true } = (await req.json()) as {
-    prompt?: string;
-    isStream?: boolean
-  };
+const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<Response> => {
+  const { prompt, isStream = true } = req.body || {};
 
   if (!prompt) {
     return new Response("No prompt in the request", { status: 400 });
@@ -36,9 +26,15 @@ const handler = async (req: Request, res: Response): Promise<Response> => {
     n: 1,
   };
   //TODO WX调用需要传用户信息
-  const stream = await OpenAIStream(payload, session.user);
+  const stream = await OpenAIStream(payload, req.session.user);
   if (isStream) {
-    return new Response(stream);
+    // set response headers
+    res.setHeader("Content-Type", "text/plain");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("Transfer-Encoding", "chunked");
+    // send the stream as response body
+    res.status(200).write(stream);
   }
   const reader = stream.getReader();
   const decoder = new TextDecoder();
@@ -59,4 +55,4 @@ const handler = async (req: Request, res: Response): Promise<Response> => {
   })
 };
 
-export default handler;
+export default withIronSessionApiRoute(handler, sessionOptions);
