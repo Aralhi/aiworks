@@ -45,22 +45,22 @@ export default function Header() {
         <a href="/">
           <Image width={120} height={100} alt="logo" src="/aiworks-long.png" />
         </a>
-        <div className="navigation text-white flex">
-          <Menu>
-            <Menu.Button className="mr-6 flex items-center">
+        <div className="navigation text-white">
+          <ul className="flex">
+            <li className="mr-6 flex items-center">
               <Link href={"./chat"}>Chat</Link>
-            </Menu.Button>
-            <Menu.Button className="mr-6 flex items-center">
+            </li>
+            <li className="mr-6 flex items-center">
               <Link href={"./midjourney"}>Midjourney</Link>
               <a href="#"></a>
-            </Menu.Button>
-            <Menu.Button className="mr-6 flex items-center">
+            </li>
+            <li className="mr-6 flex items-center">
               <Link href={"./tutorial"}>教程</Link>
-            </Menu.Button>
-            <Menu.Button className="mr-6 flex items-center">
+            </li>
+            <li className="mr-6 flex items-center">
               <Link href={"./pricing"}>价格</Link>
-            </Menu.Button>
-            <Menu.Button className="hidden md:block relative" onClick={avatarClick}>
+            </li>
+            <li className="hidden md:block relative" onClick={avatarClick}>
               <a href="#">
                 <img
                   src={user?.avatarUrl || AVATARS[0]}
@@ -74,8 +74,8 @@ export default function Header() {
                 <div className="w-20 h-10 text-center flex flex-col justify-center border-b border-gray-200 dark:border-gray-800 cursor-pointer"
                   onClick={logout}>登出</div>
                 </div>}
-            </Menu.Button>
-          </Menu>
+            </li>
+          </ul>
         </div>
       </nav>
       <Toaster
