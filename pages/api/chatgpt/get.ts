@@ -8,6 +8,9 @@ if (!process.env.OPENAI_API_KEY) {
 
 export const config = {
   runtime: "edge",
+  unstable_allowDynamic: [
+    '/node_modules/mongoose/dist/browser.umd.js'
+  ]
 };
 
 const handler = async (req: Request, res: Response): Promise<Response> => {
