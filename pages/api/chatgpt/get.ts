@@ -7,11 +7,11 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
 }
 
-const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<Response> => {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { prompt, isStream = true } = req.body || {};
 
   if (!prompt) {
-    return new Response("No prompt in the request", { status: 400 });
+    return res.status(400).json({ error: "No prompt in the request" });
   }
 
   const payload: OpenAIStreamPayload = {
@@ -33,8 +33,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<Respo
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.setHeader("Transfer-Encoding", "chunked");
-    // send the stream as response body
-    res.status(200).write(stream);
   }
   const reader = stream.getReader();
   const decoder = new TextDecoder();
@@ -45,14 +43,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<Respo
     const temp = await reader.read();
     done = temp.done;
     value = decoder.decode(temp.value);
+    res.pipe(value);
     result += value;
   }
-  return new Response(result, {
-    status: 200,
-    headers: {
-      'content-type': 'application/json'
-    }
-  })
+  if (isStream) {
+    return res.end();
+  }
+  return res.json({ result });
 };
 
 export default withIronSessionApiRoute(handler, sessionOptions);

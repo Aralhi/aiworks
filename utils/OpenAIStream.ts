@@ -55,21 +55,21 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, user?: UserSess
           // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
           if (data === "[DONE]") {
             controller.close();
-            // 插入数据库
-            const completion = {
-              userId: user?._id,
-              prompt: payload.messages[0].content,
-              id,
-              model,
-              created,
-              content: contents.join('')
-            }
-            try {
-              const insertRes = await new Completion(completion).save()
-              console.log('insert completion success', insertRes)
-            } catch (e) {
-              console.error('insert completion failed', e)
-            }
+            // // 插入数据库
+            // const completion = {
+            //   userId: user?._id,
+            //   prompt: payload.messages[0].content,
+            //   id,
+            //   model,
+            //   created,
+            //   content: contents.join('')
+            // }
+            // try {
+            //   const insertRes = await new Completion(completion).save()
+            //   console.log('insert completion success', insertRes)
+            // } catch (e) {
+            //   console.error('insert completion failed', e)
+            // }
             return;
           }
           try {
