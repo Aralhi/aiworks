@@ -10,6 +10,9 @@ export interface ICompletion extends Document {
 
 /* PetSchema will correspond to a collection in your MongoDB database. */
 const CompletionSchema = new Schema({
+  userId: {
+    type: String,
+  },
   prompt: {
     type: String,
     required: [true, 'Please provide prompt.'],
