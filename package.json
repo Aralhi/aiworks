@@ -27,8 +27,10 @@
     "react-hook-form": "^7.42.0",
     "react-hot-toast": "^2.4.0",
     "react-icons": "^4.8.0",
+    "react-markdown": "^8.0.7",
     "react-scroll-to-bottom": "^4.2.0",
     "react-use-measure": "^2.1.1",
+    "remark-gfm": "^3.0.1",
     "swr": "^2.1.5",
     "tencentcloud-sdk-nodejs": "^4.0.594"
   },
