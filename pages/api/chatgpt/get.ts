@@ -17,13 +17,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
-    // temperature: 0.7,
-    // top_p: 1,
-    // frequency_penalty: 0,
-    // presence_penalty: 0,
-    // max_tokens: 1000,
+    temperature: 0.7,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    max_tokens: 1000,
     stream: !!isStream,
-    // n: 1,
+    n: 1,
   };
   if (isStream) {
     // set response headers
