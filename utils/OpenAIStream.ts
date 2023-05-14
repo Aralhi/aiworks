@@ -63,7 +63,6 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
         async function onParse(event: ParsedEvent | ReconnectInterval) {
           if (event.type === "event") {
             const data = event.data;
-            console.log('response data', data)
             // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
             if (data === "[DONE]") {
               controller.close();
@@ -82,7 +81,6 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
               }
               try {
                 const insertRes = await new Completion(completion).save()
-                console.log('insert completion success', insertRes)
               } catch (e) {
                 console.error('insert completion failed', e)
               }
@@ -98,7 +96,6 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
                 // this is a prefix character (i.e., "\n\n"), do nothing
                 return;
               }
-              console.log('response write', text)
               response.write(text)
               contents.push(text)
               const queue = encoder.encode(text);
@@ -138,7 +135,6 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
     }
     try {
       const insertRes = await new Completion(completion).save()
-      console.log('insert completion success', insertRes)
     } catch (e) {
       console.error('insert completion failed', e)
     }

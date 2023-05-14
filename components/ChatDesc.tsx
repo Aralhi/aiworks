@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+import { Flash, Sun, Warn } from "./SVG";
 
 const EXAMPLES = [
   '用简单的术语解释量子计算',
@@ -20,38 +21,16 @@ export function ChatDesc(props: any) {
 
   return (
     <>
-      {!isHome && <h1 className="text-4xl font-semibold text-center mt-6 sm:mt-[20vh] ml-auto mr-auto mb-10 sm:mb-16 flex gap-2 items-center justify-center">
+      {!isHome && <h1 className="text-4xl font-semibold flex items-center justify-center py-6 md:py-12 lg:my-20">
         ChatGPT
       </h1>}
-      <div className="md:flex items-start text-center gap-3.5 md:my-10">
+      <div className="md:flex items-start text-center gap-3.5 md:my-10 px-6 lg:px-10">
         <div
           id="examples"
           className="flex flex-col mb-8 md:mb-auto gap-3.5 flex-1"
         >
           <h2 className="flex gap-3 items-center m-auto text-lg font-normal md:flex-col md:gap-2">
-            <svg
-              stroke="currentColor"
-              fill="none"
-              strokeWidth="1.5"
-              viewBox="0 0 24 24"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            举例
+            <Sun />举例
           </h2>
           <ul className="flex flex-col gap-3.5 w-full sm:max-w-md m-auto">
             <button className={`w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md ${isHome ? '' : 'hover:bg-gray-200 dark:hover:bg-gray-900'}`}
@@ -73,22 +52,7 @@ export function ChatDesc(props: any) {
           className="flex flex-col mb-8 md:mb-auto gap-3.5 flex-1"
         >
           <h2 className="flex gap-3 items-center m-auto text-lg font-normal md:flex-col md:gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              aria-hidden="true"
-              className="h-6 w-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-              ></path>
-            </svg>
-            性能
+            <Flash />性能
           </h2>
           <ul className="flex flex-col gap-3.5 w-full sm:max-w-md m-auto">
             <li className="w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md">
@@ -107,23 +71,7 @@ export function ChatDesc(props: any) {
           className="flex flex-col mb-8 md:mb-auto gap-3.5 flex-1 hidden md:block"
         >
           <h2 className="flex gap-3 items-center m-auto text-lg font-normal md:flex-col md:gap-2">
-            <svg
-              stroke="currentColor"
-              fill="none"
-              strokeWidth="1.5"
-              viewBox="0 0 24 24"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-              <line x1="12" y1="9" x2="12" y2="13"></line>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            限制
+            <Warn />限制
           </h2>
           <ul className="flex flex-col gap-3.5 w-full sm:max-w-md m-auto">
             <li className="w-full bg-gray-50 dark:bg-white/5 p-3 rounded-md">
