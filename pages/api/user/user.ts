@@ -40,9 +40,11 @@ async function getUserFromSession(req: NextApiRequest, res: NextApiResponse) {
       res.status(200).json({ isLoggedIn: false })
     }
   } else {
-    res.json({
-      isLoggedIn: false,
-    });
+    const mock = {"_id":"6460aa3265a205c60f55022c","name":"用户RvGqIzFDBm","userCode":"RvGqIzFDBm","phone":"18312050615","avatarUrl":"/male_avatar.jpg","createAt":"2023-05-14T09:30:26.474Z","updateAt":"2023-05-14T09:31:31.802Z","__v":0,"isLoggedIn":true};
+    res.json(mock);
+    // res.json({
+    //   isLoggedIn: false,
+    // });
   }
 }
 

@@ -9,7 +9,6 @@ import { ChatDesc } from '../../components/ChatDesc';
 import { AnewSvg, ChatGPTLogo, ChatSvg, PlusSvg, Praise, SendSvg, Trample } from '@/components/SVG';
 import useUser from '@/lib/userUser';
 
-
 interface HistoryChat {
   name: string
 }
