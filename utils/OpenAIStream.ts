@@ -6,6 +6,7 @@ import {
 import Completion, { ICompletion } from '@/models/Completion';
 import { UserSession } from 'pages/api/user/user';
 import { NextApiResponse } from 'next';
+import cache from 'memory-cache'
 
 const MAX_STRING_LENGTH = 2 * 1024 // 2K
 
@@ -19,38 +20,78 @@ export interface ChatGPTMessage {
 export interface OpenAIStreamPayload {
   model: string;
   messages: ChatGPTMessage[];
-  temperature: number;
-  top_p: number;
-  frequency_penalty: number;
-  presence_penalty: number;
-  max_tokens: number;
+  // temperature: number;
+  // top_p: number;
+  // frequency_penalty: number;
+  // presence_penalty: number;
+  // max_tokens: number;
   stream: boolean;
-  n: number;
+  // n: number;
 }
 
+interface chatContext {
+  question: string,
+  answer: string
+}
+
+interface sessionInfo {
+  chatContextArr: chatContext[] | never[]
+};
+
 export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextApiResponse, user?: UserSession) {
+
+  // const [chatContext, setChatContext] = useSessionStorage('chatContext', { chatContextArr: [] });
+
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
   let counter = 0;
 
-  const res = process.env.NODE_ENV === 'development' ? await fetch('https://www.ai-works.cn/api/generate', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      prompt: payload.messages[0].content,
-      isStream: payload.stream
-    })
-  }) : await fetch("https://api.openai.com/v1/chat/completions", {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`,
-    },
-    method: "POST",
-    body: JSON.stringify(payload),
+  let messages:any = [
+    // { role: 'system', content: '你的名字叫AIWORKS' },
+  ]
+  // {chatContextArr: [ {question:q},{answer:a} ] }
+  let sessionInfo: sessionInfo =  JSON.parse(cache.get('chatContext') || JSON.stringify({ chatContextArr: [] }));
+  const chatContextArr: chatContext[] = sessionInfo.chatContextArr;
+  // 取最近两个问题做为上下文记忆, 如果考虑节省token，可以取最近一个问题做为上下文记忆
+  const lastQuestions: chatContext[] = chatContextArr.slice(-2);
+  lastQuestions.forEach((ele: chatContext) => {
+    messages.push({
+      role: 'user',
+      content: ele.question
+    }, {
+      role: 'assistant',
+      content: ele.answer
+    });
   });
+
+  payload.messages = messages.concat(payload.messages);
+
+  function getResponseByProd() {
+    return fetch("https://api.openai.com/v1/chat/completions", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`,
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  function getResponseByDev() {
+    return fetch('https://www.ai-works.cn/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: payload.messages[0].content,
+        isStream: payload.stream
+      })
+    })
+  }
+
+  const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
   // 流式响应
   if (payload.stream) {
     let contents: Array<string> = []
@@ -69,10 +110,20 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
               controller.close();
               console.log('response end', payload.stream)
               response.end()
+              // 内容全部返回完成, 将本次返回内容记录到缓存
+              let sessionInfo: sessionInfo =  JSON.parse(cache.get('chatContext') || JSON.stringify({ chatContextArr: [] }));
+              const chatContextArr: chatContext[] = sessionInfo.chatContextArr;
+              chatContextArr.push({
+                question: payload.messages[payload.messages.length - 1].content,
+                answer: contents.join('')
+              });
+              console.log(chatContextArr, '1111111111')
+              // 缓存3小时
+              cache.put('chatContext', JSON.stringify({ chatContextArr }), 3 * 60 * 60 * 1000)
               // 插入数据库
               const completion: ICompletion = {
                 userId: user?._id || '',
-                prompt: payload.messages[0].content,
+                prompt: payload.messages[payload.messages.length - 1].content,
                 role: payload.messages[0].role,
                 stream: payload.stream,
                 id,
@@ -124,6 +175,12 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
     // 非流式响应
     const json = await res.json();
     const content = json.choices[0].message.content;
+    chatContextArr.push({
+      question: payload.messages[payload.messages.length - 1].content,
+      answer: content
+    });
+    // 缓存3小时
+    cache.put('chatContext', chatContextArr, 3 * 60 * 60 * 1000)
     // 插入数据库
     const completion: ICompletion = {
       userId: user?._id || '',

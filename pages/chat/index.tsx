@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useState, useRef } from 'react';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import { getFingerprint, isPC } from '../../utils';
 import { ChatDesc } from '../../components/ChatDesc';
-
+import cache from 'memory-cache'
 
 interface HistoryChat {
   name: string
