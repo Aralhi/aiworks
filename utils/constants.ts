@@ -29,3 +29,5 @@ export const AVATARS = [
   '/male_avatar.jpg',
   '/female_avatar.jpg'
 ]
+export const MAX_CONVERSATION_NAME_LEN = 20
+export const MAX_CONVERSATION_COUNT = 20

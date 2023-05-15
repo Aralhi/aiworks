@@ -18,8 +18,6 @@ export type UserSession = {
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     return await getUserFromSession(req, res)
-  } else if (req.method === 'POST') {
-
   } else if (req.method === 'PUT') {
     // 更新用户信息
     await update(req, res)

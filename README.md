@@ -45,3 +45,11 @@ return res.json({ status: 'ok', data: { name: 'xxx', phone: '185xxxxxxxxx' }})
 // 后台处理异常
 return res.status(500).json({ status: 'failed', message: '注册失败'})
 ```
+
+## 会话管理
+新用户直接发送chat，会自动创建conversation，并在后续会话中传递改conversationId。
+
+conversationId会记录到Completion里，用于查询该conversation中的问答记录
+
+会话列表最多建**20**个
+

@@ -11,9 +11,9 @@ import { ChatDesc } from "../components/ChatDesc";
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const [completion, setCompletion] = useState<String>("");
-  const [chatText, setChatText] = useState<String>("免费试用");
-  const [mjText, setMjText] = useState<String>("免费试用");
+  const [completion, setCompletion] = useState<string>("");
+  const [chatText, setChatText] = useState<string>("免费试用");
+  const [mjText, setMjText] = useState<string>("免费试用");
 
   const bioRef = useRef<null | HTMLDivElement>(null);
 

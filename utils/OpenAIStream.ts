@@ -38,7 +38,7 @@ interface sessionInfo {
   chatContextArr: chatContext[] | never[]
 };
 
-export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextApiResponse, user?: UserSession) {
+export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextApiResponse, conversationId: string, user?: UserSession) {
 
   // const [chatContext, setChatContext] = useSessionStorage('chatContext', { chatContextArr: [] });
 
@@ -85,12 +85,11 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        prompt: payload.messages[0].content,
+        prompt: payload.messages[payload.messages.length - 1].content,
         isStream: payload.stream
       })
     })
   }
-
   const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
   // 流式响应
   if (payload.stream) {
@@ -116,7 +115,6 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
                 question: payload.messages[payload.messages.length - 1].content,
                 answer: contents.join('')
               });
-              console.log(chatContextArr, '1111111111')
               // 缓存3小时
               cache.put('chatContext', JSON.stringify({ chatContextArr }), 3 * 60 * 60 * 1000)
               // 插入数据库
@@ -128,6 +126,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
                 id,
                 model,
                 created,
+                conversationId,
                 content: contents.join('')
               }
               try {
@@ -188,6 +187,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, response: NextA
       model: json.model,
       created: json.created,
       content,
+      conversationId,
       usage: json.usage
     }
     try {

@@ -1,14 +1,15 @@
 import { Schema, model, models } from 'mongoose'
 
 export interface ICompletion {
-  userId: String;
-  prompt: String;
-  role: String;
+  userId: string;
+  prompt: string;
+  role: string;
   stream: Boolean;
-  id: String;
+  id: string; // chatgpt id
   created: Number;
-  model: String;
-  content: String;
+  model: string;
+  content: string;
+  conversationId: string;
   usage?: Usage 
 }
 
@@ -38,7 +39,7 @@ const CompletionSchema = new Schema({
   },
   model: {
     type: String,
-    required: true,
+    required: [true, 'Please provide a model.'],
   },
   content: {
     type: String,
@@ -46,6 +47,11 @@ const CompletionSchema = new Schema({
   },
   role: {
     type: String,
+    required: [true, 'Please provide a role.'],
+  },
+  conversationId: {
+    type: String,
+    required: [true, 'Please provide a conversation id.'],
   },
   stream: {
     type: Boolean,
