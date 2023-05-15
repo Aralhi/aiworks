@@ -51,7 +51,6 @@ const CompletionSchema = new Schema({
   },
   conversationId: {
     type: String,
-    required: [true, 'Please provide a conversation id.'],
   },
   stream: {
     type: Boolean,

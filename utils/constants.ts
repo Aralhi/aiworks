@@ -31,3 +31,6 @@ export const AVATARS = [
 ]
 export const MAX_CONVERSATION_NAME_LEN = 20
 export const MAX_CONVERSATION_COUNT = 20
+export const MAX_COMPLETION_QUERY_COUNT = 10
+
+export const MAX_TOKEN = 2000

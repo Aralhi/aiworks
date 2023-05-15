@@ -2,8 +2,8 @@ import { withIronSessionApiRoute } from 'iron-session/next';
 import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
 import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
-import Conversation, { IConversation } from '@/models/Conversation';
-import { MAX_CONVERSATION_COUNT } from '@/utils/constants';
+import Conversation from '@/models/Conversation';
+import { MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -22,12 +22,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // 查询历史会话格式
     const count = await Conversation.countDocuments({ userId })
     if (count < MAX_CONVERSATION_COUNT) {
-      const newDoc = await Conversation.create({
-        userId,
-        name: conversationName,
-      })
-      console.log('insert conversation success:', newDoc)
-      newConversationId = newDoc._id
+      try {
+        const newDoc = await Conversation.create({
+          userId,
+          name: conversationName,
+        })
+        console.log('insert conversation success:', newDoc)
+        newConversationId = newDoc._id
+      } catch (error) {
+        console.log('insert conversation error:', error)
+      }
     }
   }
 
@@ -38,7 +42,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
-    max_tokens: 1000,
+    max_tokens: MAX_TOKEN,
     stream: !!isStream,
     n: 1,
   };

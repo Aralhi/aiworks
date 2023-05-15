@@ -4,6 +4,7 @@ import { getFingerprint } from "../utils";
 export interface CustomResponseType {
   status: string;
   message: string;
+  data?: any;
 }
 
 export default async function fetchJson<CustomResponseType>(

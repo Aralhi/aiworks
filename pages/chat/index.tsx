@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState, useRef } from 'react';
+import { ChangeEvent, useEffect, useState, useRef, useCallback } from 'react';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -16,6 +16,11 @@ import { sessionOptions } from '@/lib/session';
 import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
 import { toast } from 'react-hot-toast';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { debounce, set } from 'lodash';
+import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
+import DialogModal from '@/components/DialogModal';
+import { ICompletion } from '@/models/Completion';
 
 interface HistoryChat {
   name: string
@@ -44,6 +49,9 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [chatList, setChatList] = useState<Array<Chat>>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editingId, setEditingId] = useState('')
+  const [editingName, setEditingName] = useState('')
+  const [showDelDialog, setShowDelDialog] = useState(false)
+  const [deleteId, setDeleteId] = useState('')
 
   useEffect(() => {
     setIsOpen(isPC() ? true : false)
@@ -58,7 +66,9 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   }
 
   function newChat() {
-
+    setConversationId('')
+    setChatList([])
+    setInit(true)
   }
   
   function handleContentChange(e: ChangeEvent<HTMLTextAreaElement>) {
@@ -80,10 +90,12 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 
   function handleKeyDown(e: any) {
     if (e.key === 'Enter' && e.shiftKey) {
+      console.log('shift + enter')
       e.preventDefault();
       setPrompt(prompt + '\n');
       calculateHeight(prompt + '\n');
       handleFocus()
+      return
     }
     if (e.keyCode === 13) {
       e.preventDefault();
@@ -97,7 +109,6 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       textareaRef.current.selectionEnd = prompt.length;
     }
   };
-
 
   async function sendConversation(regenerate?: boolean) {
     if (!regenerate && !prompt) {
@@ -127,7 +138,10 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-  
+      if (!conversationId) {
+        // 默认没有conversationId会在调chatgpt时创建，此处获取更新会话列表
+        getConversationList()
+      }
       // This data is a ReadableStream
       const data = response.body;
       if (!data) {
@@ -182,11 +196,115 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     }
   }
 
-  function editConversation(id: string) {
-    setEditingId(id)
+  function handleEdit(item: IConversation) {
+    setEditingId(item?._id)
+    setEditingName(item.name)
   }
-  function delConversation(id: string) {
+  function handleDelete(item: IConversation) {
+    setDeleteId(item?._id)
+    setEditingName(item.name)
+    setShowDelDialog(true)
+  }
 
+  function handleNameChange(e: ChangeEvent<HTMLInputElement>) {
+    // debounceNameChange(e.target.value);
+    setEditingName(e.target.value);
+  }
+
+  function handleNameKeyDown(e: any) {
+    if (e.keyCode === 13) {
+      e.preventDefault()
+      saveConversation()
+    }
+  }
+
+  const debounceNameChange = useCallback(
+    debounce(function(value) {
+      setEditingName(value);
+    }, 200)
+  ,[])
+
+  function cancelEdit() {
+    setEditingId('')
+    setEditingName('')
+  }
+
+  function cancelDelete() {
+    setDeleteId('')
+    setEditingName('')
+    setShowDelDialog(false)
+  }
+
+  async function saveConversation() {
+    const res: CustomResponseType = await fetchJson('/api/conversation', {
+      method: 'PUT',
+      body: JSON.stringify({
+        _id: editingId,
+        name: editingName
+      })
+    })
+    if (res && res.status === 'ok') {
+      setEditingId('')
+      setEditingName('')
+      setConversations((pre) => {
+        const index = pre.findIndex((item) => item._id === editingId)
+        pre[index].name = editingName
+        return [...pre]
+      })
+      toast.success(res.message)
+    } else {
+      res.message && toast.error(res.message)
+    }
+  }
+
+  async function delConversation() {
+    const res: CustomResponseType = await fetchJson(`/api/conversation?_id=${deleteId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ _id: deleteId})
+    })
+    if (res && res.status === 'ok') {
+      setConversations((pre) => {
+        return pre.filter((item) => item._id !== deleteId)
+      })
+      setDeleteId('')
+      setEditingName('')
+      setShowDelDialog(false)
+      toast.success(res.message)
+    } else {
+      res.message && toast.error(res.message)
+    }
+  }
+
+  async function getConversationList() {
+    const res: CustomResponseType = await fetchJson('/api/conversation')
+    if (res && res.status === 'ok') {
+      setConversations(res?.data || [])
+      if (!conversationId && res?.data?.[0]?._id) {
+        setConversationId(res?.data?.[0]?._id)
+      }
+    } else {
+      res.message && toast.error(res.message)
+    }
+  }
+
+  function selectConversation(item: IConversation) {
+    setConversationId(item._id)
+    getCompletionList(item._id)
+  }
+
+  async function getCompletionList(id: string) {
+    const res: CustomResponseType = await fetchJson(`/api/completion?conversationId=${id || conversationId}`)
+    if (res && res.status === 'ok' && res?.data?.length) {
+      setInit(false)
+      setChatList((res?.data || []).map((item: ICompletion) => {
+        return {
+          prompt: item.prompt,
+          completion: item.content
+        }
+      }) )
+    } else {
+      res.message && toast.error('未获取到会话列表')
+    }
   }
 
   return (
@@ -204,14 +322,23 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           <PlusSvg />
           New chat
         </a>
+        <DialogModal
+          isOpen={showDelDialog}
+          title='删除会话'
+          desc={<>您确认要删除<strong className='px-1'>{editingName}</strong>会话吗</>}
+          onClose={() => { setShowDelDialog(false) }}
+          cancelCallback={cancelDelete}
+          saveCallback={delConversation}
+        />
         <ol className="w-full">
           {conversations.map((item: IConversation, index: number) => (
             <li
               key={`history_chat_${index}`}
               className="relative z-[15]"
               style={{ opacity: 1, height: "auto" }}
+              onClick={() => {selectConversation(item)}}
             >
-              <a className={`flex py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all )} pr-14 )} ${ cid === item?._id ? 'bg-gray-800' : ''} hover:bg-gray-800 group`}>
+              <a className={`flex py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all )} pr-14 )} ${ conversationId === item?._id ? 'bg-gray-800' : ''} hover:bg-gray-800 group`}>
                 <ChatSvg />
                 <div className="flex-1 text-ellipsis max-h-5 overflow-hidden break-all relative">
                   {editingId !== item?._id && item.name}
@@ -219,19 +346,19 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                     <input
                       type="text"
                       className="w-full bg-transparent border-0 focus:ring-0 focus-visible:ring-0 dark:bg-transparent p-0 text-sm"
-                      value={item.name}
+                      value={editingName}
                       autoFocus
-                      />)
+                      onChange={(e) => { handleNameChange(e) }}
+                      onKeyDown={(e) => { handleNameKeyDown(e)}}
+                    />)
                   }
                   <div className="absolute inset-y-0 right-0 w-8 z-10 bg-gradient-to-l from-gray-800"></div>
                 </div>
                 <div className="absolute flex right-1 z-10 text-gray-300 visible">
-                  <button className="p-1 hover:text-white" onClick={() => { editConversation(item?._id) }}>
-                    <Edit />
-                  </button>
-                  <button className="p-1 hover:text-white" onClick={() => { delConversation(item?._id) }}>
-                    <Delete />
-                  </button>
+                  {editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleEdit(item) }}><Edit /></button>}
+                  {editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleDelete(item) }}><Delete /></button>}
+                  {editingId === item?._id && <button className="p-1 hover:text-white" onClick={saveConversation}><FaCheck /></button>}
+                  {editingId === item?._id && <button className="p-1 hover:text-white" onClick={cancelEdit}><FaTimes /></button>}
                 </div>
               </a>
             </li>
