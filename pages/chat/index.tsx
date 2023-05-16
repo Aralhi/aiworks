@@ -171,8 +171,8 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
         done = doneReading;
         const chunkValue = decoder.decode(value);
         setCompletion((prev) => prev + chunkValue);
+        console.log('chunkValue', chunkValue)
         setChatList((pre) => {
-          // 最后一个元素是completion，可以直接更新
           let tmp = pre.pop() as Chat
           return [...pre, { prompt: tmp.prompt, completion: tmp.completion + chunkValue }]
         })

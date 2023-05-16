@@ -57,12 +57,13 @@ export async function OpenAIStream({
   payload.messages = messages.concat(payload.messages);
 
   function getResponseByProd() {
+    console.log('start request openai', payload)
     return fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`,
       },
-      method: "POST",
       body: JSON.stringify(payload),
     });
   }
@@ -110,6 +111,7 @@ export async function OpenAIStream({
                 // this is a prefix character (i.e., "\n\n"), do nothing
                 return;
               }
+              console.log('response write', text)
               response.write(text)
               contents.push(text)
               const queue = encoder.encode(text);
