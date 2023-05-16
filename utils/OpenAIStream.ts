@@ -69,7 +69,6 @@ export async function OpenAIStream({
   }
 
   function getResponseByDev() {
-    console.log('start request openai dev', payload)
     return fetch('https://www.ai-works.cn/api/generate', {
       method: 'POST',
       headers: {
@@ -161,33 +160,34 @@ async function completionCallback({ payload, request, content, user, chatId, con
   conversationId: string,
   usage?: any
 }) {
-  // 内容全部返回完成, 将本次返回内容记录到缓存
-  const key = `${CHAT_CONTEXT_PRE}${conversationId}`
-  let sessionInfo: sessionInfo =  JSON.parse(cache.get(key) || JSON.stringify({ chatContextArr: [] }));
-  const chatContextArr: chatContext[] = sessionInfo.chatContextArr;
-  chatContextArr.push({
-    question: payload.messages[payload.messages.length - 1].content,
-    answer: content
-  });
-  //TODO: 考虑文本内容可能超大，设置较短缓存过期时间，过期从数据库中读取。
-  cache.put(key, JSON.stringify({ chatContextArr }), CHAT_CONTEXT_CACHE_TIME)
-  // 未登录用户记录用户的fingerPrint
-  const fingerprint = user?._id ? '' : request.headers[FINGERPRINT_KEY] as string
-  // 插入问答记录到数据库
-  const completion: ICompletion = {
-    userId: user?._id || '',
-    prompt: payload.messages[payload.messages.length - 1].content,
-    role: payload.messages[0].role,
-    stream: payload.stream,
-    chatId,
-    model: payload.model,
-    conversationId,
-    content,
-    usage,
-    fingerprint
-  }
   try {
-    await new Completion(completion).save()
+    // 内容全部返回完成, 将本次返回内容记录到缓存
+    const key = `${CHAT_CONTEXT_PRE}${conversationId}`
+    let sessionInfo: sessionInfo =  JSON.parse(cache.get(key) || JSON.stringify({ chatContextArr: [] }));
+    const chatContextArr: chatContext[] = sessionInfo.chatContextArr;
+    chatContextArr.push({
+      question: payload.messages[payload.messages.length - 1].content,
+      answer: content
+    });
+    //TODO: 考虑文本内容可能超大，设置较短缓存过期时间，过期从数据库中读取。
+    cache.put(key, JSON.stringify({ chatContextArr }), CHAT_CONTEXT_CACHE_TIME)
+    // 未登录用户记录用户的fingerPrint
+    const fingerprint = user?._id ? '' : request.headers[FINGERPRINT_KEY] as string
+    // 插入问答记录到数据库
+    const completion: ICompletion = {
+      userId: user?._id || '',
+      prompt: payload.messages[payload.messages.length - 1].content,
+      role: payload.messages[0].role,
+      stream: payload.stream,
+      chatId,
+      model: payload.model,
+      conversationId,
+      content,
+      usage,
+      fingerprint
+    }
+    const insertRes = await new Completion(completion).save()
+    console.log('insert completion success', insertRes)
   } catch (e) {
     console.error('insert completion failed', e)
   }
