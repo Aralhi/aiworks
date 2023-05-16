@@ -1,10 +1,7 @@
 import { getWXAccessToken, createQrCode } from "@/lib/weichat"
+import { NextApiRequest, NextApiResponse } from "next"
 
-export const config = {
-  runtime: "edge"
-}
-
-export default async (req: Request, res: Response) => {
+export default async (req: NextApiRequest, res: NextApiResponse) => {
   const result = await createQrCode()
   return new Response()
 }

@@ -13,6 +13,7 @@ export default function Header() {
   const [showMenu, setShowMenu] = useState(false)
   const { user, mutateUser } = useUser()
   const router = useRouter()
+  const query = router.query
 
   function avatarClick () {
     setShowMenu(!showMenu)
@@ -23,11 +24,14 @@ export default function Header() {
     if (!user?.isLoggedIn) {
       // 未登录跳转到登录页
       if (router.pathname !== '/login') {
-        router.push(`/login?originUrl=${router.pathname}`)
+        router.push({
+          pathname: '/login',
+          query: Object.assign({}, query, { originUrl: router.pathname })
+        })
       }
       return
     }
-  router.push('/user')    
+    router.push({ pathname: 'user', query}) 
   }
 
   async function logout() {
@@ -36,7 +40,10 @@ export default function Header() {
       await fetchJson('/api/user/logout', { method: 'POST' }),
       false
     )
-    router.push(`/login?originUrl=${router.pathname}`)
+    router.push({
+      pathname: '/login',
+      query: Object.assign({}, query, { originUrl: router.pathname })
+    })
   }
 
   return (
@@ -48,17 +55,17 @@ export default function Header() {
         <div className="navigation text-white">
           <ul className="flex">
             <li className="mr-6 flex items-center">
-              <Link href={"./chat"}>Chat</Link>
+              <Link href={{ pathname: 'chat', query }}>Chat</Link>
             </li>
             <li className="mr-6 flex items-center">
-              <Link href={"./midjourney"}>Midjourney</Link>
+              <Link href={{ pathname: 'midjourney', query }}>Midjourney</Link>
               <a href="#"></a>
             </li>
             <li className="mr-6 flex items-center">
-              <Link href={"./tutorial"}>教程</Link>
+              <Link href={{ pathname: 'tutorial', query }}>教程</Link>
             </li>
             <li className="mr-6 flex items-center">
-              <Link href={"./pricing"}>价格</Link>
+              <Link href={{ pathname: 'pricing', query }}>价格</Link>
             </li>
             <li className="hidden md:block relative" onClick={avatarClick}>
               <a href="#">

@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.session.user || !req.session.user.isLoggedIn || !req.session.user._id) {
-    res.status(400).json({ status: 'failed', message: '您无法做此操作，请先登录' })    
+    return res.status(200).json({ status: 'failed' })    
   }
   if (req.method === 'GET') {
     try {

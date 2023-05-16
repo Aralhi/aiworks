@@ -2,25 +2,28 @@ import { ChangeEvent, useEffect, useState, useRef, useCallback } from 'react';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import rehypeKatex from 'rehype-katex'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 import vscDarkPlus from "react-syntax-highlighter/dist/cjs/styles/prism/vsc-dark-plus";
 import { getFingerprint, isPC } from '../../utils';
 import { ChatDesc } from '../../components/ChatDesc';
-import { AnewSvg, ChatGPTLogo, ChatSvg, Checked, Copy, Delete, Edit, PlusSvg, Praise, SendSvg, Trample } from '@/components/SVG';
+import { AnewSvg, ChatGPTLogo, ChatSvg, Copy, Delete, Edit, PlusSvg, SendSvg } from '@/components/SVG';
 import useUser from '@/lib/userUser';
 import { useRouter } from 'next/router';
 import Conversation, { IConversation } from '@/models/Conversation';
-import { MAX_CONVERSATION_COUNT, MAX_CONVERSATION_NAME_LEN } from '@/utils/constants';
+import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_CONVERSATION_NAME_LEN } from '@/utils/constants';
 import { withIronSessionSsr } from 'iron-session/next';
 import { sessionOptions } from '@/lib/session';
 import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
 import { toast } from 'react-hot-toast';
 import { FaCheck, FaTimes } from 'react-icons/fa';
-import { debounce, set } from 'lodash';
+import { debounce } from 'lodash';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import DialogModal from '@/components/DialogModal';
 import { ICompletion } from '@/models/Completion';
+import Link from 'next/link';
+import { Modal } from 'antd'
 
 interface HistoryChat {
   name: string
@@ -52,6 +55,8 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [editingName, setEditingName] = useState('')
   const [showDelDialog, setShowDelDialog] = useState(false)
   const [deleteId, setDeleteId] = useState('')
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [loginDialogMsg, setLoginDialogMsg] = useState('')
 
   useEffect(() => {
     setIsOpen(isPC() ? true : false)
@@ -127,7 +132,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'x-fingerprint': await getFingerprint()
+          [FINGERPRINT_KEY]: await getFingerprint()
         },
         body: JSON.stringify({
           prompt: !regenerate ? prompt : chatList[chatList.length - 1].prompt,
@@ -141,6 +146,16 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       if (!conversationId) {
         // 默认没有conversationId会在调chatgpt时创建，此处获取更新会话列表
         getConversationList()
+      }
+      // 区分响应体header的Content-type，因为改接口能返回Stream和Json
+      const isJson = response.headers.get('Content-Type')?.includes('application/json')
+      if ((!user?.isLoggedIn || !user?.pricing?.isEffective) && isJson) {
+        const json = await response.json()
+        if (json.status === 'failed') {
+          setShowLoginDialog(true)
+          setLoginDialogMsg(json.message)
+        }
+        return
       }
       // This data is a ReadableStream
       const data = response.body;
@@ -330,6 +345,18 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           cancelCallback={cancelDelete}
           saveCallback={delConversation}
         />
+        <Modal
+          open={showLoginDialog}
+          title={!user?.isLoggedIn ? '会话次数已用完' : '购买后可继续使用'}
+          onCancel={() => { setShowLoginDialog(false) }}>
+            <p className='flex justify-center'>{loginDialogMsg}</p>
+            {!user?.isLoggedIn && <p className='flex justify-center items-center mt-2'>登录后获得更多查询次数，
+              <Link className='font-bold text-violet-500' href={{ pathname: 'login', query: router.query }}>登录</Link>
+            </p>}
+            {user?.isLoggedIn && !user?.pricing && <p className='flex justify-center items-center mt-2'>
+              <Link className='font-bold text-violet-500' href={{ pathname: 'pricing', query: router.query }}>感觉不够用?</Link>
+            </p>}
+        </Modal>
         <ol className="w-full">
           {conversations.map((item: IConversation, index: number) => (
             <li
@@ -419,6 +446,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                               <ReactMarkdown
                                 children={item.completion}
                                 remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeKatex]}
                                 components={{
                                   code({
                                     node,
@@ -548,7 +576,7 @@ export default chat;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
   await dbConnect()
-  const conversationList = await Conversation.find({ userId: req.session.user?._id }).lean()
+  const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()
   return {
     props: { conversationList: JSON.parse(JSON.stringify(conversationList)) },
   };

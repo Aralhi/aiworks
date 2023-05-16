@@ -5,12 +5,13 @@ export interface ICompletion {
   prompt: string;
   role: string;
   stream: Boolean;
-  id: string; // chatgpt id
-  created: Number;
+  chatId: string; // chat gpt id
   model: string;
   content: string;
+  createAt?: string;
   conversationId: string;
   usage?: Usage 
+  fingerprint?: string;
 }
 
 export type Usage = {
@@ -28,14 +29,14 @@ const CompletionSchema = new Schema({
     type: String,
     required: [true, 'Please provide prompt.'],
   },
-  id: {
+  chatId: {
     type: String,
     required: [true, 'Please provide a completion id.'],
     unique: true,
   },
-  created: {
-    type: Number,
-    required: [true, 'Please provide a created.'],
+  createAt: {
+    type: Date,
+    default: Date.now,
   },
   model: {
     type: String,
@@ -57,8 +58,10 @@ const CompletionSchema = new Schema({
   },
   usage: {
     type: Object,
+  },
+  fingerprint: {
+    type: String,
   }
 })
 
 export default models.Completion ||  model('Completion', CompletionSchema, 'completion')
-

@@ -6,6 +6,7 @@ import { generateUserInfo } from "@/lib/api/user";
 import { UserSession } from "./user";
 import User from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
+import { FINGERPRINT_KEY } from "@/utils/constants";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   //TODO 现在只支持了验证码登录，后面接入微信要适配一下
@@ -24,7 +25,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         isLoggedIn: true,
         phone: user.phone,
         name: user.name,
-        userCode: user.userCode
+        userCode: user.userCode,
+        fingerprint: req.headers[FINGERPRINT_KEY]
       } as UserSession
       await req.session.save()
       console.log('old user login success:', user)
@@ -40,7 +42,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       isLoggedIn: true,
       phone,
       name: userInfo.name,
-      userCode: userInfo.userCode
+      userCode: userInfo.userCode,
+      fingerprint: req.headers[FINGERPRINT_KEY] as string
     }
     req.session.user = newSession
     await req.session.save()

@@ -3,7 +3,11 @@ import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
 import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
 import Conversation from '@/models/Conversation';
-import { MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
+import { LOGIN_MAX_QUERY_COUNT, MAX_CONVERSATION_COUNT, MAX_TOKEN, UNLOGIN_MAX_QUERY_COUNT } from '@/utils/constants';
+import dbConnect from '@/lib/dbConnect';
+import Completion from '@/models/Completion';
+import { getTodayTime } from '@/utils/index';
+import { queryCompletionCount } from '@/lib/completion';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -11,14 +15,32 @@ if (!process.env.OPENAI_API_KEY) {
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { prompt, conversationId, conversationName, isStream = true } = req.body || {};
-
   if (!prompt) {
     return res.status(400).json({ error: "No prompt in the request" });
   }
+  // 限制未登录和未购买的请求次数
+  const { isLoggedIn, pricing } = req.session.user || {}
+  if (!isLoggedIn || !pricing) {
+    try {
+      const { _id: userId, fingerprint } = req.session.user || {}
+      const count = await queryCompletionCount(userId, fingerprint)
+      if (isLoggedIn && count >= LOGIN_MAX_QUERY_COUNT){
+        res.setHeader('Content-type', 'application/json')
+        return res.json({ status: 'failed', message: "您的免费次数已用完" });
+      } else if (!isLoggedIn && count >= UNLOGIN_MAX_QUERY_COUNT) {
+        res.setHeader('Content-type', 'application/json')
+        return res.json({ status: 'failed', message: "未登录用户最大查询三次" });
+      }
+    } catch (error) {
+      console.error('get completion count error', error)
+    }
+  }
+
+  const { _id: userId } = req.session.user || {}
   // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
   let newConversationId
-  if (!conversationId && conversationName) {
-    const { _id: userId } = req.session.user || {}
+  // 登录了才创建会话
+  if (userId && !conversationId && conversationName) {
     // 查询历史会话格式
     const count = await Conversation.countDocuments({ userId })
     if (count < MAX_CONVERSATION_COUNT) {
@@ -34,7 +56,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }
     }
   }
-
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
@@ -54,7 +75,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader("Transfer-Encoding", "chunked");
   }
   //TODO WX调用需要传用户信息
-  await OpenAIStream(payload, res, conversationId || newConversationId, req.session.user);
+  await OpenAIStream({
+    payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
+  });
 };
 
 export default withIronSessionApiRoute(handler, sessionOptions);

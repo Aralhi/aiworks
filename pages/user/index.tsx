@@ -3,19 +3,20 @@ import { useState, ChangeEvent, useEffect } from "react";
 import { FaShoppingCart, FaUserAlt, FaGift, FaRegCopy } from "react-icons/fa";
 import PriceCard from "@/components/PriceCard";
 import { toast } from "react-hot-toast";
-import { AVATARS, USERNAME_LENGTH } from "@/utils/constants";
+import { AVATARS, FINGERPRINT_KEY, USERNAME_LENGTH } from "@/utils/constants";
 import fetchJson, { CustomResponseType } from "@/lib/fetchJson";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 import { withIronSessionSsr } from "iron-session/next";
 import { sessionOptions } from "@/lib/session";
 import { InferGetServerSidePropsType } from "next";
-import moment from "moment";
+import moment from "moment-timezone";
+import { getTodayTime } from "@/utils/index";
+import Completion from "@/models/Completion";
 
-function user({ inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function user({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user, mutateUser } = useUser();
   const [currentIndex, setCurrentIndex] = useState(1);
-  const [todayQueryCount, setTodayQueryCount] = useState(0);
   const [userName, setUserName] = useState(user?.name || '')
   const [userAvatar, setUserAvatar] = useState(user?.avatarUrl || '')
   const [inviteUrl, setInviteUrl] = useState('')
@@ -133,11 +134,20 @@ function user({ inviteList }: InferGetServerSidePropsType<typeof getServerSidePr
                   </span>
                 </p>
                 <p>
-                  <span className="text-gray-400">每天只有</span>
-                  <span className="font-bold text-black mx-2">
-                    {user?.pricing?.queryCount || 10}
-                  </span>
-                  <span className="text-gray-400">查询次数</span>
+                  {!user?.pricing?.name && <>
+                    <span className="text-gray-400">每天只有</span>
+                    <span className="font-bold text-black mx-2">
+                      {user?.pricing?.queryCount || 10}
+                    </span>
+                    <span className="text-gray-400">查询次数</span>
+                  </>}
+                  {user?.pricing?.name && <>
+                    <span className="text-gray-400">您共有</span>
+                    <span className="font-bold text-black mx-2">
+                      {user?.pricing?.queryCount || 10}
+                    </span>
+                    <span className="text-gray-400">查询次数</span>
+                  </>}
                 </p>
                 <p>
                   <span className="text-gray-400 mr-4">似乎不够用？</span>
@@ -148,13 +158,13 @@ function user({ inviteList }: InferGetServerSidePropsType<typeof getServerSidePr
               </div>
               <div className="flex justify-center items-center gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
                 <div className="flex flex-col gap-5 text-center">
-                  <div className="text-lg text-black">{todayQueryCount}</div>
+                  <div className="text-lg text-black">{todayQueryCount < 0 ? '-' : todayQueryCount}</div>
                   <div className="">今天的请求次数</div>
                 </div>
                 <div className="w-[1px] bg-gray-500 h-[38px] mt-6"></div>
                 <div className="flex flex-col gap-5 text-center">
-                  <div className="text-lg text-black">{todayQueryCount}</div>
-                  <div className="">每天允许的请求次数</div>
+                  <div className="text-lg text-black">{leftQueryCount < 0 ? '-' : leftQueryCount}</div>
+                  <div className="">剩余请求次数</div>
                 </div>
               </div>
             </div>
@@ -273,7 +283,7 @@ function user({ inviteList }: InferGetServerSidePropsType<typeof getServerSidePr
               </div>
             </div>
             <h1 className="text-2xl">记录</h1>
-            <table className="flex justify-center items-center flex-1 w-full flex-row flex-wrap">
+            <table className="flex justify-center items-center flex-1 w-full flex-row flex-wrap p-4">
               <thead className="w-full">
                 <tr className="w-full flex justify-center flex-row flex-1 bg-gray-100">
                   <th className="w-1/2 py-4" style={{ border: '1px solid violet', borderRight: 'none' }}>用户</th>
@@ -282,9 +292,13 @@ function user({ inviteList }: InferGetServerSidePropsType<typeof getServerSidePr
               </thead>
               <tbody className="w-full">
                 {(inviteList || []).map((item: any, index: number) => (
-                  <tr key={index} className="w-full flex justify-center items-center flex-row flex-1">
-                    <td className="w-1/2 text-center h-[48px]" style={{ lineHeight: '48px', border: '1px solid violet', borderRight: 'none', borderTop: index === 0 ? 'none' : '' }}>{item.name}</td>
-                    <td className="w-1/2 text-center h-[48px]" style={{ lineHeight: '48px', border: '1px solid violet', borderTop: index === 0 ? 'none' : '' }}>{item.createAt ? moment(item.createAt).format('YYYY-MM-DD hh:mm:ss') : '-'}</td>
+                  <tr key={`invite_${index}`} className="w-full flex justify-center items-center flex-row flex-1">
+                    <td className="w-1/2 text-center h-[48px]" style={{ lineHeight: '48px', border: '1px solid violet', borderRight: 'none', borderTop: index === 0 ? 'none' : '' }}>
+                      {item.name}
+                    </td>
+                    <td className="w-1/2 text-center h-[48px]" style={{ lineHeight: '48px', border: '1px solid violet', borderTop: index === 0 ? 'none' : '' }}>
+                      {item.createAt ? moment(item.createAt).tz('Asia/Shanghai').format('YYYY-MM-DD hh:mm:ss') : '-'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -298,10 +312,53 @@ function user({ inviteList }: InferGetServerSidePropsType<typeof getServerSidePr
 export default user;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
-  await dbConnect()
-  const inviteList = await User.find({ userCode: req.session.user?.userCode }).lean()
-  console.log('.....inviteList', inviteList)
-  return {
-    props: { inviteList: JSON.parse(JSON.stringify(inviteList)) },
-  };
+  const defaultProps = { todayQueryCount: -1, leftQueryCount: -1, inviteList: [] }
+  if (!req.session.user || !req.session.user?.isLoggedIn) {
+    // 未登录重定向到登录页
+    res.statusCode = 302
+    res.setHeader('Location', '/login')
+    res.end()
+    return {
+      props: defaultProps,
+    };
+  }
+  try {
+    await dbConnect()
+    // get today completion count by userId
+    const [todayStartUTC, todayEndUTC] = getTodayTime()
+    console.log('todayStartCST', todayStartUTC, todayEndUTC)
+    const result = await Completion.aggregate([
+      {
+        $match: {
+          $or: [
+            {userId: req.session.user?._id},
+            {fingerprint: req.session.user?.fingerprint}
+          ],
+          createAt: {
+            $gte: new Date(todayStartUTC),
+            $lte: new Date(todayEndUTC)
+          }
+        }
+      },
+      {
+        $count: 'count',
+      },
+    ])
+    const todayQueryCount = result[0]?.count || 0
+    console.log('todayQueryCount', todayQueryCount)
+    const inviteList = await User.find({ inviteCode: req.session.user?.userCode }).lean()
+    return {
+      props: {
+        todayQueryCount,
+        //TODO 统计剩余的次数
+        leftQueryCount: -1,
+        inviteList: JSON.parse(JSON.stringify(inviteList))
+      },
+    };
+  } catch (err) {
+    console.log('get user inviteList error', err)
+    return {
+      props: defaultProps,
+    };
+  }
 }, sessionOptions)

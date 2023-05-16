@@ -13,7 +13,10 @@ export function ChatDesc(props: any) {
 
   function handleClick(item: string) {
     if (isHome) {
-      router.push('/chat')
+      router.push({
+        pathname: '/chat',
+        query: router.query
+      })
       return
     }
     onExampleClick(item)

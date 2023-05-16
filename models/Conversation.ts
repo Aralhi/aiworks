@@ -3,7 +3,7 @@ import { Schema, model, models } from 'mongoose'
 export interface IConversation {
   userId: string;
   name: string;
-  createAt: Number;
+  createAt?: string;
   _id: string;
 }
 
@@ -18,9 +18,8 @@ const ConversationSchema = new Schema({
     required: [true, 'Please provide a name.'],
   },
   createAt: {
-    type: Number,
-    required: [true, 'Please provide a createAt.'],
-    default: Date.now
+    type: Date,
+    default: Date.now,
   },
 })
 

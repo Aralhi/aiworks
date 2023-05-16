@@ -34,3 +34,9 @@ export const MAX_CONVERSATION_COUNT = 20
 export const MAX_COMPLETION_QUERY_COUNT = 10
 
 export const MAX_TOKEN = 2000
+
+export const TIME_ZONE = 'Asia/Shanghai'
+export const FINGERPRINT_KEY = 'x-fingerprint'
+
+export const UNLOGIN_MAX_QUERY_COUNT = 3
+export const LOGIN_MAX_QUERY_COUNT = 10
