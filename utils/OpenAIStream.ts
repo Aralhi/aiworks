@@ -85,9 +85,7 @@ export async function OpenAIStream({
   // 流式响应
   if (payload.stream) {
     let contents: Array<string> = []
-    let id: string = ''
-    let created: number = 0
-    let model: string = ''
+    let chatId: string = ''
     const stream = new ReadableStream({
       async start(controller) {
         // callback
@@ -99,25 +97,17 @@ export async function OpenAIStream({
               controller.close();
               console.log('response end', payload.stream)
               response.end()
-              completionCallback({ payload, request, content: contents.join(''), user, chatId: id, conversationId })
+              completionCallback({ payload, request, content: contents.join(''), user, chatId, conversationId })
               return;
             }
             try {
               const json = JSON.parse(data);
-              id = json.id
-              created = json.created
-              model = json.model
+              chatId = json.id
               const text = json.choices[0].delta?.content || "";
-              if (counter < 2 && (text.match(/\n/) || []).length) {
-                // this is a prefix character (i.e., "\n\n"), do nothing
-                return;
-              }
-              console.log('response write', text)
               response.write(text)
               contents.push(text)
               const queue = encoder.encode(text);
               controller.enqueue(queue);
-              counter++;
             } catch (e) {
               // maybe parse error
               controller.error(e);
