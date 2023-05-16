@@ -57,7 +57,7 @@ export async function OpenAIStream({
   payload.messages = messages.concat(payload.messages);
 
   function getResponseByProd() {
-    console.log('start request openai', payload)
+    console.log('start request openai prod', payload)
     return fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -69,6 +69,7 @@ export async function OpenAIStream({
   }
 
   function getResponseByDev() {
+    console.log('start request openai dev', payload)
     return fetch('https://www.ai-works.cn/api/generate', {
       method: 'POST',
       headers: {
