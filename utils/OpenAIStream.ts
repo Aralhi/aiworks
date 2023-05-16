@@ -57,7 +57,6 @@ export async function OpenAIStream({
   payload.messages = messages.concat(payload.messages);
 
   function getResponseByProd() {
-    console.log('start request openai prod', payload)
     return fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -125,6 +124,7 @@ export async function OpenAIStream({
     return stream
   } else {
     // 非流式响应
+    console.log('response end, isStream=', payload.stream)
     const json = await res.json();
     const content = json.choices[0].message.content;
     completionCallback({ payload, request, content, user, chatId: json.id, conversationId, usage: json.usage })
@@ -161,6 +161,7 @@ async function completionCallback({ payload, request, content, user, chatId, con
   usage?: any
 }) {
   try {
+    console.log('completionCallback', payload, content)
     // 内容全部返回完成, 将本次返回内容记录到缓存
     const key = `${CHAT_CONTEXT_PRE}${conversationId}`
     let sessionInfo: sessionInfo =  JSON.parse(cache.get(key) || JSON.stringify({ chatContextArr: [] }));
@@ -171,6 +172,7 @@ async function completionCallback({ payload, request, content, user, chatId, con
     });
     //TODO: 考虑文本内容可能超大，设置较短缓存过期时间，过期从数据库中读取。
     cache.put(key, JSON.stringify({ chatContextArr }), CHAT_CONTEXT_CACHE_TIME)
+    console.log('set cache success', key)
     // 未登录用户记录用户的fingerPrint
     const fingerprint = user?._id ? '' : request.headers[FINGERPRINT_KEY] as string
     // 插入问答记录到数据库

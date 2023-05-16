@@ -20,7 +20,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
   // 限制未登录和未购买的请求次数
   const { isLoggedIn, pricing } = req.session.user || {}
-  if (!isLoggedIn || !pricing) {
+  if ((!isLoggedIn || !pricing) && process.env.NODE_ENV === 'production') {
     try {
       const { _id: userId, fingerprint } = req.session.user || {}
       const count = await queryCompletionCount(userId, fingerprint)
@@ -75,9 +75,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader("Transfer-Encoding", "chunked");
   }
   //TODO WX调用需要传用户信息
-  await OpenAIStream({
+  const stream = await OpenAIStream({
     payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
   });
+  return stream
 };
 
 export default withIronSessionApiRoute(handler, sessionOptions);
