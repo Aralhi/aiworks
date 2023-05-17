@@ -23,7 +23,8 @@ import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import DialogModal from '@/components/DialogModal';
 import { ICompletion } from '@/models/Completion';
 import Link from 'next/link';
-import { Modal } from 'antd'
+import { Modal } from 'antd';
+import * as XLSX from 'xlsx'
 
 interface HistoryChat {
   name: string
@@ -42,6 +43,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const router = useRouter()
   const { cid } = router.query
   const [conversationId, setConversationId] = useState(cid)
+  const [conversationName, setConversationName] = useState("");
   const [init, setInit] = useState(true)
   const [isOpen, setIsOpen] = useState(false);
   // 最多显示20条历史记录
@@ -304,6 +306,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 
   function selectConversation(item: IConversation) {
     setConversationId(item._id)
+    setConversationName(item.name);
     getCompletionList(item._id)
   }
 
@@ -320,6 +323,15 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     } else {
       res.message && toast.error('未获取到会话列表')
     }
+  }
+
+  function exportConversation() {
+    const list = [['prompt', 'answer'], ...chatList.map((item) => [item.prompt, item.completion])];
+    let WorkSheet = XLSX.utils.aoa_to_sheet(list)
+    // eslint-disable-next-line camelcase
+    let new_workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(new_workbook, WorkSheet)
+    XLSX.writeFile(new_workbook, `${conversationName} -会话数据.xlsx`)
   }
 
   return (
@@ -533,35 +545,39 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                     </div>
                   </div>
                 )}
-                <div className="flex flex-col w-full py-2 flex-grow md:py-3 md:pl-4 relative border border-black/10 bg-white dark:border-gray-900/50 dark:text-white dark:bg-gray-700 rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:shadow-[0_0_15px_rgba(0,0,0,0.10)]">
-                  <textarea
-                    ref={textareaRef}
-                    tabIndex={0}
-                    data-id="root"
-                    style={{
-                      minHeight: "24px",
-                      height: "auto",
-                      overflowY: "hidden",
-                    }}
-                    rows={1}
-                    value={prompt}
-                    onChange={handleContentChange}
-                    onKeyDown={handleKeyDown}
-                    onFocus={handleFocus}
-                    placeholder="Send a message."
-                    className="m-0 w-full resize-none border-0 bg-transparent p-0 pr-7 focus:ring-0 focus-visible:ring-0 dark:bg-transparent pl-2 md:pl-0"
-                    data-listener-added_516abbe0="true"
-                  ></textarea>
-
-                  <div
-                    className="absolute p-1 rounded-md text-gray-500 bottom-1.5 md:bottom-2.5 hover:bg-gray-100 enabled:dark:hover:text-gray-400 dark:hover:bg-gray-900 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent right-1 md:right-2 disabled:opacity-40"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      sendConversation();
-                    }}
-                  >
-                    <SendSvg />
+                <div style={{ display: "flex" }}>
+                  <div className="flex flex-col w-full py-2 flex-grow md:py-3 md:pl-4 relative border border-black/10 bg-white dark:border-gray-900/50 dark:text-white dark:bg-gray-700 rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:shadow-[0_0_15px_rgba(0,0,0,0.10)]">
+                    <textarea
+                      ref={textareaRef}
+                      tabIndex={0}
+                      data-id="root"
+                      style={{
+                        minHeight: "24px",
+                        height: "auto",
+                        overflowY: "hidden",
+                      }}
+                      rows={1}
+                      value={prompt}
+                      onChange={handleContentChange}
+                      onKeyDown={handleKeyDown}
+                      onFocus={handleFocus}
+                      placeholder="Send a message."
+                      className="m-0 w-full resize-none border-0 bg-transparent p-0 pr-7 focus:ring-0 focus-visible:ring-0 dark:bg-transparent pl-2 md:pl-0"
+                      data-listener-added_516abbe0="true"
+                    ></textarea>
+                      <div
+                        className="absolute p-1 rounded-md text-gray-500 bottom-1.5 md:bottom-2.5 hover:bg-gray-100 enabled:dark:hover:text-gray-400 dark:hover:bg-gray-900 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent right-1 md:right-2 disabled:opacity-40"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          sendConversation();
+                        }}
+                      >
+                        <SendSvg />
+                      </div>
                   </div>
+                  {
+                    conversationId && <div style={{ cursor: "pointer", display: "flex", alignItems: "center", width: "90em", marginLeft: "1em" }} onClick={() => exportConversation()}>导出当前记录</div>
+                  }
                 </div>
               </div>
             </form>
