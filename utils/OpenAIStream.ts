@@ -161,7 +161,7 @@ async function completionCallback({ payload, request, content, user, chatId, con
   usage?: any
 }) {
   try {
-    console.log('completionCallback', payload, content)
+    console.log('completionCallback', payload)
     // 内容全部返回完成, 将本次返回内容记录到缓存
     const key = `${CHAT_CONTEXT_PRE}${conversationId}`
     let sessionInfo: sessionInfo =  JSON.parse(cache.get(key) || JSON.stringify({ chatContextArr: [] }));

@@ -575,8 +575,10 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 export default chat;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
+  const start = Date.now()
   await dbConnect()
   const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()
+  console.log('chat getServerSideProps', Date.now() - start)
   return {
     props: { conversationList: JSON.parse(JSON.stringify(conversationList)) },
   };
