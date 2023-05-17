@@ -1,10 +1,6 @@
 import type { NextPage } from "next";
-import Head from "next/head";
-import Image from "next/image";
 import { useRef, useState } from "react";
-import { Toaster, toast } from "react-hot-toast";
 import Footer from "../components/Footer";
-import LoadingDots from "../components/LoadingDots";
 import Link from "next/link";
 import { ChatDesc } from "../components/ChatDesc";
 

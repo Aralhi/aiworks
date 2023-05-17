@@ -185,6 +185,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 
   function copyCode(id: string, e: any) {
     const codeElement = document.getElementById(id)?.childNodes[0] as HTMLElement
+    if (!codeElement) return
     const range = document.createRange ? document.createRange() : new Range();
     range.selectNodeContents(codeElement);
     const selection = window.getSelection();
@@ -222,7 +223,6 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   }
 
   function handleNameChange(e: ChangeEvent<HTMLInputElement>) {
-    // debounceNameChange(e.target.value);
     setEditingName(e.target.value);
   }
 
@@ -458,6 +458,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                                     const match = /language-(\w+)/.exec(
                                       className || ""
                                     );
+                                    const codeId = `code_block_${index}_${Math.floor(Math.random() * 100)}`
                                     return !inline && match ? (
                                       <>
                                         <div className="flex items-center relative text-gray-200 bg-gray-800 px-4 py-2 text-xs font-sans justify-between rounded-t-md">
@@ -471,8 +472,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                                             className="flex ml-auto gap-2"
                                             onClick={(e) => {
                                               copyCode(
-                                                `code_block_${index}`,
-                                                e
+                                                codeId,  e
                                               );
                                             }}
                                           >
@@ -481,7 +481,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                                           </button>
                                         </div>
                                         <SyntaxHighlighter
-                                          id={`code_block_${index}`}
+                                          id={codeId}
                                           {...props}
                                           customStyle={{ marginTop: 0 }}
                                           children={String(children).replace(
@@ -548,7 +548,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                     onChange={handleContentChange}
                     onKeyDown={handleKeyDown}
                     onFocus={handleFocus}
-                    placeholder="Send a message."
+                    placeholder="输入您的问题（Shift + Enter换行）"
                     className="m-0 w-full resize-none border-0 bg-transparent p-0 pr-7 focus:ring-0 focus-visible:ring-0 dark:bg-transparent pl-2 md:pl-0"
                     data-listener-added_516abbe0="true"
                   ></textarea>

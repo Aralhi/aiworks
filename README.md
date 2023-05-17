@@ -22,6 +22,19 @@ headlessui
 
 PRICING_PLAN: 套餐信息
 
+## 购买及数据结构
+
+订单
+
+用户套餐
+```
+// 用户套餐信息，下单后更新到User表
+  name: string; // 套餐名
+  queryCount: number; // 套餐内查询次数
+  startAt: number; // 套餐生效开始时间
+  endAt: number; // 套餐结束时间
+```
+
 ## 请求发送
 该项目是前后端一体，直接用fetch发送就行了，不需要额外引入axios包
 
@@ -53,3 +66,8 @@ conversationId会记录到Completion里，用于查询该conversation中的问�
 
 会话列表最多建**20**个
 
+## 答案展示形式支持
+- code
+- 表格
+- 列表，如1. xxx 2. xxx
+- emoji

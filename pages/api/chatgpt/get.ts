@@ -4,9 +4,6 @@ import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
 import Conversation from '@/models/Conversation';
 import { LOGIN_MAX_QUERY_COUNT, MAX_CONVERSATION_COUNT, MAX_TOKEN, UNLOGIN_MAX_QUERY_COUNT } from '@/utils/constants';
-import dbConnect from '@/lib/dbConnect';
-import Completion from '@/models/Completion';
-import { getTodayTime } from '@/utils/index';
 import { queryCompletionCount } from '@/lib/completion';
 
 if (!process.env.OPENAI_API_KEY) {

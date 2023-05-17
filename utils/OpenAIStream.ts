@@ -4,7 +4,7 @@ import {
   ReconnectInterval,
 } from "eventsource-parser";
 import Completion, { ICompletion } from '@/models/Completion';
-import user, { UserSession } from 'pages/api/user/user';
+import { UserSession } from 'pages/api/user/user';
 import { NextApiRequest, NextApiResponse } from 'next';
 import cache from 'memory-cache'
 import { FINGERPRINT_KEY } from "./constants";

@@ -1,5 +1,4 @@
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
-import { TIME_ZONE } from './constants';
 
 export function isPC() {
   const userAgentInfo = navigator.userAgent;

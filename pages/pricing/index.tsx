@@ -1,5 +1,4 @@
 import PriceCard from "@/components/PriceCard";
-import { PRICING_PLAN } from "@/utils/constants";
 import { RadioGroup } from '@headlessui/react'
 import { useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";

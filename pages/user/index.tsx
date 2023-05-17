@@ -3,7 +3,7 @@ import { useState, ChangeEvent, useEffect } from "react";
 import { FaShoppingCart, FaUserAlt, FaGift, FaRegCopy } from "react-icons/fa";
 import PriceCard from "@/components/PriceCard";
 import { toast } from "react-hot-toast";
-import { AVATARS, FINGERPRINT_KEY, USERNAME_LENGTH } from "@/utils/constants";
+import { AVATARS, USERNAME_LENGTH } from "@/utils/constants";
 import fetchJson, { CustomResponseType } from "@/lib/fetchJson";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";

@@ -24,6 +24,7 @@ export const PRICING_PLAN = {
 
 export const USERNAME_LENGTH = 12
 export const API_TIMEOUT = 10000
+export const USER_CACHE_TIME = 60 * 60 * 1000 // 1小时
 export const AVATARS = [
   '/default_avatar.jpg',
   '/male_avatar.jpg',

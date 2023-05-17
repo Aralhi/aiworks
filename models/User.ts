@@ -1,6 +1,5 @@
 import { USERNAME_LENGTH } from '@/utils/constants'
 import { Schema, model, models } from 'mongoose'
-import { IPricing } from './Pricing';
 
 export interface IUser {
   name: string;
@@ -20,7 +19,6 @@ export type UserPricing = {
   endTimestamp: number; // 结束时间戳，ms
 }
 
-/* PetSchema will correspond to a collection in your MongoDB database. */
 const UserSchema = new Schema({
   name: {
     type: String,
@@ -33,7 +31,6 @@ const UserSchema = new Schema({
   },
   phone: {
     type: String,
-    required: [false, 'Please provide a phone number.'],
     unique: true,
   },
   avatarUrl: {

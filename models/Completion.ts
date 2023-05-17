@@ -20,7 +20,6 @@ export type Usage = {
   total_tokens: Number;
 }
 
-/* PetSchema will correspond to a collection in your MongoDB database. */
 const CompletionSchema = new Schema({
   userId: {
     type: String,

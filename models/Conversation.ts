@@ -7,7 +7,6 @@ export interface IConversation {
   _id: string;
 }
 
-/* PetSchema will correspond to a collection in your MongoDB database. */
 const ConversationSchema = new Schema({
   userId: {
     type: String,

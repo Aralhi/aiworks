@@ -1,31 +1,35 @@
-import { USERNAME_LENGTH } from '@/utils/constants'
 import { Schema, model, models } from 'mongoose'
 
+// 用户的套餐信息，下单后更新到用户表
 export interface IPricing {
-  name: string;
-  queryCount: number;
+  name: string; // 套餐名
+  queryCount: number; // 套餐内查询次数
+  startAt: number; // 套餐生效开始时间
+  endAt: number; // 套餐结束时间
 }
 
-/* PetSchema will correspond to a collection in your MongoDB database. */
+// 套餐信息
 const PricingSchema = new Schema({
   name: {
     type: String,
-    required: [true, 'Please provide a name.'],
-    maxlength: [USERNAME_LENGTH, `Name cannot be more than ${USERNAME_LENGTH} characters`],
+    required: [true, 'Please provide pricing name.'],
   },
-  userCode: {
+  label: {
     type: String,
-    required: [true, 'Please provide a user code.']
+    required: [true, 'Please provide pricing label.'],
   },
-  phone: {
-    type: String,
-    required: [false, 'Please provide a phone number.'],
-    unique: true,
+  queryCount: {
+    type: Number,
+    required: [true, 'Please provide query count.']
   },
-  avatarUrl: {
-    type: String,
-    required: false,
-  }
+  price: {
+    type: Number,
+    required: [true, 'Please provide price.'],
+  },
+  period: {
+    type: Number,
+    required: [true, 'Please provide period.'],
+  },
 })
 
 export default models.Pricing ||  model('Pricing', PricingSchema, 'pricing')

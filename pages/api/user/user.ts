@@ -2,9 +2,10 @@ import { getUpdateBody } from "@/lib/api/user";
 import dbConnect from "@/lib/dbConnect";
 import { sessionOptions } from "@/lib/session";
 import User, { UserPricing } from "@/models/User";
-import { USERNAME_LENGTH } from "@/utils/constants";
+import { USERNAME_LENGTH, USER_CACHE_TIME } from "@/utils/constants";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
+import cache from 'memory-cache'
 
 // session中User的类型
 export type UserSession = {
@@ -30,11 +31,17 @@ export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function getUserFromSession(req: NextApiRequest, res: NextApiResponse) {
   if (req.session.user) {
-    const { phone = '' } = req.session.user as UserSession
+    const { _id = '' } = req.session.user || {}
+    const cacheKey = getUserCacheKey(_id)
+    const cacheUser = cache.get(cacheKey)
+    if (cacheUser) {
+      return res.status(200).json(Object.assign({}, JSON.parse(cacheUser), { isLoggedIn: true }));
+    }
     await dbConnect()
-    const user = await User.findOne({ phone })
+    const user = (await User.findOne({ _id })).toJSON()
     if (user) {
-      return res.status(200).json(Object.assign({}, user.toJSON(), { isLoggedIn: true }));
+      cache.put(cacheKey, JSON.stringify(user), USER_CACHE_TIME)
+      return res.status(200).json(Object.assign({}, user, { isLoggedIn: true }));
     } else {
       console.log('user not found by session', req.session.user)
       req.session.destroy()
@@ -64,9 +71,14 @@ async function update(req: NextApiRequest, res: NextApiResponse) {
       updateAt: Date.now(),
       ...getUpdateBody(name, avatarUrl)
     })
+    cache.del(getUserCacheKey(_id))
     console.log('update user success:', updateRes)
     return res.json({ status: 'ok', message: '更新成功'})
   } catch (e) {
     console.error('update user failed:', e)
   }
+}
+
+function getUserCacheKey(id: string) {
+  return `user_info_${id}`
 }
