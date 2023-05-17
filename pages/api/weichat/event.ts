@@ -14,7 +14,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const parser = new XMLParser();
     let jObj = parser.parse(req.body);
     console.log('weichat event req.body', typeof jObj, jObj)
-    if (req.method === 'POST') {
+    if (req.method === 'GET') {
       // 验证微信消息
       const { signature, nonce, timestamp, echostr } = req.query || {}
       const str = [process.env.WX_PUBLIC_TOKEN, timestamp, nonce].sort().join('')
