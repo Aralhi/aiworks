@@ -2,11 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next"
 import crypto from 'crypto'
 
 if (!process.env.WX_PUBLIC_TOKEN) {
-  throw new Error("Missing env var from WX");
+  throw new Error("Missing WX_PUBLIC_TOKEN");
 }
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  console.log('weichat event', req.method, req.query, req.body)
+  console.log('weichat event', process.env.WX_PUBLIC_TOKEN, req.method, req.query, req.body)
   if (req.method === 'GET') {
     // 验证微信消息
     const { signature, nonce, timestamp, echostr } = req.query || {}
