@@ -23,7 +23,8 @@ import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import DialogModal from '@/components/DialogModal';
 import { ICompletion } from '@/models/Completion';
 import Link from 'next/link';
-import { Modal } from 'antd'
+import { Modal } from 'antd';
+import * as XLSX from 'xlsx'
 
 interface HistoryChat {
   name: string
@@ -42,6 +43,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const router = useRouter()
   const { cid } = router.query
   const [conversationId, setConversationId] = useState(cid)
+  const [conversationName, setConversationName] = useState("");
   const [init, setInit] = useState(true)
   const [isOpen, setIsOpen] = useState(false);
   // 最多显示20条历史记录
@@ -304,6 +306,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 
   function selectConversation(item: IConversation) {
     setConversationId(item._id)
+    setConversationName(item.name);
     getCompletionList(item._id)
   }
 
@@ -320,6 +323,15 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     } else {
       res.message && toast.error('未获取到会话列表')
     }
+  }
+
+  function exportConversation() {
+    const list = [['prompt', 'answer'], ...chatList.map((item) => [item.prompt, item.completion])];
+    let WorkSheet = XLSX.utils.aoa_to_sheet(list)
+    // eslint-disable-next-line camelcase
+    let new_workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(new_workbook, WorkSheet)
+    XLSX.writeFile(new_workbook, `${conversationName} -会话数据.xlsx`)
   }
 
   return (
@@ -562,6 +574,9 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                   >
                     <SendSvg />
                   </div>
+                  {
+                    conversationId && <div style={{ cursor: "pointer", display: "flex", alignItems: "center", width: "90em", marginLeft: "1em" }} onClick={() => exportConversation()}>导出当前记录</div>
+                  }
                 </div>
               </div>
             </form>
