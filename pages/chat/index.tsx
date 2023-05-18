@@ -17,7 +17,7 @@ import { sessionOptions } from '@/lib/session';
 import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
 import { toast } from 'react-hot-toast';
-import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaFileDownload, FaTimes } from 'react-icons/fa';
 import { debounce } from 'lodash';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import DialogModal from '@/components/DialogModal';
@@ -25,10 +25,6 @@ import { ICompletion } from '@/models/Completion';
 import Link from 'next/link';
 import { Modal } from 'antd';
 import * as XLSX from 'xlsx'
-
-interface HistoryChat {
-  name: string
-}
 
 interface Chat {
   prompt: string;
@@ -44,7 +40,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const { cid } = router.query
   const [conversationId, setConversationId] = useState(cid)
   const [conversationName, setConversationName] = useState("");
-  const [init, setInit] = useState(true)
+  const [init, setInit] = useState(!cid)
   const [isOpen, setIsOpen] = useState(false);
   // 最多显示20条历史记录
   const [conversations, setConversations] = useState<Array<IConversation>>(conversationList || [])
@@ -66,6 +62,8 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       toast.error(`最多只能创建${MAX_CONVERSATION_COUNT}个会话，您已经达到上限。`)
       localStorage.setItem('aiworks_conversation_count_message', 'true')
     }
+    // 根据cid查询会话列表
+    getCompletionList(cid as string)
   }, [])
 
   function selectExample(item: string) {
@@ -308,6 +306,8 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     setConversationId(item._id)
     setConversationName(item.name);
     getCompletionList(item._id)
+    console.log('selectConversation', item)
+    router.push({ pathname: 'chat', query: { cid: item._id }})
   }
 
   async function getCompletionList(id: string) {
@@ -320,8 +320,6 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           completion: item.content
         }
       }) )
-    } else {
-      res.message && toast.error('未获取到会话列表')
     }
   }
 
@@ -407,7 +405,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       <main className="h-full w-full pt-[60px]">
         <div className="relative text-gray-800 w-full h-full md:flex md:flex-col dark:text-gray-100">
           {init && <ChatDesc onExampleClick={selectExample} />}
-          {!init && chatList && chatList.length && (
+          {!init && chatList && chatList.length > 0 && (
             <ScrollToBottom className="overflow-hidden dark:dark-theme">
               {chatList.map((item: Chat, index: number) => (
                 <div key={`chat_${index}`}>
@@ -525,6 +523,12 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
             </ScrollToBottom>
           )}
           <div className="w-full absolute bottom-0 left-0 border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent md:bg-vert-light-gradient md:dark:bg-vert-dark-gradient pt-2">
+            {
+              conversationId && <div className='bg-gray-400 dark:bg-gray-900 absolute bottom-[120px] w-8 h-8 rounded-full z-10 right-6 cursor-pointer flex items-center justify-center'
+                onClick={() => exportConversation()}>
+                <FaFileDownload className='w-4 h-4'></FaFileDownload>
+              </div>
+            }
             <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
               <div className="relative flex h-full flex-1 items-stretch md:flex-col">
                 <div className="">
@@ -574,9 +578,6 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                   >
                     <SendSvg />
                   </div>
-                  {
-                    conversationId && <div style={{ cursor: "pointer", display: "flex", alignItems: "center", width: "90em", marginLeft: "1em" }} onClick={() => exportConversation()}>导出当前记录</div>
-                  }
                 </div>
               </div>
             </form>
@@ -589,12 +590,24 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 
 export default chat;
 
-export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
-  const start = Date.now()
-  await dbConnect()
-  const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()
-  console.log('chat getServerSideProps', Date.now() - start)
-  return {
-    props: { conversationList: JSON.parse(JSON.stringify(conversationList)) },
-  };
+export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
+  const url = new URL(req.headers.referer || '')
+  const cid = url.searchParams.get('cid')
+  try {
+    await dbConnect()
+    // 查询会话列表
+    const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()
+    return {
+      props: {
+        conversationList: JSON.parse(JSON.stringify(conversationList)),
+      },
+    };
+  } catch (e) {
+    console.error('getServerSideProps error', e)
+    return {
+      props: {
+        conversationList: [],
+      },
+    };
+  }
 }, sessionOptions)

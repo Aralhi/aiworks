@@ -21,9 +21,13 @@ export async function getWXAccessToken() {
     throw new Error(`getWXAccessToken failed, status: ${res.status}`)
   }
   const result = await res.json()
-  cache.put('wx_access_token', result.access_token, result.expires_in * 1000)
-  console.log('fetch wx access_token success and cached', result)
-  return result.access_token
+  if (result.access_token) {
+    console.log('getWXAccessToken success', result)
+    cache.put('wx_access_token', result.access_token, result.expires_in * 1000)
+    console.log('fetch wx access_token success and cached', result)
+    return result.access_token
+  }
+  return false
 }
 
 export async function createQrCode() {

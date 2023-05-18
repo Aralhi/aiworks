@@ -1,99 +1,111 @@
-import { ChangeEvent, useState, useCallback, useEffect } from 'react';
+import { ChangeEvent, useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
-import { debounce } from 'lodash';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
+import { Tabs, Checkbox, InputNumber, Input } from 'antd';
+import type { TabsProps } from 'antd';
+import { createQrCode } from '@/lib/weichat';
+import Link from 'next/link';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
+import React from 'react';
 
-const SMS_TIMEOUT = process.env.NODE_ENV === 'development' ? 1 : 120;
+const SMS_TIMEOUT = process.env.NODE_ENV === 'development' ? 5 : 60;
+let protocolChecked = false;
 
 const Login = () => {
   const [phone, setPhone] = useState('');
-  const [phoneCheck, setPhoneCheck] = useState(true);
+  console.log('render login', protocolChecked, phone);
   const [code, setCode] = useState('');
+  const [phoneCheck, setPhoneCheck] = useState(true);
   const [codeCheck, setCodeCheck] = useState(true);
-  const [isCodeButtonDisabled, setIsCodeButtonDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(SMS_TIMEOUT);
+  const [countdown, setCountdown] = useState(-1);
   const router = useRouter();
   const inviteCode = router.query?.c
 
-  useEffect(() => {
-    let timer: any = null;
-    if (isCodeButtonDisabled) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
+  const tabItems: TabsProps['items'] = [
+    {
+      key: 'weixin',
+      label: '微信登录',
+      children: <WeixinLogin />
+    },
+    {
+      key: 'phone',
+      label: '手机号登录',
+      children: <PhoneLogin />
     }
-    return () => clearInterval(timer);
-  }, [isCodeButtonDisabled]);
-
-  useEffect(() => {
-    if (countdown === 0) {
-      setIsCodeButtonDisabled(false);
-    }
-  }, [countdown]);
+  ]
 
   const handleSendCode = async () => {
+    if (countdown > 0) {
+      return
+    }
     if (!phone || !phoneCheck) {
       toast.error('请输入正确的手机号码');
       return
     }
-    setIsCodeButtonDisabled(true);
+    if (!protocolChecked) {
+      toast.error('请阅读并同意用户协议');
+      return
+    }
     setCountdown(SMS_TIMEOUT);
-    const res = await fetch('/api/sms/sendCode', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        phone
-      })
-    })
-    if (!res.ok) {
-      toast.error('验证码发送失败');
+    // const res = await fetch('/api/sms/sendCode', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({
+    //     phone
+    //   })
+    // })
+    // if (!res.ok) {
+    //   toast.error('验证码发送失败');
+    // }
+    // const result = await res.json();
+    // if (result.status === 'ok') {
+    //   toast.success('验证码发送成功');
+    // }
+  };
+
+  useEffect(() => {
+    if (countdown <= 0) {
+      return;
     }
-    const result = await res.json();
-    if (result.status === 'ok') {
-      toast.success('验证码发送成功');
-    }
+    let timer: any = null;
+    timer = setInterval(() => {
+      setCountdown((prevCountdown) => prevCountdown - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown])
+
+  const phoneBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    setPhone(e.target.value)
+    checkPhone(e.target.value);
   };
 
-  const phoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setPhone(e.target.value);
-    debouncePhoneChange(e.target.value);
+  const codeBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    setCode(e.target.value)
+    checkCode(e.target.value);
   };
 
-  const codeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setCode(e.target.value);
-    debounceCodeChange(e.target.value);
-  };
-
-  const debouncePhoneChange = useCallback(
-    debounce(function(value) {
-      checkPhone(value);
-    }, 500)
-  ,[])
-
-  const debounceCodeChange = useCallback(
-    debounce(function(value) {
-      checkCode(value);
-    }, 500)
-  ,[])
-
-  function checkPhone(value: string) {
-    if (/^1[3-9]\d{9}$/.test(value || phone)) {
+  function checkPhone(phone: string) {
+    if (/^1[3-9]\d{9}$/.test(phone)) {
       setPhoneCheck(true);
     } else {
       setPhoneCheck(false);
     }
   }
 
-  function checkCode(value: string) {
-    if (/^\d{6}$/.test(value)) {
+  function checkCode(code: string) {
+    if (/^\d{6}$/.test(code)) {
       setCodeCheck(true)
     } else {
       setCodeCheck(false)
     }
+  }
+
+  function protocolClick (e: CheckboxChangeEvent) {
+    protocolChecked = e.target.checked;
   }
 
   const handleLogin = async () => {
@@ -124,10 +136,74 @@ const Login = () => {
     }
   };
 
+  function refreshQRCode() {
+    console.log('refreshQRCode');
+  }
+
+  function WeixinLogin() {
+    return (
+      <div className="flex justify-center items-center flex-col gap-4 relative min-h-[350px]">
+        <p className="text-gray-400 text-center">微信扫码关注公众号完成登录</p>
+        <div
+          className="flex justify-center items-center w-[200px] h-[200px] md:w-[250px] md:h-[250px] bg-white bg-opacity-95"
+        >二维码已过期，
+          <span className="cursor-pointer text-blue-500"
+            onClick={refreshQRCode}
+          >刷新
+          </span>
+        </div>
+        <p> 登录即表示您已阅读并同意<Link className='text-blue-500 ml-2' href={'/protocol'} target='_blank'>服务条款</Link></p>
+      </div>
+    );
+  }
+
+  function PhoneLogin() {
+    return (
+      <div className="flex justify-center items-center bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 min-h-[350px] w-[300px] md:w-[400px]">
+        <div className="space-y-6">
+          <Input 
+            placeholder='请输入手机号'
+            addonBefore={<span>+86</span>}
+            defaultValue={phone}
+            className='w-full h-[40px]'
+            onBlur={phoneBlur}
+          />
+          <label className='text-red-400 text-xs'>{!phoneCheck && '请输入正确的电话号码'}</label>
+          <Input
+            defaultValue={code}
+            placeholder='请输入验证码'
+            onBlur={codeBlur}
+            addonAfter={<span className='cursor-pointer' onClick={handleSendCode}>{countdown > 0 ? `${countdown} 秒重新获取` : '获取验证码'}</span>}
+            className='w-full h-[40px]'
+          />
+          <label className='text-red-400 text-xs'>{!codeCheck && '请输入正确的验证码'}</label>
+          {inviteCode &&
+            <Input
+              disabled
+              defaultValue={inviteCode}
+              addonBefore={<span>邀请码</span>}
+            />}
+          <div>
+            <Checkbox onChange={protocolClick} defaultChecked={protocolChecked} value={protocolChecked}>阅读并同意</Checkbox>
+            <Link className='text-blue-500' href={'/protocol'} target='_blank'>《用户协议与隐私政策》</Link>
+          </div>
+          <div>
+            <button
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              onClick={handleLogin}
+              disabled={loading || !phoneCheck || !codeCheck}
+            >登录
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">登录</h2>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">AI works，让AI触手可及 </h2>
       </div>
       <Toaster
         position="top-center"
@@ -135,82 +211,18 @@ const Login = () => {
         toastOptions={{ duration: 2000 }}
       />
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                电话：
-              </label>
-              <div className="mt-1">
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  required
-                  value={phone}
-                  onChange={phoneChange}
-                  className="caret-violet-400 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-            <label className='text-red-600 text-sm'>{!phoneCheck && '请输入正确的电话号码'}</label>
-            </div>
-            <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700">
-                验证码：
-              </label>
-              <div className="mt-1 flex rounded-md shadow-sm">
-                <input
-                  id="code"
-                  name="code"
-                  type="text"
-                  autoComplete="off"
-                  required
-                  value={code}
-                  onChange={codeChange}
-                  className="caret-violet-400 appearance-none block w-2/3 px-3 py-2 border border-gray-300 rounded-l-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={handleSendCode}
-                  disabled={isCodeButtonDisabled}
-                  className="inline-flex items-center w-1/3 px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-r-md"
-                >
-                  {isCodeButtonDisabled ? `(${countdown}s)` : '获取验证码'}
-                </button>
-              </div>
-              <label className='text-red-600 text-sm'>{!codeCheck && '请输入正确的验证码'}</label>
-            </div>
-            {inviteCode && <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700">
-                邀请码：
-              </label>
-              <div className="mt-1 flex rounded-md shadow-sm">
-                <input
-                  id="code"
-                  name="code"
-                  type="text"
-                  autoComplete="off"
-                  disabled
-                  value={inviteCode}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-l-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-            </div>}
-            <div>
-              <button
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                onClick={handleLogin}
-                disabled={loading || !phoneCheck || !codeCheck}
-              >
-                登录
-              </button>
-            </div>
-          </div>
-        </div>
+        <Tabs items={tabItems} centered size={'large'}/>
       </div>
     </div>
   );
 };
 
 export default Login;
+
+export async function getServerSideProps() {
+  // 生成二维码
+  // const result = await createQrCode();
+  return {
+    props: {}
+  }
+}
