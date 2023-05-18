@@ -1,15 +1,51 @@
+import { WX_API } from '@/utils/constants'
 import cache from 'memory-cache'
 
-const WX_API = 'https://api.weixin.qq.com'
+export type AccessTokenResponse = {
+  access_token: string;
+  expires_in: number;
+}
 
-export async function getWXAccessToken() {
+export type CreateQrResponse = {
+  ticket: string;
+  expire_seconds: number;
+  url: string;
+  errorcode?: number;
+}
+
+export type WXtMessage = {
+  MsgType: string;
+  Event: string;
+  FromUserName: string;
+  EventKey: string;
+}
+
+export type WXUserInfo = {
+  subscribe: number, 
+  openid: string, 
+  language: string, 
+  subscribe_time: number,
+  unionid:  string,
+  remark: string,
+  groupid: number,
+  tagid_list: Array<number>,
+  subscribe_scene: string,
+  qr_scene: number,
+  qr_scene_str: string
+}
+
+const SCENE_STR = 'wx_login'
+
+// 获取订阅号或服务号的Access Token
+export async function getWXAccessToken(type: string = 'service') {
   const accessToken = cache.get('wx_access_token')
   if (accessToken) {
     console.log('get cached wx access_token', accessToken)
     return accessToken
   }
-  const appId = process.env.SUB_APP_ID
-  const appSecret = process.env.SUB_APP_SECRET
+  // 服务号
+  const appId = process.env[type === 'service' ? 'SERVICE_APP_ID' : 'SUB_APP_ID']
+  const appSecret = process.env[type === 'service' ? 'SERVICE_APP_SECRET' : 'SUB_APP_SECRET']
   let url = `${WX_API}/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`
   const res = await fetch(url, {
     method: 'GET',
@@ -20,33 +56,65 @@ export async function getWXAccessToken() {
   if (!res.ok) { 
     throw new Error(`getWXAccessToken failed, status: ${res.status}`)
   }
-  const result = await res.json()
+  const result: AccessTokenResponse = await res.json()
   if (result.access_token) {
-    console.log('getWXAccessToken success', result)
     cache.put('wx_access_token', result.access_token, result.expires_in * 1000)
     console.log('fetch wx access_token success and cached', result)
     return result.access_token
+  } else {
+    console.log('getWXAccessToken failed', result)
+    return
   }
-  return false
 }
 
+// 根据Access Token创建二维码
 export async function createQrCode() {
   const accessToken = await getWXAccessToken()
-  const url = `${WX_API}/cgi-bin/qrcode/create?access_token=${accessToken}`
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      expire_seconds: 10 * 60,
-      action_name: "QR_SCENE",
-      action_info: { scene: { scene_id: 'login' } },
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`createQrCode failed, status: ${res.status}`)
+  if(!accessToken) {
+    return
   }
-  const result = await res.json()
-  console.log('createQrCode success', result)
+  const url = `${WX_API}/cgi-bin/qrcode/create?access_token=${accessToken}`
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        expire_seconds: 2 * 60, // 2 minutes
+        action_name: "QR_STR_SCENE",
+        action_info: { scene: { scene_str: SCENE_STR } },
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`createQrCode failed, status: ${res.status}`)
+    }
+    const result: CreateQrResponse = await res.json()
+    if (!result.errorcode) {
+      console.log('createQrCode success', result)
+      return result
+    }
+  } catch (error) {
+    console.log('createQrCode failed', error)
+  }
+}
+
+export async function getUserInfo(openid: string) {
+  const token = await getWXAccessToken()
+  const url = `${WX_API}/cgi-bin/user/info?access_token=${token}&openid=${openid}&lang=zh_CN`
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+    if (!res.ok) {
+      throw new Error(`get user info failed, status: ${res.status}`)
+    }
+    const result: WXUserInfo = await res.json()
+    console.log('get user info success', result)
+    return result
+  } catch (e) {
+    console.log('get user info failed', e)
+  }
 }

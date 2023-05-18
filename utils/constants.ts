@@ -41,3 +41,6 @@ export const FINGERPRINT_KEY = 'x-fingerprint'
 
 export const UNLOGIN_MAX_QUERY_COUNT = 3
 export const LOGIN_MAX_QUERY_COUNT = 10
+
+export const WX_API = 'https://api.weixin.qq.com'
+export const MP_WX_API = 'https://mp.weixin.qq.com'

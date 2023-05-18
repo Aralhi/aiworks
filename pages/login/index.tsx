@@ -2,17 +2,19 @@ import { ChangeEvent, useState, useCallback, useEffect, useRef, useMemo } from '
 import { toast, Toaster } from 'react-hot-toast';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
-import { Tabs, Checkbox, InputNumber, Input } from 'antd';
+import { Tabs, Checkbox, Input } from 'antd';
 import type { TabsProps } from 'antd';
 import { createQrCode } from '@/lib/weichat';
 import Link from 'next/link';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import React from 'react';
+import { InferGetServerSidePropsType } from 'next';
+import { MP_WX_API } from '@/utils/constants';
 
 const SMS_TIMEOUT = process.env.NODE_ENV === 'development' ? 5 : 60;
 let protocolChecked = false;
 
-const Login = () => {
+const Login = ({ qrUrl }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const [phone, setPhone] = useState('');
   console.log('render login', protocolChecked, phone);
   const [code, setCode] = useState('');
@@ -20,6 +22,7 @@ const Login = () => {
   const [codeCheck, setCodeCheck] = useState(true);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(-1);
+  const [qrStatus, setQrStataus] = useState('');
   const router = useRouter();
   const inviteCode = router.query?.c
 
@@ -49,22 +52,22 @@ const Login = () => {
       return
     }
     setCountdown(SMS_TIMEOUT);
-    // const res = await fetch('/api/sms/sendCode', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({
-    //     phone
-    //   })
-    // })
-    // if (!res.ok) {
-    //   toast.error('验证码发送失败');
-    // }
-    // const result = await res.json();
-    // if (result.status === 'ok') {
-    //   toast.success('验证码发送成功');
-    // }
+    const res = await fetch('/api/sms/sendCode', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        phone
+      })
+    })
+    if (!res.ok) {
+      toast.error('验证码发送失败');
+    }
+    const result = await res.json();
+    if (result.status === 'ok') {
+      toast.success('验证码发送成功');
+    }
   };
 
   useEffect(() => {
@@ -146,11 +149,14 @@ const Login = () => {
         <p className="text-gray-400 text-center">微信扫码关注公众号完成登录</p>
         <div
           className="flex justify-center items-center w-[200px] h-[200px] md:w-[250px] md:h-[250px] bg-white bg-opacity-95"
-        >二维码已过期，
-          <span className="cursor-pointer text-blue-500"
-            onClick={refreshQRCode}
-          >刷新
-          </span>
+        >
+          <img src={qrUrl || ''} className='w-full h-full'/>
+          {qrStatus === 'expired' && <>
+            <span>二维码已过期，</span>
+            <span className="cursor-pointer text-blue-500"
+              onClick={refreshQRCode}
+            >刷新
+            </span></>}
         </div>
         <p> 登录即表示您已阅读并同意<Link className='text-blue-500 ml-2' href={'/protocol'} target='_blank'>服务条款</Link></p>
       </div>
@@ -221,8 +227,18 @@ export default Login;
 
 export async function getServerSideProps() {
   // 生成二维码
-  // const result = await createQrCode();
+  const result = await createQrCode();
+  if (result?.ticket) {
+    return {
+      props: {
+        qrUrl: `${MP_WX_API}/cgi-bin/showqrcode?ticket=${encodeURIComponent(result?.ticket)}`
+      }
+    }
+  }
+  console.log('login getServerSideProps create qr', result);
   return {
-    props: {}
+    props: {
+      qr: null
+    }
   }
 }
