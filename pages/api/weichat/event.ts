@@ -11,7 +11,7 @@ if (!process.env.WX_PUBLIC_TOKEN) {
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     console.log('weichat event req.query', req.url)
-    console.log('weichat event req.body', req.url)
+    console.log('weichat event req.body', typeof req.body, req.body)
     // 验证微信消息
     if (req.method === 'GET') {
       const { signature, nonce, timestamp, echostr } = req.query || {}
