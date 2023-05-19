@@ -24,7 +24,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
     } else if (req.method === 'POST') {
       const parser = new XMLParser();
-      const message: WXtMessage = parser.parse(req.body);
+      const message: WXtMessage = parser.parse(req.body).xml;
       console.log('weichat event message', message)
       // https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_event_pushes.html
       let { MsgType, Event, EventKey, FromUserName } = message
