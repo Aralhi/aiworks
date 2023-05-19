@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
@@ -69,6 +69,10 @@ const Login = ({ qrUrl }: InferGetServerSidePropsType<typeof getServerSideProps>
       toast.success('验证码发送成功');
     }
   };
+
+  useEffect(() => {
+    document.title = '登录 | AI works';
+  })
 
   useEffect(() => {
     if (countdown <= 0) {

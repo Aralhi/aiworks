@@ -1,4 +1,10 @@
+import { useEffect } from "react";
+
 export default function Protocol() {
+  useEffect(() => {
+    document.title = '用户协议'
+    }, [])
+
   return (
     <div className="p-6 pt-[100px] px-10 md:px-20" style={{ color: 'rgba(39,38,77,.65)' }}>
       <h1 className="text-2xl font-bold mb-4">用户协议</h1>

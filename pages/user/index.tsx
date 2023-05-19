@@ -35,6 +35,9 @@ function user({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSid
 
   useEffect(() => {
     // 规避第一次user为空的情况
+    if (!user?.name) {
+      document.title = `${user?.name}-用户中心`
+    }
     setUserName(user?.name || '')
     setUserAvatar(user?.avatarUrl || '')
     setInviteUrl(`${location.origin}/login?c=${user?.userCode}`)

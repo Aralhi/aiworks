@@ -57,6 +57,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [loginDialogMsg, setLoginDialogMsg] = useState('')
 
   useEffect(() => {
+    document.title = `${conversationName || '会话'} - AI works`
     setIsOpen(isPC() ? true : false)
     if (conversations && conversations.length > MAX_CONVERSATION_COUNT && !localStorage.getItem('aiworks_conversation_count_message')) {
       toast.error(`最多只能创建${MAX_CONVERSATION_COUNT}个会话，您已经达到上限。`)
