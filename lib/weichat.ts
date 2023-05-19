@@ -17,6 +17,7 @@ export type WXtMessage = {
   MsgType: string;
   Event: string;
   FromUserName: string;
+  ToUserName: string;
   EventKey: string;
 }
 
@@ -34,7 +35,7 @@ export type WXUserInfo = {
   qr_scene_str: string
 }
 
-const SCENE_STR = 'wx_login'
+export const SCENE_STR = 'wx_login'
 
 // 获取订阅号或服务号的Access Token
 export async function getWXAccessToken(type: string = 'service') {

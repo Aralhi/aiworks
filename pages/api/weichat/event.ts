@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import crypto from 'crypto'
-import { XMLParser } from 'fast-xml-parser';
-import { WXtMessage, getUserInfo } from "@/lib/weichat";
+import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+import { SCENE_STR, WXtMessage, getUserInfo } from "@/lib/weichat";
 
 
 if (!process.env.WX_PUBLIC_TOKEN) {
@@ -24,22 +24,23 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
     } else if (req.method === 'POST') {
       const parser = new XMLParser();
-      const message: WXtMessage = parser.parse(req.body.xml);
+      const message: WXtMessage = parser.parse(req.body);
       console.log('weichat event message', message)
+      // https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_event_pushes.html
       let { MsgType, Event, EventKey, FromUserName } = message
+      let resContext = ''
       if (MsgType === 'event') {
         switch (Event) {
           case 'subscribe':
-            // TODO 记录数据库
-            res.send('感觉您的关注，AI works团队为您倾情服务。')
+            resContext = '感觉您的关注，AI works团队为您倾情服务。'
             break
           case 'unsubscribe':
-            // TODO 记录数据库
-            res.send('江湖再见!')
+            // 取消关注不需要做什么
+            resContext = '江湖再见!'
             break
           // 关注后扫码
           case  'SCAN':
-            res.send('扫码成功')
+            resContext = '扫码成功'
             break
         }
         if(!!EventKey) {
@@ -48,13 +49,26 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             // 扫码并关注
             // 关注就创建帐号的话可以在这里把用户信息写入数据库完成用户注册
             EventKey = EventKey.slice(8)
-            console.log(userInfo + '扫码并关注了公众号')
+            if (EventKey === SCENE_STR && Event === 'subscribe') {
+              console.log(userInfo + '扫码并关注了公众号')
+              // 缓存扫码状态，供浏览器轮询扫码状态
+            }
           } else {
             // 已关注
             console.log(userInfo + '扫码进入了公众号')
           }
         }
       }
+      const resBody = {
+        ToUserName: message.FromUserName,
+        FromUserName: message.ToUserName,
+        CreateTime: Math.floor(new Date().getTime() / 1000),
+        MsgType: 'text',
+        Content: resContext
+      }
+      res.setHeader('Content-Type', 'application/xml')
+      const builder = new XMLBuilder();
+      res.send(builder.build(resBody))
     }
   } catch (e) {
     console.error('weichat event error', e)
