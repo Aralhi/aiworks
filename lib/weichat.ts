@@ -10,7 +10,7 @@ export type CreateQrResponse = {
   ticket: string;
   expire_seconds: number;
   url: string;
-  errorcode?: number;
+  errcode?: number;
 }
 
 export type WXtMessage = {
@@ -32,7 +32,8 @@ export type WXUserInfo = {
   tagid_list: Array<number>,
   subscribe_scene: string,
   qr_scene: number,
-  qr_scene_str: string
+  qr_scene_str: string,
+  errcode?: number,
 }
 
 export const SCENE_STR = 'wx_login'
@@ -91,7 +92,7 @@ export async function createQrCode() {
       throw new Error(`createQrCode failed, status: ${res.status}`)
     }
     const result: CreateQrResponse = await res.json()
-    if (!result.errorcode) {
+    if (!result.errcode) {
       console.log('createQrCode success', result)
       return result
     }
@@ -113,8 +114,10 @@ export async function getUserInfo(openid: string) {
       throw new Error(`get user info failed, status: ${res.status}`)
     }
     const result: WXUserInfo = await res.json()
-    console.log('get user info success', result)
-    return result
+    if (!result?.errcode) {
+      console.log('get user info success', result)
+      return result
+    }
   } catch (e) {
     console.log('get user info failed', e)
   }

@@ -50,12 +50,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             // 关注就创建帐号的话可以在这里把用户信息写入数据库完成用户注册
             EventKey = EventKey.slice(8)
             if (EventKey === SCENE_STR && Event === 'subscribe') {
-              console.log(userInfo + '扫码并关注了公众号')
+              console.log(userInfo, '扫码并关注了公众号')
               // 缓存扫码状态，供浏览器轮询扫码状态
             }
           } else {
             // 已关注
-            console.log(userInfo + '扫码进入了公众号')
+            console.log(userInfo, '扫码进入了公众号')
           }
         }
       }
@@ -68,7 +68,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       res.setHeader('Content-Type', 'application/xml')
       const builder = new XMLBuilder();
-      res.send(builder.build(resBody))
+      const xml = builder.build(resBody)
+      console.log('weichat event res', xml)
+      res.send(xml)
     }
   } catch (e) {
     console.error('weichat event error', e)

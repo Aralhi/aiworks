@@ -312,6 +312,9 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   }
 
   async function getCompletionList(id: string) {
+    if(!conversationId) {
+      return
+    }
     const res: CustomResponseType = await fetchJson(`/api/completion?conversationId=${id || conversationId}`)
     if (res && res.status === 'ok' && res?.data?.length) {
       setInit(false)
