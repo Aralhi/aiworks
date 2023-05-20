@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import crypto from 'crypto'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
-import cache from 'memory-cache'
-import { SCENE_STR, WXtEventMessage, getQrCacheKey, getUserInfo } from "@/lib/weichat";
+import {  WXtEventMessage, getQrCacheKey, getUserInfo } from "@/lib/weichat";
 import { WXUserInfo } from "@/models/User";
-import { LOGIN_QR_TIME } from "@/utils/constants";
+import { WX_EVENT_TYPE } from "@/utils/constants";
+import WxEvent from "@/models/WxEvent";
 
 
 if (!process.env.WX_PUBLIC_TOKEN) {
@@ -59,9 +59,16 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           if (!userInfo) {
             return res.send(builder.build({ xml: resBody }))
           }
-          // EventKey: 'wx_login'
+          const key = getQrCacheKey(Ticket as string)
+          const value = `${userInfo.openid}_scan`
           // 缓存扫码状态，供浏览器轮询扫码状态
-          cache.put(getQrCacheKey(Ticket as string), `${userInfo.openid}_scan`, LOGIN_QR_TIME)
+          await WxEvent.findOneAndUpdate({
+            type: WX_EVENT_TYPE.login_qr,
+            key
+          }, {
+            value,
+            updateAt: Date.now(),
+          }, { upsert: true })
         }
       }
       const xml = builder.build({ xml: resBody })

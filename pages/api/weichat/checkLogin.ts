@@ -4,9 +4,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import cache from 'memory-cache'
 import { getQrCacheKey } from "@/lib/weichat";
 import User from "@/models/User";
-import { FINGERPRINT_KEY, LOGIN_QR_STATUS } from "@/utils/constants";
+import { FINGERPRINT_KEY, LOGIN_QR_STATUS, WX_EVENT_TYPE } from "@/utils/constants";
 import { UserSession } from "../user/user";
 import { generateUserInfo } from "@/lib/api/user";
+import WxEvent from "@/models/WxEvent";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { ticket, inviteCode } = req.query || {}
@@ -15,16 +16,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
   // 二维码几种状态：generate：新生成，未扫码，scan：已扫码。不存在：已过期
   const cacheKey = getQrCacheKey(ticket as string)
-  const result = cache.get(cacheKey)
-  console.log('checkLogin result', cacheKey, result)
-  if (!result) {
+  const result = await WxEvent.findOne({
+    type: WX_EVENT_TYPE.login_qr,
+    key: cacheKey
+  })
+  const qrStatus = result?.value
+  if (!qrStatus || result?.expireAt < Date.now()) {
     // 缓存没记录表示处理中
     return res.status(200).json({ status: 'expired', message: '已过期' })
-  } else if (result === LOGIN_QR_STATUS.generated) {
+  } else if (qrStatus === LOGIN_QR_STATUS.generated) {
     return res.status(200).json({ status: 'pending', message: '处理中' })
-  } else if (result && result.includes(LOGIN_QR_STATUS.scan)) {
+  } else if (qrStatus && qrStatus.includes(LOGIN_QR_STATUS.scan)) {
     // 已扫码，处理登录逻辑
-    const openid = result.split('_')[0]
+    const openid = qrStatus.split('_')[0]
     // 新用户插入DB
     const defaultInfo = generateUserInfo()
     const newUser = await new User(Object.assign({}, defaultInfo, {

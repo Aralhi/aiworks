@@ -1,8 +1,9 @@
 import Settings from '@/models/Settings';
 import { WXUserInfo } from '@/models/User';
-import { ACCESS_TOKEN_NAME, LOGIN_QR_STATUS, LOGIN_QR_TIME, MP_WX_API, WX_API } from '@/utils/constants'
+import { ACCESS_TOKEN_NAME, LOGIN_QR_STATUS, LOGIN_QR_TIME, MP_WX_API, WX_API, WX_EVENT_TYPE } from '@/utils/constants'
 import dbConnect from './dbConnect';
 import cache from 'memory-cache'
+import WxEvent from '@/models/WxEvent';
 
 export type AccessTokenResponse = {
   access_token: string;
@@ -104,14 +105,20 @@ export async function createQrCode() {
     const result: CreateQrResponse = await res.json()
     if (!result.errcode) {
       const cacheKey = getQrCacheKey(result?.ticket)
-      cache.put(cacheKey, LOGIN_QR_STATUS.generated, result.expire_seconds * 1000)
-      console.log('createQrCode and cache success', cacheKey, LOGIN_QR_STATUS.generated, result.expire_seconds * 1000)
+      await dbConnect()
+      const newDoc = await new WxEvent({
+        type: WX_EVENT_TYPE.login_qr,
+        key: cacheKey,
+        value: LOGIN_QR_STATUS.generated,
+        expireAt: +Date.now() + result.expire_seconds
+      }).save()
+      console.log('createQrCode and insert db success', result, newDoc)
       return result
     } else {
       console.error('createQrCode failed', result)
     }
   } catch (error) {
-    console.error('createQrCode failed', error)
+    console.error('createQrCode exception', error)
   }
 }
 

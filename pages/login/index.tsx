@@ -14,7 +14,7 @@ import { MP_WX_API } from '@/utils/constants';
 const SMS_TIMEOUT = process.env.NODE_ENV === 'development' ? 5 : 60;
 let protocolChecked = false;
 
-const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [phoneCheck, setPhoneCheck] = useState(true);
@@ -22,6 +22,7 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(-1);
   const [qr, setQr] = useState(qrUrl);
+  const [ticket, setTicket] = useState(defaultTicket);
   const [qrStatus, setQrStatus] = useState('');
   const router = useRouter();
   const inviteCode = router.query?.c
@@ -167,8 +168,10 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
 
   async function refreshQRCode() {
     const result: CustomResponseType = await fetchJson(`/api/weichat/genLoginQR`)
-    if (result?.data?.ticket) {
-      setQr(generateQrUrl(result?.data?.ticket))
+    const { ticket } = result?.data;
+    if (ticket) {
+      setTicket(ticket);
+      setQr(generateQrUrl(ticket))
       setQrStatus('');
     }
   }
@@ -262,7 +265,7 @@ export async function getServerSideProps() {
   if (result?.ticket) {
     return {
       props: {
-        ticket: result?.ticket,
+        defaultTicket: result?.ticket,
         qrUrl: generateQrUrl(result?.ticket)
       }
     }
@@ -270,7 +273,7 @@ export async function getServerSideProps() {
   console.log('login getServerSideProps create qr', result);
   return {
     props: {
-      ticket: null,
+      defaultTicket: null,
       qr: null
     }
   }

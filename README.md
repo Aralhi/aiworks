@@ -75,3 +75,9 @@ conversationId会记录到Completion里，用于查询该conversation中的问�
 
 ## 注意
 有dbConnect的文件，不要在前端引入，否则前端执行时会出现连数据的情况。😓
+[我遇到了，待验证]在 getServerSideProps 方法中设置的缓存数据只能在服务端渲染时访问，而在 API 路由中无法直接访问。下面是AI的解释
+```
+
+然而，当我们尝试在 API 路由中访问 getServerSideProps 方法中设置的缓存数据时，会发现缓存数据并没有被读取到。这是因为 memory-cache 缓存库是基于 Node.js 内存的，而 getServerSideProps 方法和 API 路由是在不同的 Node.js 环境中执行的。虽然它们都处于服务端 Node.js 环境中，但它们使用的是不同的内存空间。因此，在 getServerSideProps 方法中设置的缓存数据无法直接被 API 路由访问。
+
+```

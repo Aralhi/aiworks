@@ -50,3 +50,6 @@ export const LOGIN_QR_STATUS = {
   generated: 'generated',
   scan: 'scan'
 }
+export const WX_EVENT_TYPE = {
+  login_qr: 'login_qr',
+}
