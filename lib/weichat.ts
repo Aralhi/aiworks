@@ -39,12 +39,17 @@ export async function getWXAccessToken(type: string = 'service') {
     // 服务号
     const appId = process.env[type === 'service' ? 'SERVICE_APP_ID' : 'SUB_APP_ID']
     const appSecret = process.env[type === 'service' ? 'SERVICE_APP_SECRET' : 'SUB_APP_SECRET']
-    let url = `${WX_API}/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`
+    let url = `${WX_API}/cgi-bin/stable_token`
     const res = await fetch(url, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({
+        grant_type: 'client_credential',
+        appid: appId,
+        secret: appSecret
+      })
     })
     if (!res.ok) { 
       throw new Error(`getWXAccessToken failed, status: ${res.status}`)
