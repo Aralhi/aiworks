@@ -1,7 +1,7 @@
 import Settings from '@/models/Settings';
 import { WXUserInfo } from '@/models/User';
 import { ACCESS_TOKEN_NAME, LOGIN_QR_TIME, WX_API } from '@/utils/constants'
-import cache from 'memory-cache'
+import dbConnect from './dbConnect';
 
 export type AccessTokenResponse = {
   access_token: string;
@@ -57,6 +57,7 @@ export async function getWXAccessToken(type: string = 'service') {
   }*/
   // read from db
   try {
+    await dbConnect()
     const setting = await Settings.findOne({ key: ACCESS_TOKEN_NAME })
     console.log('getWXAccessToken success', setting)
     return setting?.value
