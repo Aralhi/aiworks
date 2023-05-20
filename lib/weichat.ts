@@ -56,9 +56,13 @@ export async function getWXAccessToken(type: string = 'service') {
     return
   }*/
   // read from db
-  const setting = await Settings.findOne({ key: ACCESS_TOKEN_NAME })
-  console.log('getWXAccessToken sucess', setting)
-  return setting?.value
+  try {
+    const setting = await Settings.findOne({ key: ACCESS_TOKEN_NAME })
+    console.log('getWXAccessToken success', setting)
+    return setting?.value
+  } catch (e) {
+    console.log('getWXAccessToken failed', e)
+  }
 }
 
 // 根据Access Token创建二维码
@@ -102,9 +106,6 @@ export async function getUserInfo(openid: string) {
         "Content-Type": "application/json",
       }
     })
-    if (!res.ok) {
-      throw new Error(`get user info failed, status: ${res.status}`)
-    }
     const result: WXUserInfo = await res.json()
     if (!result?.errcode) {
       console.log('get user info success', result)

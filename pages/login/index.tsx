@@ -16,7 +16,6 @@ let protocolChecked = false;
 
 const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const [phone, setPhone] = useState('');
-  console.log('render login', protocolChecked, phone);
   const [code, setCode] = useState('');
   const [phoneCheck, setPhoneCheck] = useState(true);
   const [codeCheck, setCodeCheck] = useState(true);
@@ -75,7 +74,7 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
     if (ticket && qrUrl) {
       // 生成二维码成功，轮询二维码扫码状态
       const checkLogin = async () => {
-        const res: CustomResponseType = await fetchJson(`/api/user/checkLogin?ticket=${ticket}&inviteCode=${inviteCode}`, {
+        const res: CustomResponseType = await fetchJson(`/api/weichat/checkLogin?ticket=${ticket}&inviteCode=${inviteCode}`, {
           method: 'GET'
         })
         if (res && res.status === 'ok') {

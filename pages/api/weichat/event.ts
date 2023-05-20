@@ -31,46 +31,39 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       console.log('weichat event message', message)
       // https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_event_pushes.html
       let { MsgType, Event, EventKey, FromUserName, Ticket } = message
-      let resContext = ''
-      if (MsgType === 'event') {
-        switch (Event) {
-          case 'subscribe':
-            resContext = '感谢您的关注，AI works团队为您倾情服务。'
-            break
-          case 'unsubscribe':
-            // 取消关注不需要做什么
-            resContext = '江湖再见!'
-            break
-          // 关注后扫码
-          case  'SCAN':
-            resContext = '登录成功'
-            break
-        }
-        if(!!EventKey) {
-          const userInfo: WXUserInfo | undefined = await getUserInfo(FromUserName)
-          if (!userInfo) {
-            return res.status(500).json({ status: 'failed', message: '获取用户信息失败' })
-          }
-          if (EventKey.slice(0, 8) === 'qrscene_') {
-            // 扫码并关注
-            // 关注就创建帐号的话可以在这里把用户信息写入数据库完成用户注册
-            EventKey = EventKey.slice(8)
-            if (EventKey === SCENE_STR && Event === 'subscribe') {
-            }
-          }
-          // 缓存扫码状态，供浏览器轮询扫码状态
-          cache.put(`${Ticket}_${SCENE_STR}`, `${userInfo.openid}_scan`, LOGIN_QR_TIME)
-        }
-      }
       const resBody = {
         ToUserName: message.FromUserName,
         FromUserName: message.ToUserName,
         CreateTime: Math.floor(new Date().getTime() / 1000),
         MsgType: 'text',
-        Content: resContext
+        Content: ''
       }
-      res.setHeader('Content-Type', 'application/xml')
       const builder = new XMLBuilder();
+      res.setHeader('Content-Type', 'application/xml')
+      if (MsgType === 'event') {
+        switch (Event) {
+          case 'subscribe':
+            resBody.Content = '感谢您的关注，AI works团队为您倾情服务。'
+            break
+          case 'unsubscribe':
+            // 取消关注不需要做什么
+            resBody.Content = '江湖再见!'
+            break
+          // 关注后扫码
+          case  'SCAN':
+            resBody.Content = '登录成功'
+            break
+        }
+        if(!!EventKey) {
+          const userInfo: WXUserInfo | undefined = await getUserInfo(FromUserName)
+          if (!userInfo) {
+            return res.send(builder.build({ xml: resBody }))
+          }
+          // EventKey: 'wx_login'
+          // 缓存扫码状态，供浏览器轮询扫码状态
+          cache.put(`${Ticket}_${SCENE_STR}`, `${userInfo.openid}_scan`, LOGIN_QR_TIME)
+        }
+      }
       const xml = builder.build({ xml: resBody })
       console.log('weichat event res', xml)
       res.send(xml)
