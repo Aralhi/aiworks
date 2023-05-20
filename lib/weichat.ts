@@ -1,5 +1,6 @@
+import Settings from '@/models/Settings';
 import { WXUserInfo } from '@/models/User';
-import { LOGIN_QR_TIME, WX_API } from '@/utils/constants'
+import { ACCESS_TOKEN_NAME, LOGIN_QR_TIME, WX_API } from '@/utils/constants'
 import cache from 'memory-cache'
 
 export type AccessTokenResponse = {
@@ -27,7 +28,7 @@ export const SCENE_STR = 'wx_login'
 
 // 获取订阅号或服务号的Access Token
 export async function getWXAccessToken(type: string = 'service') {
-  const accessToken = cache.get('wx_access_token')
+  /**const accessToken = cache.get('wx_access_token')
   if (accessToken) {
     console.log('get cached wx access_token', accessToken)
     return accessToken
@@ -53,7 +54,11 @@ export async function getWXAccessToken(type: string = 'service') {
   } else {
     console.log('getWXAccessToken failed', result)
     return
-  }
+  }*/
+  // read from db
+  const setting = await Settings.findOne({ key: ACCESS_TOKEN_NAME })
+  console.log('getWXAccessToken sucess', setting)
+  return setting?.value
 }
 
 // 根据Access Token创建二维码
