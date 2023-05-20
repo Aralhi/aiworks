@@ -105,7 +105,7 @@ export async function createQrCode() {
     if (!result.errcode) {
       const cacheKey = getQrCacheKey(result?.ticket)
       cache.put(cacheKey, LOGIN_QR_STATUS.generated, result.expire_seconds * 1000)
-      console.log('createQrCode and cache success', cacheKey, LOGIN_QR_STATUS.generated)
+      console.log('createQrCode and cache success', cacheKey, LOGIN_QR_STATUS.generated, result.expire_seconds * 1000)
       return result
     } else {
       console.error('createQrCode failed', result)
