@@ -4,6 +4,7 @@ import { Schema, model, models } from 'mongoose'
 export interface IPricing {
   name: string; // 套餐名
   queryCount: number; // 套餐内查询次数
+  price: number;
   startAt: number; // 套餐生效开始时间
   endAt: number; // 套餐结束时间
 }

@@ -16,6 +16,7 @@
     "eventsource-parser": "^0.0.5",
     "fast-xml-parser": "^4.2.2",
     "iron-session": "^6.2.1",
+    "jsrsasign": "^10.8.6",
     "lodash": "^4.17.21",
     "memory-cache": "^0.2.0",
     "moment": "^2.29.4",
@@ -38,6 +39,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/jsrsasign": "^10.5.8",
     "@types/lodash": "^4.14.194",
     "@types/memory-cache": "^0.2.2",
     "@types/node": "18.11.3",

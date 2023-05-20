@@ -81,3 +81,8 @@ conversationId会记录到Completion里，用于查询该conversation中的问�
 然而，当我们尝试在 API 路由中访问 getServerSideProps 方法中设置的缓存数据时，会发现缓存数据并没有被读取到。这是因为 memory-cache 缓存库是基于 Node.js 内存的，而 getServerSideProps 方法和 API 路由是在不同的 Node.js 环境中执行的。虽然它们都处于服务端 Node.js 环境中，但它们使用的是不同的内存空间。因此，在 getServerSideProps 方法中设置的缓存数据无法直接被 API 路由访问。
 
 ```
+
+## wechat pay配置1
+WEXIN_PAY_MERCHANTID 商户id
+WEXIN_PAY_CERT_SERIAL_NO 序列号 使用 `15CBD8513455B5D44F93EBBF440CA77B04985198`
+WECHAT_PAY_PEM_PRIVATE_KEY 把key.pem的内容配置进去
