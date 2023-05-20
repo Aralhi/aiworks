@@ -56,15 +56,12 @@ const UserSchema = new Schema({
   },
   openid: {
     type: String,
-    unique: true,
   },
   phone: {
     type: String,
-    unique: true,
   },
   avatarUrl: {
     type: String,
-    required: false,
   },
   inviteCode: {
     type: String
