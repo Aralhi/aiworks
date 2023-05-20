@@ -79,7 +79,7 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
         const res: CustomResponseType = await fetchJson(`/api/weichat/checkLogin?ticket=${ticket}&inviteCode=${inviteCode || ''}`, {
           method: 'GET'
         })
-        if (res && res.status === 'ok') {
+        if (res && res.status === 'scan') {
           const originUrl = router.query.originUrl as string;
           if (originUrl) {
             // 重定向到原来的页面
@@ -89,8 +89,8 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
           }
         } else if (res.status === 'expired' || res.status === 'failed'){
           setQrStatus('expired');
+          timerId && clearInterval(timerId);
         }
-        timerId && clearInterval(timerId);
       };
       const timerId = setInterval(checkLogin, 1500); // 每隔1秒钟重新获取一次数据
       return () => clearInterval(timerId); // 卸载组件时清除定时器

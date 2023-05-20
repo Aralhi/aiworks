@@ -49,7 +49,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     } as UserSession
     await req.session.save()
     console.log('wx user login success:', newUser)
-    return res.status(200).json({ status: 'ok', message: "登录成功" });
+    return res.status(200).json({ status: 'scan', message: "登录成功" });
   }
 }
 
