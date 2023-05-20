@@ -26,6 +26,9 @@ export type WXtEventMessage = {
 }
 
 export const SCENE_STR = 'wx_login'
+export function getQrCacheKey(ticket: string) {
+  return `${ticket}_${SCENE_STR}`
+}
 
 // 获取订阅号或服务号的Access Token
 export async function getWXAccessToken(type: string = 'service') {
@@ -101,6 +104,7 @@ export async function createQrCode() {
     const result: CreateQrResponse = await res.json()
     if (!result.errcode) {
       console.log('createQrCode success', result)
+      cache.put(`${result.ticket}_${SCENE_STR}`, 'generated', result.expire_seconds)
       return result
     } else {
       console.error('createQrCode failed', result)

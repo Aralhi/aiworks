@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import crypto from 'crypto'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 import cache from 'memory-cache'
-import { SCENE_STR, WXtEventMessage, getUserInfo } from "@/lib/weichat";
+import { SCENE_STR, WXtEventMessage, getQrCacheKey, getUserInfo } from "@/lib/weichat";
 import { WXUserInfo } from "@/models/User";
 import { LOGIN_QR_TIME } from "@/utils/constants";
 
@@ -61,7 +61,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           }
           // EventKey: 'wx_login'
           // 缓存扫码状态，供浏览器轮询扫码状态
-          cache.put(`${Ticket}_${SCENE_STR}`, `${userInfo.openid}_scan`, LOGIN_QR_TIME)
+          cache.put(getQrCacheKey(Ticket as string), `${userInfo.openid}_scan`, LOGIN_QR_TIME)
         }
       }
       const xml = builder.build({ xml: resBody })
