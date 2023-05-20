@@ -8,6 +8,7 @@ import { FINGERPRINT_KEY, LOGIN_QR_STATUS, WX_EVENT_TYPE } from "@/utils/constan
 import { UserSession } from "../user/user";
 import { generateUserInfo } from "@/lib/api/user";
 import WxEvent from "@/models/WxEvent";
+import dbConnect from "@/lib/dbConnect";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { ticket, inviteCode } = req.query || {}
@@ -16,6 +17,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
   // 二维码几种状态：generate：新生成，未扫码，scan：已扫码。不存在：已过期
   const cacheKey = getQrCacheKey(ticket as string)
+  await dbConnect()
   const result = await WxEvent.findOne({
     type: WX_EVENT_TYPE.login_qr,
     key: cacheKey
