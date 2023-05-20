@@ -46,3 +46,7 @@ export const LOGIN_MAX_QUERY_COUNT = 10
 export const WX_API = 'https://api.weixin.qq.com'
 export const MP_WX_API = 'https://mp.weixin.qq.com'
 export const ACCESS_TOKEN_NAME = 'wechat.service.access_token'
+export const LOGIN_QR_STATUS = {
+  generated: 'generated',
+  scan: 'scan'
+}

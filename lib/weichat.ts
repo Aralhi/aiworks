@@ -1,6 +1,6 @@
 import Settings from '@/models/Settings';
 import { WXUserInfo } from '@/models/User';
-import { ACCESS_TOKEN_NAME, LOGIN_QR_TIME, MP_WX_API, WX_API } from '@/utils/constants'
+import { ACCESS_TOKEN_NAME, LOGIN_QR_STATUS, LOGIN_QR_TIME, MP_WX_API, WX_API } from '@/utils/constants'
 import dbConnect from './dbConnect';
 import cache from 'memory-cache'
 
@@ -103,8 +103,9 @@ export async function createQrCode() {
     }
     const result: CreateQrResponse = await res.json()
     if (!result.errcode) {
-      console.log('createQrCode success', result)
-      cache.put(`${result.ticket}_${SCENE_STR}`, 'generated', result.expire_seconds)
+      const cacheKey = getQrCacheKey(result?.ticket)
+      cache.put(cacheKey, LOGIN_QR_STATUS.generated, result.expire_seconds)
+      console.log('createQrCode and cache success', cacheKey, LOGIN_QR_STATUS.generated)
       return result
     } else {
       console.error('createQrCode failed', result)
