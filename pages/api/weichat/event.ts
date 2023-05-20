@@ -1,7 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import crypto from 'crypto'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
-import { SCENE_STR, WXtMessage, getUserInfo } from "@/lib/weichat";
+import cache from 'memory-cache'
+import { SCENE_STR, WXtEventMessage, getUserInfo } from "@/lib/weichat";
+import { WXUserInfo } from "@/models/User";
+import { LOGIN_QR_TIME } from "@/utils/constants";
 
 
 if (!process.env.WX_PUBLIC_TOKEN) {
@@ -24,10 +27,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
     } else if (req.method === 'POST') {
       const parser = new XMLParser();
-      const message: WXtMessage = parser.parse(req.body).xml;
+      const message: WXtEventMessage = parser.parse(req.body).xml;
       console.log('weichat event message', message)
       // https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_event_pushes.html
-      let { MsgType, Event, EventKey, FromUserName } = message
+      let { MsgType, Event, EventKey, FromUserName, Ticket } = message
       let resContext = ''
       if (MsgType === 'event') {
         switch (Event) {
@@ -40,11 +43,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             break
           // 关注后扫码
           case  'SCAN':
-            resContext = '扫码成功'
+            resContext = '登录成功'
             break
         }
         if(!!EventKey) {
-          const userInfo = await getUserInfo(FromUserName)
+          const userInfo: WXUserInfo | undefined = await getUserInfo(FromUserName)
           if (!userInfo) {
             return res.status(500).json({ status: 'failed', message: '获取用户信息失败' })
           }
@@ -53,13 +56,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             // 关注就创建帐号的话可以在这里把用户信息写入数据库完成用户注册
             EventKey = EventKey.slice(8)
             if (EventKey === SCENE_STR && Event === 'subscribe') {
-              console.log(userInfo, '扫码并关注了公众号')
-              // 缓存扫码状态，供浏览器轮询扫码状态
             }
-          } else {
-            // 已关注
-            console.log(userInfo, '扫码进入了公众号')
           }
+          // 缓存扫码状态，供浏览器轮询扫码状态
+          cache.put(`${Ticket}_${SCENE_STR}`, `${userInfo.openid}_scan`, LOGIN_QR_TIME)
         }
       }
       const resBody = {

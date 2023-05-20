@@ -8,10 +8,10 @@ export function generateUserCode() {
   return cryptoRandomString({length: 10, type: 'alphanumeric'})
 }
 
-export function generateUserInfo() {
+export function generateUserInfo(iswx: boolean = false) {
   const userCode = generateUserCode()
   return {
-    name: '用户' + userCode,
+    name: `${iswx ? '微信' : ''}用户` + userCode,
     userCode,
     avatarUrl: AVATARS[0] // 默认头像
   } as IUser

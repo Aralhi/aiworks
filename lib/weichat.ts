@@ -1,4 +1,5 @@
-import { WX_API } from '@/utils/constants'
+import { WXUserInfo } from '@/models/User';
+import { LOGIN_QR_TIME, WX_API } from '@/utils/constants'
 import cache from 'memory-cache'
 
 export type AccessTokenResponse = {
@@ -13,27 +14,13 @@ export type CreateQrResponse = {
   errcode?: number;
 }
 
-export type WXtMessage = {
+export type WXtEventMessage = {
   MsgType: string;
   Event: string;
   FromUserName: string;
   ToUserName: string;
   EventKey: string;
-}
-
-export type WXUserInfo = {
-  subscribe: number, 
-  openid: string, 
-  language: string, 
-  subscribe_time: number,
-  unionid:  string,
-  remark: string,
-  groupid: number,
-  tagid_list: Array<number>,
-  subscribe_scene: string,
-  qr_scene: number,
-  qr_scene_str: string,
-  errcode?: number,
+  Ticket?: string;
 }
 
 export const SCENE_STR = 'wx_login'
@@ -83,7 +70,7 @@ export async function createQrCode() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        expire_seconds: 2 * 60, // 2 minutes
+        expire_seconds: LOGIN_QR_TIME, // 2 minutes
         action_name: "QR_STR_SCENE",
         action_info: { scene: { scene_str: SCENE_STR } },
       }),

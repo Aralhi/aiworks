@@ -14,7 +14,7 @@ import { MP_WX_API } from '@/utils/constants';
 const SMS_TIMEOUT = process.env.NODE_ENV === 'development' ? 5 : 60;
 let protocolChecked = false;
 
-const Login = ({ qrUrl }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const [phone, setPhone] = useState('');
   console.log('render login', protocolChecked, phone);
   const [code, setCode] = useState('');
@@ -22,7 +22,7 @@ const Login = ({ qrUrl }: InferGetServerSidePropsType<typeof getServerSideProps>
   const [codeCheck, setCodeCheck] = useState(true);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(-1);
-  const [qrStatus, setQrStataus] = useState('');
+  const [qrStatus, setQrStatus] = useState('');
   const router = useRouter();
   const inviteCode = router.query?.c
 
@@ -72,7 +72,29 @@ const Login = ({ qrUrl }: InferGetServerSidePropsType<typeof getServerSideProps>
 
   useEffect(() => {
     document.title = '登录 | AI works';
-  })
+    if (ticket && qrUrl) {
+      // 生成二维码成功，轮询二维码扫码状态
+      const checkLogin = async () => {
+        const res: CustomResponseType = await fetchJson(`/api/user/checkLogin?ticket=${ticket}&inviteCode=${inviteCode}`, {
+          method: 'GET'
+        })
+        if (res && res.status === 'ok') {
+          const originUrl = router.query.originUrl as string;
+          if (originUrl) {
+            // 重定向到原来的页面
+            window.location.href = originUrl;
+          } else {
+            window.location.href = '/chat';
+          }
+        } else if (res.status === 'expired'){
+          setQrStatus('expired');
+          timerId && clearInterval(timerId);
+        }
+      };
+      const timerId = setInterval(checkLogin, 1000); // 每隔1秒钟重新获取一次数据
+      return () => clearInterval(timerId); // 卸载组件时清除定时器
+    }
+  }, [])
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -235,6 +257,7 @@ export async function getServerSideProps() {
   if (result?.ticket) {
     return {
       props: {
+        ticket: result?.ticket,
         qrUrl: `${MP_WX_API}/cgi-bin/showqrcode?ticket=${encodeURIComponent(result?.ticket)}`
       }
     }
@@ -242,6 +265,7 @@ export async function getServerSideProps() {
   console.log('login getServerSideProps create qr', result);
   return {
     props: {
+      ticket: null,
       qr: null
     }
   }
