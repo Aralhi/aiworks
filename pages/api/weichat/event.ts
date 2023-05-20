@@ -32,7 +32,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (MsgType === 'event') {
         switch (Event) {
           case 'subscribe':
-            resContext = '感觉您的关注，AI works团队为您倾情服务。'
+            resContext = '感谢您的关注，AI works团队为您倾情服务。'
             break
           case 'unsubscribe':
             // 取消关注不需要做什么
@@ -45,6 +45,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
         if(!!EventKey) {
           const userInfo = await getUserInfo(FromUserName)
+          if (!userInfo) {
+            return res.status(500).json({ status: 'failed', message: '获取用户信息失败' })
+          }
           if (EventKey.slice(0, 8) === 'qrscene_') {
             // 扫码并关注
             // 关注就创建帐号的话可以在这里把用户信息写入数据库完成用户注册
@@ -68,7 +71,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       res.setHeader('Content-Type', 'application/xml')
       const builder = new XMLBuilder();
-      const xml = builder.build(resBody)
+      const xml = builder.build({ xml: resBody })
       console.log('weichat event res', xml)
       res.send(xml)
     }
