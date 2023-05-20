@@ -1,7 +1,8 @@
 import Settings from '@/models/Settings';
 import { WXUserInfo } from '@/models/User';
-import { ACCESS_TOKEN_NAME, LOGIN_QR_TIME, WX_API } from '@/utils/constants'
+import { ACCESS_TOKEN_NAME, LOGIN_QR_TIME, MP_WX_API, WX_API } from '@/utils/constants'
 import dbConnect from './dbConnect';
+import cache from 'memory-cache'
 
 export type AccessTokenResponse = {
   access_token: string;
@@ -28,41 +29,45 @@ export const SCENE_STR = 'wx_login'
 
 // 获取订阅号或服务号的Access Token
 export async function getWXAccessToken(type: string = 'service') {
-  /**const accessToken = cache.get('wx_access_token')
-  if (accessToken) {
-    console.log('get cached wx access_token', accessToken)
-    return accessToken
-  }
-  // 服务号
-  const appId = process.env[type === 'service' ? 'SERVICE_APP_ID' : 'SUB_APP_ID']
-  const appSecret = process.env[type === 'service' ? 'SERVICE_APP_SECRET' : 'SUB_APP_SECRET']
-  let url = `${WX_API}/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
+  // 本地还是调WX接口获取，线上从DB读取
+  if (process.env.NODE_ENV === 'development') {
+    const accessToken = cache.get('wx_access_token')
+    if (accessToken) {
+      console.log('get cached wx access_token', accessToken)
+      return accessToken
     }
-  })
-  if (!res.ok) { 
-    throw new Error(`getWXAccessToken failed, status: ${res.status}`)
-  }
-  const result: AccessTokenResponse = await res.json()
-  if (result.access_token) {
-    cache.put('wx_access_token', result.access_token, result.expires_in * 1000)
-    console.log('fetch wx access_token success and cached', result)
-    return result.access_token
+    // 服务号
+    const appId = process.env[type === 'service' ? 'SERVICE_APP_ID' : 'SUB_APP_ID']
+    const appSecret = process.env[type === 'service' ? 'SERVICE_APP_SECRET' : 'SUB_APP_SECRET']
+    let url = `${WX_API}/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    if (!res.ok) { 
+      throw new Error(`getWXAccessToken failed, status: ${res.status}`)
+    }
+    const result: AccessTokenResponse = await res.json()
+    if (result.access_token) {
+      cache.put('wx_access_token', result.access_token, result.expires_in * 1000)
+      console.log('fetch wx access_token success and cached', result)
+      return result.access_token
+    } else {
+      console.log('getWXAccessToken failed', result)
+      return
+    }
   } else {
-    console.log('getWXAccessToken failed', result)
-    return
-  }*/
-  // read from db
-  try {
-    await dbConnect()
-    const setting = await Settings.findOne({ key: ACCESS_TOKEN_NAME })
-    console.log('getWXAccessToken success', setting)
-    return setting?.value
-  } catch (e) {
-    console.log('getWXAccessToken failed', e)
+    // read from db
+    try {
+      await dbConnect()
+      const setting = await Settings.findOne({ key: ACCESS_TOKEN_NAME })
+      console.log('getWXAccessToken from db success', setting)
+      return setting?.value
+    } catch (e) {
+      console.error('getWXAccessToken from db failed', e)
+    }
   }
 }
 
@@ -92,9 +97,11 @@ export async function createQrCode() {
     if (!result.errcode) {
       console.log('createQrCode success', result)
       return result
+    } else {
+      console.error('createQrCode failed', result)
     }
   } catch (error) {
-    console.log('createQrCode failed', error)
+    console.error('createQrCode failed', error)
   }
 }
 
@@ -113,6 +120,6 @@ export async function getUserInfo(openid: string) {
       return result
     }
   } catch (e) {
-    console.log('get user info failed', e)
+    console.error('get user info failed', e)
   }
 }

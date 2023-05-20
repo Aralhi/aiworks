@@ -1,6 +1,6 @@
 import PriceCard from "@/components/PriceCard";
 import { RadioGroup } from '@headlessui/react'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 
 const PRICING_TYPES = [
@@ -14,6 +14,9 @@ const PRICING_TYPES = [
 
 export default function Pricing() {
   const [selected, setSelected] = useState(PRICING_TYPES[0])
+  useEffect(() => {
+    document.title = '订阅 | AI works';
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 w-full"

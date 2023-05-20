@@ -71,3 +71,7 @@ conversationId会记录到Completion里，用于查询该conversation中的问�
 - 表格
 - 列表，如1. xxx 2. xxx
 - emoji
+
+
+## 注意
+有dbConnect的文件，不要在前端引入，否则前端执行时会出现连数据的情况。😓

@@ -2,7 +2,7 @@ import { ChangeEvent, useState, useEffect } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
-import { Tabs, Checkbox, Input } from 'antd';
+import { Tabs, Checkbox, Input, QRCode } from 'antd';
 import type { TabsProps } from 'antd';
 import { createQrCode } from '@/lib/weichat';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
   const [codeCheck, setCodeCheck] = useState(true);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(-1);
+  const [qr, setQr] = useState(qrUrl);
   const [qrStatus, setQrStatus] = useState('');
   const router = useRouter();
   const inviteCode = router.query?.c
@@ -85,7 +86,7 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
           } else {
             window.location.href = '/chat';
           }
-        } else if (res.status === 'expired'){
+        } else if (res.status === 'expired' || res.status === 'failed'){
           setQrStatus('expired');
           timerId && clearInterval(timerId);
         }
@@ -93,7 +94,7 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
       const timerId = setInterval(checkLogin, 1000); // 每隔1秒钟重新获取一次数据
       return () => clearInterval(timerId); // 卸载组件时清除定时器
     }
-  }, [])
+  }, [qr])
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -164,8 +165,12 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
     }
   };
 
-  function refreshQRCode() {
-    console.log('refreshQRCode');
+  async function refreshQRCode() {
+    const result: CustomResponseType = await fetchJson(`/api/weichat/genLoginQR`)
+    if (result?.data?.ticket) {
+      setQr(generateQrUrl(result?.data?.ticket))
+      setQrStatus('');
+    }
   }
 
   function WeixinLogin() {
@@ -173,15 +178,15 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
       <div className="flex justify-center items-center flex-col gap-4 relative min-h-[350px]">
         <p className="text-gray-400 text-center">微信扫码关注公众号完成登录</p>
         <div
-          className="flex justify-center items-center w-[200px] h-[200px] md:w-[250px] md:h-[250px] bg-white bg-opacity-95"
+          className="flex justify-center items-center w-[200px] h-[200px] md:w-[250px] md:h-[250px] bg-white bg-opacity-95 relative"
         >
-          <img src={qrUrl || ''} className='w-full h-full'/>
-          {qrStatus === 'expired' && <>
-            <span>二维码已过期，</span>
+          <img src={qr || ''} className='w-full h-full flex justify-center items-center'/>
+          {qrStatus === 'expired' && <div className='absolute w-full h-full flex justify-center items-center bg-white bg-opacity-90'>
+            <span className='text-black'>二维码已过期，</span>
             <span className="cursor-pointer text-blue-500"
               onClick={refreshQRCode}
             >刷新
-            </span></>}
+            </span></div>}
         </div>
         <p> 登录即表示您已阅读并同意<Link className='text-blue-500 ml-2' href={'/protocol'} target='_blank'>服务条款</Link></p>
       </div>
@@ -251,13 +256,14 @@ const Login = ({ qrUrl, ticket }: InferGetServerSidePropsType<typeof getServerSi
 export default Login;
 
 export async function getServerSideProps() {
+  console.log('login getServerSideProps');
   // 生成二维码
   const result = await createQrCode();
   if (result?.ticket) {
     return {
       props: {
         ticket: result?.ticket,
-        qrUrl: `${MP_WX_API}/cgi-bin/showqrcode?ticket=${encodeURIComponent(result?.ticket)}`
+        qrUrl: generateQrUrl(result?.ticket)
       }
     }
   }
@@ -268,4 +274,8 @@ export async function getServerSideProps() {
       qr: null
     }
   }
+}
+
+function generateQrUrl(ticket: string) {
+  return`${MP_WX_API}/cgi-bin/showqrcode?ticket=${encodeURIComponent(ticket)}`
 }
