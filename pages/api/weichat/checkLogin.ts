@@ -1,5 +1,5 @@
 import { sessionOptions } from "@/lib/session";
-import { withIronSessionApiRoute } from "iron-session/next/dist";
+import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import cache from 'memory-cache'
 import { SCENE_STR } from "@/lib/weichat";
