@@ -5,6 +5,7 @@ import {  WXtEventMessage, getQrCacheKey, getUserInfo } from "@/lib/weichat";
 import { WXUserInfo } from "@/models/User";
 import { WX_EVENT_TYPE } from "@/utils/constants";
 import WxEvent from "@/models/WxEvent";
+import dbConnect from "@/lib/dbConnect";
 
 
 if (!process.env.WX_PUBLIC_TOKEN) {
@@ -43,7 +44,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (MsgType === 'event') {
         switch (Event) {
           case 'subscribe':
-            resBody.Content = '感谢您的关注，AI works团队为您倾情服务。'
+            resBody.Content = '感谢您的关注，AI work，让AI触手可及！'
             break
           case 'unsubscribe':
             // 取消关注不需要做什么
@@ -62,6 +63,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const key = getQrCacheKey(Ticket as string)
           const value = `${userInfo.openid}_scan`
           // 缓存扫码状态，供浏览器轮询扫码状态
+          await dbConnect()
           await WxEvent.findOneAndUpdate({
             type: WX_EVENT_TYPE.login_qr,
             key
@@ -73,6 +75,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       const xml = builder.build({ xml: resBody })
       console.log('weichat event res', xml)
+      await dbConnect()
+      WxEvent.create({
+        type: Event,
+        message,
+        response: xml,
+      })
       res.send(xml)
     }
   } catch (e) {

@@ -56,9 +56,13 @@ const UserSchema = new Schema({
   },
   openid: {
     type: String,
+    unique: true,
+    sparse: true
   },
   phone: {
     type: String,
+    unique: true,
+    sparse: true
   },
   avatarUrl: {
     type: String,

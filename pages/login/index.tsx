@@ -89,10 +89,10 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
           }
         } else if (res.status === 'expired' || res.status === 'failed'){
           setQrStatus('expired');
-          timerId && clearInterval(timerId);
         }
+        timerId && clearInterval(timerId);
       };
-      const timerId = setInterval(checkLogin, 1000); // 每隔1秒钟重新获取一次数据
+      const timerId = setInterval(checkLogin, 1500); // 每隔1秒钟重新获取一次数据
       return () => clearInterval(timerId); // 卸载组件时清除定时器
     }
   }, [qr])
