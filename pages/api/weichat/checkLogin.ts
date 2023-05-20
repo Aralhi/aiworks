@@ -15,7 +15,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
   const result = cache.get(`${ticket}_${SCENE_STR}`)
   if (!result) {
-    return res.status(400).json({ status: 'failed', message: 'ticket已过期' })
+    console.log('checkLogin ticket not found', ticket)
+    return res.status(200).json({ status: 'failed', message: '二维码已过期' })
   }
   if (result && result.includes('scan')) {
     // 已扫码，处理登录逻辑
