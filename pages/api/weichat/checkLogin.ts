@@ -42,6 +42,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       _id: newUser._id.toString(),
       isLoggedIn: true,
       phone: '',
+      openid: newUser.openid,
       name: defaultInfo.name,
       userCode: defaultInfo.userCode,
       inviteCode,
