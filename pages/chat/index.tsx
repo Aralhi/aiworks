@@ -34,7 +34,7 @@ interface Chat {
 const COPY_CODE = 'Copy code'
 const COPIED = 'Copied'
 
-function chat({ conversationList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user } = useUser()
   const router = useRouter()
   const { cid } = router.query
@@ -592,7 +592,7 @@ function chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   );
 }
 
-export default chat;
+export default Chat;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
   const url = new URL(req.headers.referer || '')
