@@ -6,6 +6,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.1.0",
+    "@ant-design/pro-components": "^2.4.9",
     "@fingerprintjs/fingerprintjs": "^3.4.1",
     "@headlessui/react": "^1.7.7",
     "@headlessui/tailwindcss": "^0.1.2",
@@ -19,6 +21,7 @@
     "jsrsasign": "^10.8.6",
     "lodash": "^4.17.21",
     "memory-cache": "^0.2.0",
+    "midjourney": "^2.1.30",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
     "mongodb": "^5.4.0",

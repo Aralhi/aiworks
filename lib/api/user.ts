@@ -17,7 +17,6 @@ export function generateUserInfo(iswx: boolean = false) {
   } as IUser
 }
 
-
 export function getUpdateBody(name:string, avatarUrl: string) {
   const body: any = {}
   if (name) {
