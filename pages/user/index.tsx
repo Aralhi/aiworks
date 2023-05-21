@@ -14,7 +14,7 @@ import moment from "moment-timezone";
 import { getTodayTime } from "@/utils/index";
 import Completion from "@/models/Completion";
 
-function User({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user, mutateUser } = useUser();
   const [currentIndex, setCurrentIndex] = useState(1);
   const [userName, setUserName] = useState(user?.name || '')
@@ -312,7 +312,7 @@ function User({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSid
     </div>
   );
 }
-export default User;
+export default UserFC;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
   const defaultProps = { todayQueryCount: -1, leftQueryCount: -1, inviteList: [] }
