@@ -1,9 +1,7 @@
 import { Midjourney } from "midjourney";
 import { ResponseError } from "@/models/MJMessage";
 import { NextApiRequest, NextApiResponse } from "next";
-export const config = {
-  runtime: "edge",
-};
+
 const client = new Midjourney({
   ServerId: <string>process.env.SERVER_ID,
   ChannelId: <string>process.env.CHANNEL_ID,
