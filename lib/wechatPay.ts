@@ -101,6 +101,7 @@ export async function prePay(userOpenId: string, plan: IPricing) {
     headers: {
       'Authorization': `${SCHEMA} ${authToken}`,
       'Content-Type': 'application/json',
+      'Accept-Language': 'zh-CN'
     },
     method,
     body: prePayParamsStr,
