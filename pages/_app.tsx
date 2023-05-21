@@ -5,6 +5,7 @@ import "../styles/globals.css";
 import Header from "../components/Header";
 import fetchJson from "@/lib/fetchJson";
 import MainLayout from '../layouts/main'
+import '../public/antd.min.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

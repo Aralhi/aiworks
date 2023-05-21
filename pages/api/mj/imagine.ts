@@ -1,8 +1,6 @@
 import { Midjourney } from "midjourney";
 import { ResponseError } from "@/models/MJMessage";
-export const config = {
-  runtime: "edge",
-};
+import { NextApiRequest, NextApiResponse } from "next";
 
 const client = new Midjourney({
   ServerId: <string>process.env.SERVER_ID,
@@ -12,20 +10,24 @@ const client = new Midjourney({
   MaxWait: 600,
 });
 
-const handler = async (req: Request) => {
-  const { prompt } = await req.json();
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { prompt } = await req.body || {};
   console.log("imagine.handler", prompt);
+  res.setHeader('Content-Type', 'text/plain')
+  res.setHeader('Transfer-Encoding', 'chunked')
   const encoder = new TextEncoder();
-  const readable = new ReadableStream({
+  new ReadableStream({
     start(controller) {
       console.log("imagine.start", prompt);
       client
         .Imagine(prompt, (uri: string, progress: string) => {
           console.log("imagine.loading", uri);
+          res.write(JSON.stringify({ uri, progress }))
           controller.enqueue(encoder.encode(JSON.stringify({ uri, progress })));
         })
         .then((msg) => {
           console.log("imagine.done", msg);
+          res.write(JSON.stringify(msg))
           controller.enqueue(encoder.encode(JSON.stringify(msg)));
           controller.close();
         })
@@ -35,6 +37,6 @@ const handler = async (req: Request) => {
         });
     },
   });
-  return new Response(readable, {});
+  // return new Response(readable, {});
 };
 export default handler;

@@ -1,8 +1,7 @@
 import { Midjourney } from "midjourney";
 import { ResponseError } from "@/models/MJMessage";
-export const config = {
-  runtime: "edge",
-};
+import { NextApiRequest, NextApiResponse } from "next";
+
 const client = new Midjourney({
   ServerId: <string>process.env.SERVER_ID,
   ChannelId: <string>process.env.CHANNEL_ID,
@@ -10,11 +9,13 @@ const client = new Midjourney({
   Debug: true,
   MaxWait: 600,
 });
-export default async function handler(req: Request) {
-  const { content, index, msgId, msgHash } = await req.json();
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { content, index, msgId, msgHash } = await req.body || {};
   console.log("upscale.handler", content);
+  res.setHeader('Content-Type', 'text/plain')
+  res.setHeader('Transfer-Encoding', 'chunked')
   const encoder = new TextEncoder();
-  const readable = new ReadableStream({
+  new ReadableStream({
     start(controller) {
       console.log("upscale.start", content);
       client
@@ -25,6 +26,7 @@ export default async function handler(req: Request) {
           msgHash,
           (uri: string, progress: string) => {
             console.log("upscale.loading", uri);
+            res.write(JSON.stringify({ uri, progress }))
             controller.enqueue(
               encoder.encode(JSON.stringify({ uri, progress }))
             );
@@ -32,14 +34,17 @@ export default async function handler(req: Request) {
         )
         .then((msg) => {
           console.log("upscale.done", msg);
+          res.write(JSON.stringify(msg))
           controller.enqueue(encoder.encode(JSON.stringify(msg)));
           controller.close();
+          res.end()
         })
         .catch((err: ResponseError) => {
           console.log("upscale.error", err);
           controller.close();
+          res.end()
         });
     },
   });
-  return new Response(readable, {});
+  // return new Response(readable, {});
 }
