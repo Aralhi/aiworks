@@ -11,6 +11,10 @@ export interface IOrder {
 
 // 套餐信息
 const OrderSchema = new Schema({
+  tradeNo: {
+    type: String,
+    required: true,
+  },
   userId: {
     type: String,
     required: [true, 'Please provide user id.'],
@@ -26,7 +30,19 @@ const OrderSchema = new Schema({
   pricing: {
     type: Object,
     required: [true, 'Please provide pricing.'],
+  },
+  extra: {
+    type: Object,
   }
 })
+
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  COMPLETE: 'COMPLETE',
+  CLOSED: 'CLOSED',
+  // hold: 'hold',
+  // canceled: 'canceled',
+}
 
 export default models.Order ||  model('Order', OrderSchema, 'order')

@@ -52,4 +52,5 @@ export const LOGIN_QR_STATUS = {
 }
 export const WX_EVENT_TYPE = {
   login_qr: 'login_qr',
+  pay_notify: 'pay_notify'
 }

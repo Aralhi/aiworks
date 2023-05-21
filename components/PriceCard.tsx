@@ -1,10 +1,38 @@
+import { useRef, useState } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { PRICING_PLAN } from "@/utils/constants";
 import { FaCheckCircle } from "react-icons/fa";
 import Image from "next/image";
+import { Modal, message } from 'antd';
 
 export default function PriceCard() {
-  function buy (plan: number) {
+  const [payInfo, setPayInfo] = useState({
+    payUrl: null,
+    tradeNo: null,
+  });
+  const orderPolling = useRef<number|undefined>();
+  async function buy (plan: number) {
     console.log(plan);
+    const res = await fetch(`/api/weichat/pay?plan=${plan}`);
+    const payInfo = (await res.json());
+    setPayInfo(payInfo);
+    orderPolling.current = window.setInterval(async () => {
+      const res = await fetch(`/api/weichat/queryOrder?tradeNo=${payInfo.tradeNo}`);
+      if ((await res.json()).status === 'COMPLETE') {
+        setPayInfo({
+          payUrl: null,
+          tradeNo: null,
+        });
+        message.success('支付成功');
+      }
+    }, 1000);
+  }
+
+  function onCancelPay () {
+    setPayInfo({
+      payUrl: null,
+      tradeNo: null,
+    });
   }
 
   return (
@@ -12,6 +40,15 @@ export default function PriceCard() {
       className="text-black w-full min-h-[300px] rounded-3xl flex justify-center items-center py-6 gap-5 flex-wrap"
       style={{ backgroundColor: "rgba(56,114,224,.04)" }}
     >
+      <Modal
+        title="请支付"
+        width="fit-content"
+        open={!!payInfo.payUrl}
+        onCancel={onCancelPay}
+        footer={null}
+      >
+        {payInfo?.payUrl && <QRCodeCanvas value={payInfo?.payUrl} size={300} />}
+      </Modal>
       <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <h1 className="text-base" style={{ color: "#637381" }}>
           {PRICING_PLAN["1"].name}
