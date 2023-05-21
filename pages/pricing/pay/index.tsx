@@ -28,10 +28,10 @@ export default function Pay() {
       console.error('no prepayid')
     }
   }
-  return <>
-    <Script src="http://res.wx.qq.com/open/js/jweixin-1.6.0.js" strategy="beforeInteractive"></Script>
+  return <div className="pt-[100px]">
+    <Script src="//res.wx.qq.com/open/js/jweixin-1.6.0.js" strategy="beforeInteractive"></Script>
     <div>
       paying....
     </div>
-  </>
+  </div>
 }
