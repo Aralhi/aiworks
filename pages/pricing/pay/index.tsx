@@ -11,7 +11,7 @@ export default function Pay() {
     // } else {
     // }
     getPayParams().then(payParams => {
-      WeixinJSBridge.invoke('getBrandWCPayRequest', payParams, (res) => {
+      WeixinJSBridge.invoke('getBrandWCPayRequest', payParams, (res: any) => {
         console.info(res)
       });
     })
