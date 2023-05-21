@@ -3,11 +3,8 @@ const path = require('path')
 
 module.exports = {
   reactStrictMode: false,
-  cssModules: true,
+  transpilePackages: ["antd"],
   async redirects() {
     return [];
-  },
-  exclude: [
-    '/api/*'
-  ]
+  }
 };
