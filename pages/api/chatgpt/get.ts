@@ -62,6 +62,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const stream = await OpenAIStream({
     payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
   });
+
   return stream
 };
 

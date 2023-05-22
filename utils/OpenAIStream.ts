@@ -57,8 +57,8 @@ export async function OpenAIStream({
   const messages = getContext(conversationId, request.headers[FINGERPRINT_KEY] as string);
   payload.messages = messages.concat(payload.messages);
 
-  function getResponseByProd() {
-    return fetch("https://api.openai.com/v1/chat/completions", {
+  async function getResponseByProd() {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,6 +66,24 @@ export async function OpenAIStream({
       },
       body: JSON.stringify(payload),
     });
+    if(!payload.stream) {
+      const result = await res.json()
+      console.log('isStream....res:',result)
+      return new Response(JSON.stringify(result), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    } else {
+      console.log("prod env stream response....", typeof res.body)
+      return new Response(res.body, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
   }
 
   function getResponseByDev() {
@@ -80,7 +98,10 @@ export async function OpenAIStream({
       })
     })
   }
-  const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
+  // const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
+  const res = await getResponseByDev();
+  console.log('chatgpt params...', payload);
+  console.log('chatgpt res...', res);
   // 流式响应
   if (payload.stream) {
     let contents: Array<string> = []
