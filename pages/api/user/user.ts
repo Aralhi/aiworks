@@ -15,7 +15,7 @@ export type UserSession = {
   fingerprint: string;
   phone?: string;
   name?: string;
-  pricing?: UserPricing
+  pricings?: Array<UserPricing>;
 };
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {

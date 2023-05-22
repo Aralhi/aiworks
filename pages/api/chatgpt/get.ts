@@ -3,8 +3,8 @@ import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
 import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
 import Conversation from '@/models/Conversation';
-import { LOGIN_MAX_QUERY_COUNT, MAX_CONVERSATION_COUNT, MAX_TOKEN, UNLOGIN_MAX_QUERY_COUNT } from '@/utils/constants';
-import { queryCompletionCount } from '@/lib/completion';
+import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
+import { checkQueryCount } from '@/lib/completion';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -15,25 +15,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!prompt) {
     return res.status(400).json({ error: "No prompt in the request" });
   }
-  // 限制未登录和未购买的请求次数
-  const { isLoggedIn, pricing } = req.session.user || {}
-  if ((!isLoggedIn || !pricing) && process.env.NODE_ENV === 'production') {
-    try {
-      const { _id: userId, fingerprint } = req.session.user || {}
-      const count = await queryCompletionCount(userId, fingerprint)
-      if (isLoggedIn && count >= LOGIN_MAX_QUERY_COUNT){
-        res.setHeader('Content-type', 'application/json')
-        return res.json({ status: 'failed', message: "您的免费次数已用完" });
-      } else if (!isLoggedIn && count >= UNLOGIN_MAX_QUERY_COUNT) {
-        res.setHeader('Content-type', 'application/json')
-        return res.json({ status: 'failed', message: "未登录用户最大查询三次" });
-      }
-    } catch (error) {
-      console.error('get completion count error', error)
-    }
-  }
-
   const { _id: userId } = req.session.user || {}
+  // 校验queryCount
+  const { status, message } = await checkQueryCount(req)
+  if (status !== 'ok') {
+    return res.status(200).json({ status, message })
+  }
   // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
   let newConversationId
   // 登录了才创建会话
@@ -60,7 +47,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
-    max_tokens: MAX_TOKEN,
+    max_tokens: !isStream ? MAX_TOKEN / 2 : MAX_TOKEN, // 非流式请求最大token数为流式请求的一半，防止一次请求返回太多数据，场景主要是微信调用
     stream: !!isStream,
     n: 1,
   };

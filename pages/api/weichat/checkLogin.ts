@@ -22,6 +22,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     type: WX_EVENT_TYPE.login_qr,
     key: cacheKey
   })
+  // 本地收不到微信事件，直接登录成功
   const qrStatus = result?.value
   if (!qrStatus || result?.expireAt < Date.now()) {
     // 缓存没记录表示处理中
@@ -31,25 +32,28 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   } else if (qrStatus && qrStatus.includes(LOGIN_QR_STATUS.scan)) {
     // 已扫码，处理登录逻辑
     const openid = qrStatus.split('_')[0]
-    // 新用户插入DB
-    const defaultInfo = generateUserInfo()
-    const newUser = await new User(Object.assign({}, defaultInfo, {
-      registerType: 'wx',
-      openid,
-    })).save()
-    console.log('new wx user insert db success', newUser)
+    let user = await User.findOne({ openid })
+    if (!user) {
+      // 新用户插入DB
+      const defaultInfo = generateUserInfo()
+      user = await new User(Object.assign({}, defaultInfo, {
+        registerType: 'wx',
+        openid,
+      })).save()
+      console.log('new wx user insert db success', user)
+    }
     req.session.user = {
-      _id: newUser._id.toString(),
+      _id: user._id.toString(),
       isLoggedIn: true,
       phone: '',
-      openid: newUser.openid,
-      name: defaultInfo.name,
-      userCode: defaultInfo.userCode,
+      openid: user.openid,
+      name: user.name,
+      userCode: user.userCode,
       inviteCode,
       fingerprint: req.headers[FINGERPRINT_KEY]
     } as UserSession
     await req.session.save()
-    console.log('wx user login success:', newUser)
+    console.log('wx user login success:', user)
     return res.status(200).json({ status: 'scan', message: "登录成功" });
   }
 }

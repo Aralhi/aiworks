@@ -16,14 +16,13 @@ import { withIronSessionSsr } from 'iron-session/next';
 import { sessionOptions } from '@/lib/session';
 import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
-import { toast } from 'react-hot-toast';
 import { FaCheck, FaFileDownload, FaTimes } from 'react-icons/fa';
 import { debounce } from 'lodash';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import DialogModal from '@/components/DialogModal';
 import { ICompletion } from '@/models/Completion';
 import Link from 'next/link';
-import { Modal } from 'antd';
+import { Modal, message } from 'antd';
 import * as XLSX from 'xlsx'
 
 interface Chat {
@@ -40,7 +39,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const { cid } = router.query
   const [conversationId, setConversationId] = useState(cid)
   const [conversationName, setConversationName] = useState("");
-  const [init, setInit] = useState(!cid)
+  const [init, setInit] = useState(!(cid && user?.isLoggedIn))
   const [isOpen, setIsOpen] = useState(false);
   // 最多显示20条历史记录
   const [conversations, setConversations] = useState<Array<IConversation>>(conversationList || [])
@@ -57,10 +56,10 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [loginDialogMsg, setLoginDialogMsg] = useState('')
 
   useEffect(() => {
-    document.title = `${conversationName || '会话'} - AI works`
+    document.title = `${conversationName || 'ChatGPT'} - AI works`
     setIsOpen(isPC() ? true : false)
     if (conversations && conversations.length > MAX_CONVERSATION_COUNT && !localStorage.getItem('aiworks_conversation_count_message')) {
-      toast.error(`最多只能创建${MAX_CONVERSATION_COUNT}个会话，您已经达到上限。`)
+      message.error(`最多只能创建${MAX_CONVERSATION_COUNT}个会话，您已经达到上限。`)
       localStorage.setItem('aiworks_conversation_count_message', 'true')
     }
     // 根据cid查询会话列表
@@ -96,7 +95,6 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 
   function handleKeyDown(e: any) {
     if (e.key === 'Enter' && e.shiftKey) {
-      console.log('shift + enter')
       e.preventDefault();
       setPrompt(prompt + '\n');
       calculateHeight(prompt + '\n');
@@ -150,7 +148,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       }
       // 区分响应体header的Content-type，因为改接口能返回Stream和Json
       const isJson = response.headers.get('Content-Type')?.includes('application/json')
-      if ((!user?.isLoggedIn || !user?.pricing?.isEffective) && isJson) {
+      if (!user?.isLoggedIn && isJson) {
         const json = await response.json()
         if (json.status === 'failed') {
           setShowLoginDialog(true)
@@ -172,7 +170,6 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
         done = doneReading;
         const chunkValue = decoder.decode(value);
         setCompletion((prev) => prev + chunkValue);
-        console.log('chunkValue', chunkValue)
         setChatList((pre) => {
           let tmp = pre.pop() as Chat
           return [...pre, { prompt: tmp.prompt, completion: tmp.completion + chunkValue }]
@@ -267,9 +264,9 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
         pre[index].name = editingName
         return [...pre]
       })
-      toast.success(res.message)
+      message.success(res.message)
     } else {
-      res.message && toast.error(res.message)
+      res.message && message.error(res.message)
     }
   }
 
@@ -285,9 +282,9 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       setDeleteId('')
       setEditingName('')
       setShowDelDialog(false)
-      toast.success(res.message)
+      message.success(res.message)
     } else {
-      res.message && toast.error(res.message)
+      res.message && message.error(res.message)
     }
   }
 
@@ -299,7 +296,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
         setConversationId(res?.data?.[0]?._id)
       }
     } else {
-      res.message && toast.error(res.message)
+      res.message && message.error(res.message)
     }
   }
 
@@ -312,7 +309,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   }
 
   async function getCompletionList(id: string) {
-    if(!conversationId) {
+    if(!conversationId || !user?.isLoggedIn) {
       return
     }
     const res: CustomResponseType = await fetchJson(`/api/completion?conversationId=${id || conversationId}`)
@@ -367,7 +364,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
             {!user?.isLoggedIn && <p className='flex justify-center items-center mt-2'>登录后获得更多查询次数，
               <Link className='font-bold text-violet-500' href={{ pathname: 'login', query: router.query }}>登录</Link>
             </p>}
-            {user?.isLoggedIn && !user?.pricing && <p className='flex justify-center items-center mt-2'>
+            {user?.isLoggedIn && !user?.pricings && <p className='flex justify-center items-center mt-2'>
               <Link className='font-bold text-violet-500' href={{ pathname: 'pricing', query: router.query }}>感觉不够用?</Link>
             </p>}
         </Modal>
@@ -595,9 +592,9 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 export default Chat;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
-  const url = new URL(req.headers.referer || '')
-  const cid = url.searchParams.get('cid')
   try {
+    const url = new URL(req.headers.referer || '')
+    const cid = url.searchParams.get('cid')
     await dbConnect()
     // 查询会话列表
     const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()

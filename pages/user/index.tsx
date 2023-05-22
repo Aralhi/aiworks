@@ -2,7 +2,6 @@ import useUser from "@/lib/userUser";
 import { useState, ChangeEvent, useEffect } from "react";
 import { FaShoppingCart, FaUserAlt, FaGift, FaRegCopy } from "react-icons/fa";
 import PriceCard from "@/components/PriceCard";
-import { toast } from "react-hot-toast";
 import { AVATARS, USERNAME_LENGTH } from "@/utils/constants";
 import fetchJson, { CustomResponseType } from "@/lib/fetchJson";
 import dbConnect from "@/lib/dbConnect";
@@ -13,17 +12,28 @@ import { InferGetServerSidePropsType } from "next";
 import moment from "moment-timezone";
 import { getTodayTime } from "@/utils/index";
 import Completion from "@/models/Completion";
+import { message } from "antd";
 
 function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { user, mutateUser } = useUser();
+  const { user } = useUser();
   const [currentIndex, setCurrentIndex] = useState(1);
   const [userName, setUserName] = useState(user?.name || '')
   const [userAvatar, setUserAvatar] = useState(user?.avatarUrl || '')
   const [inviteUrl, setInviteUrl] = useState('')
+  if (user && (!user?.pricings || user?.pricings.length <= 0)) {
+    user.pricings = [{
+      type: 'free',
+      name: '免费',
+      status: 'active',
+      queryCount: 10,
+      startAt: 0,
+      endAt: 0
+    }]
+  }
 
   function userNameChange(e: ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length > USERNAME_LENGTH) {
-      toast.error('用户名长度不能超过10个字符')
+      message.error('用户名长度不能超过10个字符')
       return
     }
     setUserName(e.target.value)
@@ -46,7 +56,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   async function copyCode () {
     try {
       await navigator.clipboard.writeText(user?.userCode || '')
-      toast.success('复制成功')
+      message.success('复制成功')
     } catch (err) {
       console.error('Failed to copy: ', err)
     }
@@ -64,19 +74,19 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
       checked = true
     }
     if (!checked) {
-      return toast.error('请修改后再保存')
+      return message.error('请修改后再保存')
     }
     const res:CustomResponseType = await fetchJson('/api/user/user', {
       method: 'PUT',
       body: JSON.stringify(body)
     })
-    toast.success(res.message)
+    message.success(res.message)
   }
 
   async function copyUrl() {
     try {
       await navigator.clipboard.writeText(inviteUrl)
-      toast.success('复制成功')
+      message.success('复制成功')
     } catch (err) {
       console.error('Failed to copy: ', err)
     }
@@ -127,27 +137,28 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
       <div id="user-info" className="h-screen w-full">
         {currentIndex === 1 && (
           <div className="p-4">
-            <h1 className="text-2xl">当前套餐</h1>
+            <h1 className="text-2xl">套餐</h1>
             <div className="flex gap-6 flex-row">
-              <div className="flex flex-col gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
+              {(user?.pricings?.map(pricing => (
+                <div className="flex flex-col gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
                 <p>
                   <span className="text-gray-400 mr-2">当前的套餐是</span>
                   <span className="font-bold text-black">
-                    {user?.pricing?.name || "免费"}
+                    {pricing?.name || "免费"}
                   </span>
                 </p>
                 <p>
-                  {!user?.pricing?.name && <>
+                  {!pricing?.name && <>
                     <span className="text-gray-400">每天只有</span>
                     <span className="font-bold text-black mx-2">
-                      {user?.pricing?.queryCount || 10}
+                      {pricing?.queryCount || 10}
                     </span>
                     <span className="text-gray-400">查询次数</span>
                   </>}
-                  {user?.pricing?.name && <>
+                  {pricing?.name && <>
                     <span className="text-gray-400">您共有</span>
                     <span className="font-bold text-black mx-2">
-                      {user?.pricing?.queryCount || 10}
+                      {pricing?.queryCount || 10}
                     </span>
                     <span className="text-gray-400">查询次数</span>
                   </>}
@@ -159,16 +170,17 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                   </a>
                 </p>
               </div>
+              )))}
               <div className="flex justify-center items-center gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
                 <div className="flex flex-col gap-5 text-center">
                   <div className="text-lg text-black">{todayQueryCount < 0 ? '-' : todayQueryCount}</div>
                   <div className="">今天的请求次数</div>
                 </div>
-                <div className="w-[1px] bg-gray-500 h-[38px] mt-6"></div>
+                {/* <div className="w-[1px] bg-gray-500 h-[38px] mt-6"></div>
                 <div className="flex flex-col gap-5 text-center">
                   <div className="text-lg text-black">{leftQueryCount < 0 ? '-' : leftQueryCount}</div>
                   <div className="">剩余请求次数</div>
-                </div>
+                </div> */}
               </div>
             </div>
             <h1 className="text-2xl my-4">高级套餐</h1>

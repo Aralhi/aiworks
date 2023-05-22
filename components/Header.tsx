@@ -4,9 +4,7 @@ import { useState } from "react";
 import useUser from "@/lib/userUser";
 import fetchJson from "@/lib/fetchJson";
 import { useRouter } from "next/router";
-import { Toaster } from "react-hot-toast";
 import { AVATARS } from "@/utils/constants";
-import { Menu } from '@headlessui/react'
 
 
 export default function Header() {
@@ -85,11 +83,6 @@ export default function Header() {
           </ul>
         </div>
       </nav>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{ duration: 2000 }}
-      />
     </header>
   );
 }

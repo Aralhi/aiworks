@@ -4,12 +4,10 @@ import { SWRConfig } from "swr";
 import "../styles/globals.css";
 import Header from "../components/Header";
 import fetchJson from "@/lib/fetchJson";
-import MainLayout from '../layouts/main'
-import '../public/antd.min.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    MainLayout( <SWRConfig
+    <SWRConfig
       value={{
         fetcher: fetchJson,
         onError: (err) => {
@@ -20,7 +18,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Header />
       <Component {...pageProps} />
       <Analytics />
-    </SWRConfig>)
+    </SWRConfig>
   );
 }
 

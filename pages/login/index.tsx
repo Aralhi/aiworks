@@ -1,8 +1,7 @@
 import { ChangeEvent, useState, useEffect } from 'react';
-import { toast, Toaster } from 'react-hot-toast';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
-import { Tabs, Checkbox, Input, QRCode } from 'antd';
+import { Tabs, Checkbox, Input, message } from 'antd';
 import type { TabsProps } from 'antd';
 import { createQrCode } from '@/lib/weichat';
 import Link from 'next/link';
@@ -45,12 +44,10 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
       return
     }
     if (!phone || !phoneCheck) {
-      toast.error('请输入正确的手机号码');
-      return
+      return message.warning('请输入正确的手机号码')
     }
     if (!protocolChecked) {
-      toast.error('请阅读并同意用户协议');
-      return
+      return message.warning('请阅读并同意用户协议')
     }
     setCountdown(SMS_TIMEOUT);
     const res = await fetch('/api/sms/sendCode', {
@@ -63,11 +60,11 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
       })
     })
     if (!res.ok) {
-      toast.error('验证码发送失败');
+      return message.error('验证码发送失败')
     }
     const result = await res.json();
     if (result.status === 'ok') {
-      toast.success('验证码发送成功');
+      return message.success('验证码发送成功')
     }
   };
 
@@ -139,6 +136,9 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
   }
 
   const handleLogin = async () => {
+    if (!protocolChecked) {
+      message.warning('请阅读并同意用户协议')
+    }
     setLoading(true);
     const res: CustomResponseType = await fetchJson('/api/user/login', {
       method: 'POST',
@@ -153,7 +153,7 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
     })
     setLoading(false);
     if (res && res?.status === 'ok') {
-      toast.success('登录成功');
+      message.success('登录成功')
       const originUrl = router.query.originUrl as string;
       if (originUrl) {
         // 重定向到原来的页面
@@ -162,7 +162,7 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
         window.location.href = '/chat';
       }
     } else {
-      toast.error('登录失败');
+      message.error(res?.message || '登录失败')
     }
   };
 
@@ -244,11 +244,6 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">AI works，让AI触手可及 </h2>
       </div>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{ duration: 2000 }}
-      />
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <Tabs items={tabItems} centered size={'large'}/>
       </div>

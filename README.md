@@ -44,7 +44,6 @@ const res:CustomResponseType = await fetchJson('/api/user/user', {
   method: 'PUT',
   body: JSON.stringify(body)
 })
-toast.success(res.message)
 ```
 
 ## 接口返回格式

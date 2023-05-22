@@ -4,9 +4,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "predev": "ts-node --project ./tsconfig.node.json ./scripts/genAntdCss.tsx",
-    "prebuild": "cross-env NODE_ENV=production ts-node --project ./tsconfig.node.json ./scripts/genAntdCss.tsx"
+    "lint": "next lint"
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.0",
@@ -35,7 +33,6 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.42.0",
-    "react-hot-toast": "^2.4.0",
     "react-icons": "^4.8.0",
     "react-markdown": "^8.0.7",
     "react-scroll-to-bottom": "^4.2.0",

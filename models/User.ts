@@ -8,7 +8,7 @@ export interface IUser {
   phone?: string;
   createAt?: string;
   avatarUrl?: string;
-  pricing?: UserPricing;
+  pricings?: Array<UserPricing>;
 }
 
 // https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_basic_information_UnionID.html#UinonId
@@ -34,11 +34,12 @@ export type WXUserInfo = {
 
 // 用户的套餐信息
 export type UserPricing = {
+  type: string; // 套餐类型，chatGPT、midjourney
   name: string; // 套餐名
   queryCount: number; // 查询次数
-  isEffective: boolean; //是否生效
-  startTimestamp: number; // 开始时间戳，ms
-  endTimestamp: number; // 结束时间戳，ms
+  status: string; // 套餐状态，active、expired
+  startAt: number; // 开始时间戳，ms
+  endAt: number; // 结束时间戳，ms
 }
 
 const UserSchema = new Schema({
@@ -63,6 +64,9 @@ const UserSchema = new Schema({
     type: String,
     unique: true,
     sparse: true
+  },
+  pricings: {
+    type: Array<UserPricing>,
   },
   avatarUrl: {
     type: String,
