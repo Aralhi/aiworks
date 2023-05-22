@@ -74,6 +74,7 @@ export async function OpenAIStream({
         },
       })
     } else {
+      console.log("prod env stream response....", typeof res.body)
       return new Response(res.body, {
         headers: {
           "Content-Type": "text/event-stream",
