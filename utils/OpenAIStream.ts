@@ -97,7 +97,8 @@ export async function OpenAIStream({
       })
     })
   }
-  const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
+  // const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
+  const res = await getResponseByDev();
   console.log('chatgpt params...', payload);
   console.log('chatgpt res...', res);
   // 流式响应

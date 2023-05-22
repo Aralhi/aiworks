@@ -72,40 +72,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader("Transfer-Encoding", "chunked");
   }
   //TODO WX调用需要传用户信息
-  // const stream = await OpenAIStream({
-  //   payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
-  // });
-
-
-
-  // return stream
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`,
-    },
-    method: "POST",
-    body: JSON.stringify(payload),
+  const stream = await OpenAIStream({
+    payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
   });
-  if(!isStream) {
-    const result = await response.json()
-    console.log('isStream....res:',result)
-    return new Response(JSON.stringify(result), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-  } else {
-    return new Response(response.body, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
-    });
-  }
 
+  return stream
 };
 
 export default withIronSessionApiRoute(handler, sessionOptions);
