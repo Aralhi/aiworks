@@ -56,8 +56,8 @@ export async function OpenAIStream({
   const messages = getContext(conversationId);
   payload.messages = messages.concat(payload.messages);
 
-  function getResponseByProd() {
-    return fetch("https://api.openai.com/v1/chat/completions", {
+  async function getResponseByProd() {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,6 +65,23 @@ export async function OpenAIStream({
       },
       body: JSON.stringify(payload),
     });
+    if(!payload.stream) {
+      const result = await res.json()
+      console.log('isStream....res:',result)
+      return new Response(JSON.stringify(result), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    } else {
+      return new Response(res.body, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
   }
 
   function getResponseByDev() {
