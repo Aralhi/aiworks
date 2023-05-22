@@ -24,6 +24,7 @@ export default function PriceCard() {
           tradeNo: null,
         });
         message.success('支付成功');
+        clearInterval(orderPolling.current);
       }
     }, 1000);
   }
