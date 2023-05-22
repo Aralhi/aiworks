@@ -80,6 +80,8 @@ export async function OpenAIStream({
     })
   }
   const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
+  console.log('chatgpt params...', payload);
+  console.log('chatgpt res...', res);
   // 流式响应
   if (payload.stream) {
     let contents: Array<string> = []
