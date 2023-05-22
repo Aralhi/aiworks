@@ -1,5 +1,4 @@
 import { IPricing } from "@/models/Pricing";
-import { GoodsDetail as WechatPayGoodsDetail } from "tencentcloud-sdk-nodejs/tencentcloud/services/anicloud/v20220923/anicloud_models";
 import { SettleInfo } from "tencentcloud-sdk-nodejs/tencentcloud/services/cpdp/v20190820/cpdp_models";
 
 export interface PayAmout {
