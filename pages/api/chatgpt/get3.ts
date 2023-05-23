@@ -1,6 +1,6 @@
 // import { withIronSessionApiRoute } from 'iron-session/next';
 import { getIronSession } from 'iron-session/edge';
-import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
+import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream3";
 import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
 import Conversation from '@/models/Conversation';
@@ -68,10 +68,8 @@ console.log(session.user);
   };
   const startTime = Date.now();
   // //TODO WX调用需要传用户信息
-  const stream = await OpenAIStream({
-    payload, request: req, response: res, conversationId: conversationId || newConversationId, user: session.user
-  });
-
+  // const stream = await OpenAIStream({ payload, request: req, conversationId: conversationId || newConversationId, user: session.user });
+  const stream = await OpenAIStream(payload, req, session.user, conversationId || newConversationId);
   if (isStream) {
     return new Response(stream);
   }
