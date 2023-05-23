@@ -1,4 +1,7 @@
 import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream2";
+import { getIronSession } from 'iron-session/edge';
+import { sessionOptions } from "@/lib/session";
+import { NextApiRequest, NextApiResponse } from "next";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -8,7 +11,9 @@ export const config = {
   runtime: "edge",
 };
 
-const handler = async (req: Request): Promise<Response> => {
+const handler = async (req:any, res:any) => {
+  const session = await getIronSession(req, res, sessionOptions)
+console.log(session.user);
   const { prompt, conversationId, conversationName, isStream = true } = (await req.json()) as {
     prompt?: string;
     conversationId?: string;

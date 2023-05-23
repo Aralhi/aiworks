@@ -45,8 +45,8 @@ export async function OpenAIStream({
   payload, request, response, conversationId, user
 }: {
   payload: OpenAIStreamPayload,
-  request: NextApiRequest
-  response: NextApiResponse,
+  request: any
+  response: any,
   conversationId: string,
   user?: UserSession
 }) {
@@ -54,8 +54,8 @@ export async function OpenAIStream({
   const decoder = new TextDecoder();
   let counter = 0;
   // 获取上下文记忆
-  const messages = getContext(conversationId, request.headers[FINGERPRINT_KEY] as string);
-  payload.messages = messages.concat(payload.messages);
+  // const messages = getContext(conversationId, request.headers[FINGERPRINT_KEY] as string);
+  // payload.messages = messages.concat(payload.messages);
 
   function getResponseByProd() {
     return fetch("https://api.openai.com/v1/chat/completions", {
@@ -97,7 +97,7 @@ export async function OpenAIStream({
             controller.close();
             console.log('response end', payload.stream)
             response.end()
-            completionCallback({ payload, request, content: contents.join(''), user, chatId, conversationId })
+            // completionCallback({ payload, request, content: contents.join(''), user, chatId, conversationId })
             return;
           }
           try {
@@ -168,7 +168,7 @@ function setContext(conversationId: string, fingerprint: string, question: strin
 
 async function completionCallback({ payload, request, content, user, chatId, conversationId, usage }: {
   payload: OpenAIStreamPayload,
-  request: NextApiRequest
+  request: any
   content: string,
   user?: UserSession,
   chatId: string,
@@ -178,21 +178,21 @@ async function completionCallback({ payload, request, content, user, chatId, con
   try {
     console.log('completionCallback', payload)
     // 内容全部返回完成, 将本次返回内容记录到缓存
-    const fingerprint = user?._id ? '' : request.headers[FINGERPRINT_KEY] as string
-    setContext(conversationId, fingerprint, payload.messages[payload.messages.length - 1].content, content)
-    // 未登录用户记录用户的fingerPrint
-    await saveCompletion({
-      userId: user?._id || '',
-      prompt: payload.messages[payload.messages.length - 1].content,
-      role: payload.messages[0].role,
-      stream: payload.stream,
-      chatId,
-      model: payload.model,
-      conversationId,
-      content,
-      usage,
-      fingerprint
-    })
+    // const fingerprint = user?._id ? '' : request.headers[FINGERPRINT_KEY] as string
+    // setContext(conversationId, fingerprint, payload.messages[payload.messages.length - 1].content, content)
+    // // 未登录用户记录用户的fingerPrint
+    // await saveCompletion({
+    //   userId: user?._id || '',
+    //   prompt: payload.messages[payload.messages.length - 1].content,
+    //   role: payload.messages[0].role,
+    //   stream: payload.stream,
+    //   chatId,
+    //   model: payload.model,
+    //   conversationId,
+    //   content,
+    //   usage,
+    //   fingerprint
+    // })
   } catch (e) {
     console.error('insert completion failed', e)
   }
