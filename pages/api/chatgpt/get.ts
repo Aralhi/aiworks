@@ -1,23 +1,45 @@
+import { withIronSessionApiRoute } from 'iron-session/next';
 import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
+import { sessionOptions } from "@/lib/session";
+import { NextApiRequest, NextApiResponse } from "next";
+import Conversation from '@/models/Conversation';
+import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
+import { checkQueryCount } from '@/lib/completion';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
 }
 
-export const config = {
-  runtime: "edge",
-};
-
-const handler = async (req: Request): Promise<Response> => {
-  const { prompt, isStream = true } = (await req.json()) as {
-    prompt?: string;
-    isStream?: boolean
-  };
-
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { prompt, conversationId, conversationName, isStream = true } = req.body || {};
   if (!prompt) {
-    return new Response("No prompt in the request", { status: 400 });
+    return res.status(400).json({ error: "No prompt in the request" });
   }
-
+  const { _id: userId } = req.session.user || {}
+  // 校验queryCount
+  const { status, message } = await checkQueryCount(req)
+  if (status !== 'ok') {
+    return res.status(200).json({ status, message })
+  }
+  // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
+  let newConversationId
+  // 登录了才创建会话
+  if (userId && !conversationId && conversationName) {
+    // 查询历史会话格式
+    const count = await Conversation.countDocuments({ userId })
+    if (count < MAX_CONVERSATION_COUNT) {
+      try {
+        const newDoc = await Conversation.create({
+          userId,
+          name: conversationName,
+        })
+        console.log('insert conversation success:', newDoc)
+        newConversationId = newDoc._id
+      } catch (error) {
+        console.log('insert conversation error:', error)
+      }
+    }
+  }
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
@@ -25,35 +47,24 @@ const handler = async (req: Request): Promise<Response> => {
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
-    max_tokens: 200,
-    stream: true,
+    max_tokens: !isStream ? MAX_TOKEN / 2 : MAX_TOKEN, // 非流式请求最大token数为流式请求的一半，防止一次请求返回太多数据，场景主要是微信调用
+    stream: !!isStream,
     n: 1,
   };
-  const startTime = Date.now();
-  const stream = await OpenAIStream(payload);
-  console.log('stream...', stream);
-  if (isStream) {
-    console.log('chatgpt response:', isStream, Date.now() - startTime)
-    return new Response(stream);
-  }
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  let result = '';
-  let { done, value } = await reader.read();
-  result += value;
-  while (!done) {
-    const temp = await reader.read();
-    done = temp.done;
-    value = decoder.decode(temp.value);
-    result += value;
-  }
-  console.log('chatgpt response:', isStream, Date.now() - startTime, result)
-  return new Response(result, {
-    status: 200,
-    headers: {
-      'content-type': 'application/json'
-    }
-  })
+  // if (isStream) {
+  //   // set response headers
+  //   res.setHeader("Content-Type", "text/plain");
+  //   res.setHeader("Cache-Control", "no-cache");
+  //   res.setHeader("Connection", "keep-alive");
+  //   res.setHeader("Transfer-Encoding", "chunked");
+  // }
+  // //TODO WX调用需要传用户信息
+  const stream = await OpenAIStream({
+    payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
+  });
+
+  return stream
+
 };
 
-export default handler;
+export default withIronSessionApiRoute(handler, sessionOptions);

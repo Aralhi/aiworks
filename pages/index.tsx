@@ -1,65 +1,14 @@
 import type { NextPage } from "next";
-import Head from "next/head";
-import Image from "next/image";
-import { useRef, useState } from "react";
-import { Toaster, toast } from "react-hot-toast";
 import Footer from "../components/Footer";
-import LoadingDots from "../components/LoadingDots";
 import Link from "next/link";
 import { ChatDesc } from "../components/ChatDesc";
+import { useEffect } from "react";
 
 const Home: NextPage = () => {
-  const [loading, setLoading] = useState(false);
-  const [prompt, setPrompt] = useState("");
-  const [completion, setCompletion] = useState<String>("");
-  const [chatText, setChatText] = useState<String>("免费试用");
-  const [mjText, setMjText] = useState<String>("免费试用");
 
-  const bioRef = useRef<null | HTMLDivElement>(null);
-
-  const scrollToBios = () => {
-    if (bioRef.current !== null) {
-      bioRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const generateBio = async (e: any) => {
-    e.preventDefault();
-    setCompletion("");
-    setLoading(true);
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    // This data is a ReadableStream
-    const data = response.body;
-    if (!data) {
-      return;
-    }
-
-    const reader = data.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
-      setCompletion((prev) => prev + chunkValue);
-    }
-    scrollToBios();
-    setLoading(false);
-  };
+  useEffect(() => {
+    document.title = 'AI works，让AI触手可及'
+  })
 
   return (
     <main className="w-fulL">
@@ -77,14 +26,14 @@ const Home: NextPage = () => {
         <div className="flex h-full justify-center items-center flex-col gap-4 p-4 md:w-1/3 bg-white">
           <h1 className="text-4xl w-full font-bold mb-4 text-center" style={{ color: 'rgb(52, 0, 104)' }}>chatGPT</h1>
           <p style={{ color: 'rgb(52, 0, 104)' }}>全球最强大的人工智能，在创作、文案编辑、编码、美食配方等方面可以给你惊人的灵感和效率，更可以作为AIGC工具强大的prompt生成器。</p>
-          <Link className="text-green-400 underline" href={'/chat'}>{mjText}</Link>
+          <Link className="text-green-400 underline" href={'/chat'}>免费试用</Link>
         </div>
       </div>
       <div id="mj-desc" className="text-gray-700 flex justify-center items-center flex-col gap-4 min-h-[300px] md:h-[400px] lg:h-[700px]"
         style={{ position: 'relative'}}>
-        <div className="bg-[url('/mj-desc.png')] bg-cover z-0 w-full h-full" style={{ position: 'absolute' }}></div>
-        <p className="text-gray-200 text-lg md:text-3xl z-10 text-center">全球最强文生图模型，一分钟帮你实现创意。<br></br>
-          <Link className="text-green-400 text-lg md:text-3xl underline" href={'/midjourney'}>{mjText}MidJourney</Link>
+        <div className="bg-[url('/mj-desc.JPG')] bg-cover z-0 w-full h-full" style={{ position: 'absolute' }}></div>
+        <p className="text-gray-200 text-lg md:text-3xl z-10 text-center bg-gray-400 bg-opacity-80">全球最强文生图模型，一分钟帮你实现创意。<br></br>
+          <Link className="text-green-400 text-lg md:text-3xl underline" href={'/midjourney'}>免费试用MidJourney</Link>
         </p>
       </div>
       <div id="feature" className="mt-6 mb-6 pl-6 pr-6">
