@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import Conversation from '@/models/Conversation';
 import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
 import { checkQueryCount } from '@/lib/completion';
+import { UserSession } from '../user/user';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -15,9 +16,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!prompt) {
     return res.status(400).json({ error: "No prompt in the request" });
   }
-  const { _id: userId } = req.session.user || {}
+  const user = req.session.user as UserSession
+  const { _id: userId } = user
   // 校验queryCount
-  const { status, message } = await checkQueryCount(req)
+  const { status, message } = await checkQueryCount(user, req.headers[FINGERPRINT_KEY] as string)
   if (status !== 'ok') {
     return res.status(200).json({ status, message })
   }
