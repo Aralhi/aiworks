@@ -32,34 +32,34 @@ const handler = async (req: Request, res: Response) => {
   const { _id: userId } = user
   const fingerprint = req.headers.get(FINGERPRINT_KEY) || ''
   // 校验queryCount
-  const { status, message } = await checkQueryCount(user, fingerprint)
-  if (status !== 'ok') {
-    return new Response(JSON.stringify({ status, message }), {
-      status: 200,
-      headers: {
-        'content-type': 'application/json;charset=UTF-8',
-      }
-    });
-  }
-  // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
-  let newConversationId;
-  // // 登录了才创建会话
-  if (userId && !conversationId && conversationName) {
-    // 查询历史会话格式
-    const count = await Conversation.countDocuments({ userId })
-    if (count < MAX_CONVERSATION_COUNT) {
-      try {
-        const newDoc = await Conversation.create({
-          userId,
-          name: conversationName,
-        })
-        console.log('insert conversation success:', newDoc)
-        newConversationId = newDoc._id
-      } catch (error) {
-        console.log('insert conversation error:', error)
-      }
-    }
-  }
+  // const { status, message } = await checkQueryCount(user, fingerprint)
+  // if (status !== 'ok') {
+  //   return new Response(JSON.stringify({ status, message }), {
+  //     status: 200,
+  //     headers: {
+  //       'content-type': 'application/json;charset=UTF-8',
+  //     }
+  //   });
+  // }
+  // // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
+  // let newConversationId;
+  // // // 登录了才创建会话
+  // if (userId && !conversationId && conversationName) {
+  //   // 查询历史会话格式
+  //   const count = await Conversation.countDocuments({ userId })
+  //   if (count < MAX_CONVERSATION_COUNT) {
+  //     try {
+  //       const newDoc = await Conversation.create({
+  //         userId,
+  //         name: conversationName,
+  //       })
+  //       console.log('insert conversation success:', newDoc)
+  //       newConversationId = newDoc._id
+  //     } catch (error) {
+  //       console.log('insert conversation error:', error)
+  //     }
+  //   }
+  // }
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
