@@ -51,34 +51,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     stream: !!isStream,
     n: 1,
   };
-  const startTime = Date.now();
-  // //TODO WX调用需要传用户信息
+  if (isStream) {
+    // set response headers
+    res.setHeader("Content-Type", "text/plain");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("Transfer-Encoding", "chunked");
+  }
+  //TODO WX调用需要传用户信息
   const stream = await OpenAIStream({
     payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
   });
 
-  if (isStream) {
-    return new Response(stream);
-  }
-
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  let result = '';
-  let { done, value } = await reader.read();
-  result += value;
-  while (!done) {
-    const temp = await reader.read();
-    done = temp.done;
-    value = decoder.decode(temp.value);
-    result += value;
-  }
-  console.log('chatgpt response:', isStream, Date.now() - startTime, result)
-  return new Response(result, {
-    status: 200,
-    headers: {
-      'content-type': 'application/json'
-    }
-  })
+  return stream
 
 };
 

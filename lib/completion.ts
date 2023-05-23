@@ -4,6 +4,7 @@ import dbConnect from "./dbConnect";
 import cache from 'memory-cache'
 import User, { UserPricing } from "@/models/User";
 import { FINGERPRINT_KEY, LOGIN_MAX_QUERY_COUNT, UNLOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
+import { NextApiRequest } from "next";
 
 const COMPLETION_COUNT_CACHE_TIME = 1000 * 60 * 60 * 24 // 1小时
 
@@ -89,7 +90,7 @@ export async function saveCompletion(completion: ICompletion) {
   }
 }
 
-export async function checkQueryCount(req: any) {
+export async function checkQueryCount(req: NextApiRequest) {
   const { user } = req.session || {}
   const fingerprint = req.headers[FINGERPRINT_KEY] as string
   // TODO兼容微信调用，用openid

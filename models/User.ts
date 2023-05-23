@@ -84,4 +84,4 @@ const UserSchema = new Schema({
   }
 })
 
-export default models?.User ||  model('User', UserSchema, 'user')
+export default models.User ||  model('User', UserSchema, 'user')

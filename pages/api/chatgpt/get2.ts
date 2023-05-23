@@ -17,8 +17,7 @@ export const config = {
 
 const handler = async (req:any, res:any) => {
   const session = await getIronSession(req, res, sessionOptions)
-console.log(session.user);
-console.log(Conversation)
+
   const { prompt, conversationId, conversationName, isStream = true } = (await req.json()) as {
     prompt?: string;
     conversationId?: string;
@@ -37,24 +36,24 @@ console.log(Conversation)
   //   return res.status(200).json({ status, message })
   // }
   // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
-  let newConversationId;
-  // // 登录了才创建会话
-  if (userId && !conversationId && conversationName) {
-    // 查询历史会话格式
-    const count = await Conversation.countDocuments({ userId })
-    if (count < MAX_CONVERSATION_COUNT) {
-      try {
-        const newDoc = await Conversation.create({
-          userId,
-          name: conversationName,
-        })
-        console.log('insert conversation success:', newDoc)
-        newConversationId = newDoc._id
-      } catch (error) {
-        console.log('insert conversation error:', error)
-      }
-    }
-  }
+  // let newConversationId;
+  // // // 登录了才创建会话
+  // if (userId && !conversationId && conversationName) {
+  //   // 查询历史会话格式
+  //   const count = await Conversation.countDocuments({ userId })
+  //   if (count < MAX_CONVERSATION_COUNT) {
+  //     try {
+  //       const newDoc = await Conversation.create({
+  //         userId,
+  //         name: conversationName,
+  //       })
+  //       console.log('insert conversation success:', newDoc)
+  //       newConversationId = newDoc._id
+  //     } catch (error) {
+  //       console.log('insert conversation error:', error)
+  //     }
+  //   }
+  // }
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
@@ -69,7 +68,7 @@ console.log(Conversation)
   const startTime = Date.now();
   // //TODO WX调用需要传用户信息
   // const stream = await OpenAIStream({ payload, request: req, conversationId: conversationId || newConversationId, user: session.user });
-  const stream = await OpenAIStream(payload, req, session.user, conversationId || newConversationId);
+  const stream = await OpenAIStream(payload, req, session.user);
   if (isStream) {
     return new Response(stream);
   }

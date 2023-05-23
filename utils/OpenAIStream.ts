@@ -59,7 +59,7 @@ export async function OpenAIStream({
   payload.messages = messages.concat(payload.messages);
 
   async function getResponseByProd() {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    return fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -81,10 +81,8 @@ export async function OpenAIStream({
       })
     })
   }
-  // const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
-  const res = await getResponseByDev();
-  console.log('chatgpt params...', payload);
-  console.log('chatgpt res...', res);
+  const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
+
   // 流式响应
   if (payload.stream) {
     let contents: Array<string> = []
