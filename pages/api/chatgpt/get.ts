@@ -31,6 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
   };
   const startTime = Date.now();
   const stream = await OpenAIStream(payload);
+  console.log('stream...', stream);
   if (isStream) {
     console.log('chatgpt response:', isStream, Date.now() - startTime)
     return new Response(stream);
