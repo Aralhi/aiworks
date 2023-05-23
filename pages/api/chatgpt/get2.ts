@@ -1,5 +1,6 @@
-import { withIronSessionApiRoute } from 'iron-session/next';
-import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
+// import { withIronSessionApiRoute } from 'iron-session/next';
+import { getIronSession } from 'iron-session/edge';
+import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream2";
 import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
 import Conversation from '@/models/Conversation';
@@ -10,20 +11,34 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
 }
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { prompt, conversationId, conversationName, isStream = true } = req.body || {};
+export const config = {
+  runtime: "edge",
+};
+
+const handler = async (req:any, res:any) => {
+  const session = await getIronSession(req, res, sessionOptions)
+console.log(session.user);
+console.log(Conversation)
+  const { prompt, conversationId, conversationName, isStream = true } = (await req.json()) as {
+    prompt?: string;
+    conversationId?: string;
+    conversationName?: string;
+    isStream?: boolean;
+  };
+
   if (!prompt) {
-    return res.status(400).json({ error: "No prompt in the request" });
+    return new Response("No prompt in the request", { status: 400 });
   }
-  const { _id: userId } = req.session.user || {}
+
+  const { _id: userId } = session.user || {}
   // 校验queryCount
-  const { status, message } = await checkQueryCount(req)
-  if (status !== 'ok') {
-    return res.status(200).json({ status, message })
-  }
+  // const { status, message } = await checkQueryCount(req, res)
+  // if (status !== 'ok') {
+  //   return res.status(200).json({ status, message })
+  // }
   // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
-  let newConversationId
-  // 登录了才创建会话
+  let newConversationId;
+  // // 登录了才创建会话
   if (userId && !conversationId && conversationName) {
     // 查询历史会话格式
     const count = await Conversation.countDocuments({ userId })
@@ -53,10 +68,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   };
   const startTime = Date.now();
   // //TODO WX调用需要传用户信息
-  const stream = await OpenAIStream({
-    payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
-  });
-
+  // const stream = await OpenAIStream({ payload, request: req, conversationId: conversationId || newConversationId, user: session.user });
+  const stream = await OpenAIStream(payload, req, session.user, conversationId || newConversationId);
   if (isStream) {
     return new Response(stream);
   }
@@ -82,4 +95,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 };
 
-export default withIronSessionApiRoute(handler, sessionOptions);
+export default handler;
