@@ -63,4 +63,4 @@ const CompletionSchema = new Schema({
   }
 })
 
-export default models.Completion ||  model('Completion', CompletionSchema, 'completion')
+export default models?.Completion ||  model('Completion', CompletionSchema, 'completion')

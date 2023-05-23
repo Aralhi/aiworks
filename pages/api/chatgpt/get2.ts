@@ -6,7 +6,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import Conversation from '@/models/Conversation';
 import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
 import { checkQueryCount } from '@/lib/completion';
-import { random } from 'lodash';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -19,6 +18,7 @@ export const config = {
 const handler = async (req:any, res:any) => {
   const session = await getIronSession(req, res, sessionOptions)
 console.log(session.user);
+console.log(Conversation)
   const { prompt, conversationId, conversationName, isStream = true } = (await req.json()) as {
     prompt?: string;
     conversationId?: string;
@@ -32,29 +32,29 @@ console.log(session.user);
 
   const { _id: userId } = session.user || {}
   // 校验queryCount
-  // const { status, message } = await checkQueryCount(req)
+  // const { status, message } = await checkQueryCount(req, res)
   // if (status !== 'ok') {
   //   return res.status(200).json({ status, message })
   // }
   // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
-  let newConversationId = '11111';
+  let newConversationId;
   // // 登录了才创建会话
-  // if (userId && !conversationId && conversationName) {
-  //   // 查询历史会话格式
-  //   const count = await Conversation.countDocuments({ userId })
-  //   if (count < MAX_CONVERSATION_COUNT) {
-  //     try {
-  //       const newDoc = await Conversation.create({
-  //         userId,
-  //         name: conversationName,
-  //       })
-  //       console.log('insert conversation success:', newDoc)
-  //       newConversationId = newDoc._id
-  //     } catch (error) {
-  //       console.log('insert conversation error:', error)
-  //     }
-  //   }
-  // }
+  if (userId && !conversationId && conversationName) {
+    // 查询历史会话格式
+    const count = await Conversation.countDocuments({ userId })
+    if (count < MAX_CONVERSATION_COUNT) {
+      try {
+        const newDoc = await Conversation.create({
+          userId,
+          name: conversationName,
+        })
+        console.log('insert conversation success:', newDoc)
+        newConversationId = newDoc._id
+      } catch (error) {
+        console.log('insert conversation error:', error)
+      }
+    }
+  }
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],

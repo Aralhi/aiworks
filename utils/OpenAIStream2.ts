@@ -48,7 +48,7 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, request: any, u
 console.log(messages, '0000000')
 
   payload.messages = messages.concat(payload.messages);
-
+console.log(payload);
   function getResponseByProd() {
     return fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -74,7 +74,7 @@ console.log(messages, '0000000')
   }
 
   const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
-
+console.log(res);
   let contents: Array<string> = []
   let chatId: string = ''
 
@@ -87,7 +87,7 @@ console.log(messages, '0000000')
           // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
           if (data === "[DONE]") {
             controller.close();
-            // completionCallback({ payload, request, content: contents.join(''), user, chatId, conversationId })
+            completionCallback({ payload, request, content: contents.join(''), user, chatId, conversationId })
             return;
           }
           try {
@@ -146,49 +146,49 @@ function getContext(conversationId: string, fingerprint: string) {
   return messages
 }
 
-// function setContext(conversationId: string, fingerprint: string, question: string, answer: string) {
-//   if (!conversationId && !fingerprint) {
-//     return []
-//   }
-//   const key = `${CHAT_CONTEXT_PRE}${conversationId || fingerprint}`
-//   const chatContextArr: chatContext[] =  cache.get(key) || [];
-//   chatContextArr.push({
-//     question,
-//     answer
-//   });
-//   //TODO: 考虑文本内容可能超大，设置较短缓存过期时间，过期从数据库中读取。
-//   cache.put(key, chatContextArr, CHAT_CONTEXT_CACHE_TIME)
-//   console.log('set cache success', key)
-// }
+function setContext(conversationId: string, fingerprint: string, question: string, answer: string) {
+  if (!conversationId && !fingerprint) {
+    return []
+  }
+  const key = `${CHAT_CONTEXT_PRE}${conversationId || fingerprint}`
+  const chatContextArr: chatContext[] =  cache.get(key) || [];
+  chatContextArr.push({
+    question,
+    answer
+  });
+  //TODO: 考虑文本内容可能超大，设置较短缓存过期时间，过期从数据库中读取。
+  cache.put(key, chatContextArr, CHAT_CONTEXT_CACHE_TIME)
+  console.log('set cache success', key)
+}
 
-// async function completionCallback({ payload, request, content, user, chatId, conversationId, usage }: {
-//   payload: OpenAIStreamPayload,
-//   request: any
-//   content: string,
-//   user?: UserSession,
-//   chatId: string,
-//   conversationId: string,
-//   usage?: any
-// }) {
-//   try {
-//     console.log('completionCallback', payload)
-//     // 内容全部返回完成, 将本次返回内容记录到缓存
-//     const fingerprint = user?._id ? '' : request.headers.get(FINGERPRINT_KEY);
-//     setContext(conversationId, fingerprint, payload.messages[payload.messages.length - 1].content, content)
-//     // 未登录用户记录用户的fingerPrint
-//     await saveCompletion({
-//       userId: user?._id || '',
-//       prompt: payload.messages[payload.messages.length - 1].content,
-//       role: payload.messages[0].role,
-//       stream: payload.stream,
-//       chatId,
-//       model: payload.model,
-//       conversationId,
-//       content,
-//       usage,
-//       fingerprint
-//     })
-//   } catch (e) {
-//     console.error('insert completion failed', e)
-//   }
-// }
+async function completionCallback({ payload, request, content, user, chatId, conversationId, usage }: {
+  payload: OpenAIStreamPayload,
+  request: any
+  content: string,
+  user?: UserSession,
+  chatId: string,
+  conversationId: string,
+  usage?: any
+}) {
+  try {
+    console.log('completionCallback', payload)
+    // 内容全部返回完成, 将本次返回内容记录到缓存
+    const fingerprint = user?._id ? '' : request.headers.get(FINGERPRINT_KEY);
+    setContext(conversationId, fingerprint, payload.messages[payload.messages.length - 1].content, content)
+    // 未登录用户记录用户的fingerPrint
+    await saveCompletion({
+      userId: user?._id || '',
+      prompt: payload.messages[payload.messages.length - 1].content,
+      role: payload.messages[0].role,
+      stream: payload.stream,
+      chatId,
+      model: payload.model,
+      conversationId,
+      content,
+      usage,
+      fingerprint
+    })
+  } catch (e) {
+    console.error('insert completion failed', e)
+  }
+}
