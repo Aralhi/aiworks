@@ -22,5 +22,5 @@ const ConversationSchema = new Schema({
   },
 })
 
-export default models.Conversation ||  model('Conversation', ConversationSchema, 'conversation')
+export default models?.Conversation ||  model('Conversation', ConversationSchema, 'conversation')
 

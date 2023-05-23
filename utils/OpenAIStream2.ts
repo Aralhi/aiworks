@@ -39,7 +39,6 @@ interface chatContext {
 export async function OpenAIStream(payload: OpenAIStreamPayload, request: any, user: any) {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-   console.log('09090909', request.headers.get(FINGERPRINT_KEY))
   let counter = 0;
 
   // 获取上下文记忆
