@@ -38,3 +38,11 @@ export function getTodayTime() {
   const todayEndUTC = new Date(todayEnd).toISOString(); // 转换为 UTC 时间结束时间
   return [todayStartUTC, todayEndUTC]
 }
+
+export function formatUTCTime(utcDateString: string) {
+  const utcDate = new Date(utcDateString);
+  const localDate = new Date(utcDate.getTime() + (new Date().getTimezoneOffset() * 60000 * -1));
+  const formattedDate = localDate.toISOString().replace('T', ' ').substr(0, 19);
+  console.log(formattedDate);
+  return formattedDate
+}

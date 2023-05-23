@@ -1,26 +1,29 @@
-export const PRICING_PLAN = {
-  '1': {
+export const PRICING_PLAN = [
+  {
+    type: 'chatGPT',
     name: '尝鲜版',
-    queryCount: 500,
+    queryCount: 300,
     price: 10,
     period: 7,
     label: '周'
   },
-  '2': {
+  {
+    type: 'chatGPT',
     name: '尊享版',
     queryCount: 2000,
-    price: 29,
+    price: 39,
     period: 30,
     label: '月'
   },
-  '3': {
+  {
+    type: 'chatGPT',
     name: '荣耀季卡',
     queryCount: 9999,
-    price: 88,
+    price: 99,
     period: 90,
     label: '季度'
   }
-}
+]
 
 export const USERNAME_LENGTH = 12
 export const API_TIMEOUT = 10000

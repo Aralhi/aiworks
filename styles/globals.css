@@ -187,3 +187,11 @@ table {
 .markdown ol li, .markdown ol li>p, .markdown ol ol, .markdown ol ul, .markdown ul li, .markdown ul li>p, .markdown ul ol, .markdown ul ul {
   margin: 0;
 }
+
+:where(.css-dev-only-do-not-override-15rg2km).ant-radio-wrapper {
+  color: white;
+}
+.anticon svg {
+  width: 100%;
+  height: 100%;
+}

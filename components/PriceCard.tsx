@@ -52,11 +52,11 @@ export default function PriceCard() {
       </Modal>
       <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <h1 className="text-base" style={{ color: "#637381" }}>
-          {PRICING_PLAN["1"].name}
+          {PRICING_PLAN[0].name}
         </h1>
         <p className="flex items-center">
           <span className="font-bold text-2xl">
-            ￥{PRICING_PLAN["1"].price}
+            ￥{PRICING_PLAN[0].price}
           </span>
           <span className="text-base"> /一周</span>
         </p>
@@ -84,7 +84,7 @@ export default function PriceCard() {
           <p className="flex items-center">
             <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">
-              {PRICING_PLAN["1"].queryCount}
+              {PRICING_PLAN[0].queryCount}
             </span>
             <span style={{ color: "#000000a6" }}>次查询</span>
           </p>
@@ -99,12 +99,12 @@ export default function PriceCard() {
         </div>
       </div>
       <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
-        <h1 className="text-lg text-indigo-700">{PRICING_PLAN["2"].name}</h1>
+        <h1 className="text-lg text-indigo-700">{PRICING_PLAN[1].name}</h1>
         <p className="flex items-center">
           <span className="font-bold text-2xl">
-            ￥{PRICING_PLAN["2"].price}
+            ￥{PRICING_PLAN[1].price}
           </span>
-          <span className="text-base"> /{PRICING_PLAN["2"].label}</span>
+          <span className="text-base"> /{PRICING_PLAN[1].label}</span>
         </p>
         <button
           className="w-full bg-gradient-to-br from-blue-500 to-blue-900 shadow-md hover:shadow-lg text-white font-medium py-2 px-4 rounded"
@@ -130,7 +130,7 @@ export default function PriceCard() {
           <p className="flex items-center">
             <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">
-              {PRICING_PLAN["2"].queryCount}
+              {PRICING_PLAN[1].queryCount}
             </span>
             <span style={{ color: "#000000a6" }}>次查询</span>
           </p>
@@ -146,12 +146,12 @@ export default function PriceCard() {
       </div>
       <div className="relative bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <Image className="absolute top-0 left-0" src="/pro.svg" width={64} height={64} alt="logo" />
-        <h1 className="text-lg text-violet-700">{PRICING_PLAN["3"].name}</h1>
+        <h1 className="text-lg text-violet-700">{PRICING_PLAN[2].name}</h1>
         <p className="flex items-center">
           <span className="font-bold text-2xl">
-            ￥{PRICING_PLAN["3"].price}
+            ￥{PRICING_PLAN[2].price}
           </span>
-          <span className="text-base"> /{PRICING_PLAN["3"].label}</span>
+          <span className="text-base"> /{PRICING_PLAN[2].label}</span>
         </p>
         <button
           className="w-full bg-gradient-to-br from-blue-500 to-blue-900 shadow-md hover:shadow-lg text-white font-medium py-2 px-4 rounded"

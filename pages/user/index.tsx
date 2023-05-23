@@ -9,10 +9,9 @@ import User from "@/models/User";
 import { withIronSessionSsr } from "iron-session/next";
 import { sessionOptions } from "@/lib/session";
 import { InferGetServerSidePropsType } from "next";
-import moment from "moment-timezone";
-import { getTodayTime } from "@/utils/index";
+import { getTodayTime, formatUTCTime } from "@/utils/index";
 import Completion from "@/models/Completion";
-import { message } from "antd";
+import { Button, Divider, QRCode, message } from "antd";
 
 function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user } = useUser();
@@ -91,6 +90,19 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
       console.error('Failed to copy: ', err)
     }
   }
+
+  const downloadQRCode = () => {
+    const canvas = document.getElementById('myqrcode')?.querySelector<HTMLCanvasElement>('canvas');
+    if (canvas) {
+      const url = canvas.toDataURL();
+      const a = document.createElement('a');
+      a.download = 'QRCode.png';
+      a.href = url;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
 
   return (
     <div className="w-full flex pt-[80px]">
@@ -289,11 +301,18 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                 <p className="flex-1 text-center">好友注册账户</p>
                 <p className="flex-1 text-center">您和您的朋友各获得1个MJ调用额</p>
               </div>
-              <div className="bg-white flex h-[40px] overflow-hidden w-full mt-6" style={{ border: '1px solid #212b36', borderRadius: '8px' }}>
-                <input className="py-4 flex-1 text-gray-950 outline-none pl-2" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
-                <div className="flex py-4 items-center flex-row justify-center gap-4 text-white cursor-pointer" style={{ backgroundColor: '#212b36', width: '140px', lineHeight: '40px', userSelect: 'none' }}
-                  onClick={copyUrl}>
-                  <FaRegCopy />复制
+              <Divider />
+              <div className="flex justify-between items-center">
+                <div className="bg-white flex h-[40px] overflow-hidden w-1/2 mt-6" style={{ border: '1px solid #212b36', borderRadius: '8px' }}>
+                  <input className="py-4 flex-1 text-gray-950 outline-none pl-2" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
+                  <div className="flex py-4 items-center flex-row justify-center gap-4 text-white cursor-pointer" style={{ backgroundColor: '#212b36', width: '140px', lineHeight: '40px', userSelect: 'none' }}
+                    onClick={copyUrl}>
+                    <FaRegCopy />复制
+                  </div>
+                </div>
+                <div id="myqrcode" className="flex flex-col justify-start items-center w-1/2">
+                  <QRCode className="mt-2" value={inviteUrl}/>
+                  <Button className="w-[100px]" onClick={downloadQRCode}>下载</Button>
                 </div>
               </div>
             </div>
@@ -312,7 +331,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                       {item.name}
                     </td>
                     <td className="w-1/2 text-center h-[48px]" style={{ lineHeight: '48px', border: '1px solid violet', borderTop: index === 0 ? 'none' : '' }}>
-                      {item.createAt ? moment(item.createAt).tz('Asia/Shanghai').format('YYYY-MM-DD hh:mm:ss') : '-'}
+                      {item.createAt ? formatUTCTime(item.createAt) : '-'}
                     </td>
                   </tr>
                 ))}

@@ -24,8 +24,6 @@
     "lodash": "^4.17.21",
     "memory-cache": "^0.2.0",
     "midjourney": "^2.1.30",
-    "moment": "^2.29.4",
-    "moment-timezone": "^0.5.43",
     "mongodb": "^5.4.0",
     "mongoose": "^7.1.1",
     "next": "^13.1.1",
