@@ -57,7 +57,7 @@ export async function OpenAIStream({
   const messages = getContext(conversationId, request.headers[FINGERPRINT_KEY] as string);
   payload.messages = messages.concat(payload.messages);
 
-  function getResponseByProd() {
+  async function getResponseByProd() {
     return fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -81,49 +81,57 @@ export async function OpenAIStream({
     })
   }
   const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
-  console.log('chatgpt params...', payload);
-  console.log('chatgpt res...', res);
+
   // 流式响应
-  let contents: Array<string> = []
-  let chatId: string = ''
-  const stream = new ReadableStream({
-    async start(controller) {
-      // callback
-      async function onParse(event: ParsedEvent | ReconnectInterval) {
-        if (event.type === "event") {
-          const data = event.data;
-          // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
-          if (data === "[DONE]") {
-            controller.close();
-            console.log('response end', payload.stream)
-            response.end()
-            completionCallback({ payload, request, content: contents.join(''), user, chatId, conversationId })
-            return;
-          }
-          try {
-            const json = JSON.parse(data);
-            chatId = json.id
-            const text = json.choices[0].delta?.content || "";
-            response.write(text)
-            contents.push(text)
-            const queue = encoder.encode(text);
-            controller.enqueue(queue);
-          } catch (e) {
-            // maybe parse error
-            controller.error(e);
+  if (payload.stream) {
+    let contents: Array<string> = []
+    let chatId: string = ''
+    const stream = new ReadableStream({
+      async start(controller) {
+        // callback
+        async function onParse(event: ParsedEvent | ReconnectInterval) {
+          if (event.type === "event") {
+            const data = event.data;
+            // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
+            if (data === "[DONE]") {
+              controller.close();
+              console.log('response end', payload.stream)
+              response.end()
+              completionCallback({ payload, request, content: contents.join(''), user, chatId, conversationId })
+              return;
+            }
+            try {
+              const json = JSON.parse(data);
+              chatId = json.id
+              const text = json.choices[0].delta?.content || "";
+              response.write(text)
+              contents.push(text)
+              const queue = encoder.encode(text);
+              controller.enqueue(queue);
+            } catch (e) {
+              // maybe parse error
+              controller.error(e);
+            }
           }
         }
-      }
-      // stream response (SSE) from OpenAI may be fragmented into multiple chunks
-      // this ensures we properly read chunks and invoke an event for each SSE event stream
-      const parser = createParser(onParse);
-      // https://web.dev/streams/#asynchronous-iteration
-      for await (const chunk of res.body as any) {
-        parser.feed(decoder.decode(chunk));
-      }
-    },
-  });
-  return stream
+        // stream response (SSE) from OpenAI may be fragmented into multiple chunks
+        // this ensures we properly read chunks and invoke an event for each SSE event stream
+        const parser = createParser(onParse);
+        // https://web.dev/streams/#asynchronous-iteration
+        for await (const chunk of res.body as any) {
+          parser.feed(decoder.decode(chunk));
+        }
+      },
+    });
+    return stream
+  } else {
+    // 非流式响应
+    console.log('response end, isStream=', payload.stream)
+    const json = await res.json();
+    const content = json.choices[0].message.content;
+    completionCallback({ payload, request, content, user, chatId: json.id, conversationId, usage: json.usage })
+    return response.json({ result: content });
+  }
 }
 
 function getContext(conversationId: string, fingerprint: string) {

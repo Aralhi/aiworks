@@ -45,8 +45,6 @@ export async function OpenAIStream(payload: OpenAIStreamPayload, request: any, u
   // 获取上下文记忆
   const messages = getContext(conversationId, request.headers.get(FINGERPRINT_KEY));
 
-console.log(messages, '0000000')
-
   payload.messages = messages.concat(payload.messages);
 console.log(payload);
   function getResponseByProd() {
@@ -74,7 +72,7 @@ console.log(payload);
   }
 
   const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
-console.log(res);
+
   let contents: Array<string> = []
   let chatId: string = ''
 
