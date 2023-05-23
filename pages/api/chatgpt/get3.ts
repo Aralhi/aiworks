@@ -55,7 +55,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     stream: !!isStream,
     n: 1,
   };
-
+  const startTime = Date.now();
   // //TODO WX调用需要传用户信息
   const stream = await OpenAIStream({
     payload, request: req, response: res, conversationId: conversationId || newConversationId, user: req.session.user
