@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { PRICING_PLAN } from "@/utils/constants";
-import { FaCheckCircle } from "react-icons/fa";
 import Image from "next/image";
 import { Modal, message } from 'antd';
+import { CheckCircleFilled } from '@ant-design/icons';
 
 export default function PriceCard() {
   const [payInfo, setPayInfo] = useState({
@@ -70,15 +70,15 @@ export default function PriceCard() {
         </button>
         <div className="px-4 flex flex-col items-start justify-center gap-1">
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>边缘计算，极速访问</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>支持上下文关联查询</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>会话管理个性化调教</span>
           </p>
           <p className="flex items-center">

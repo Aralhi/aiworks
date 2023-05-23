@@ -16,7 +16,6 @@ import { withIronSessionSsr } from 'iron-session/next';
 import { sessionOptions } from '@/lib/session';
 import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
-import { FaCheck, FaFileDownload, FaTimes } from 'react-icons/fa';
 import { debounce } from 'lodash';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import DialogModal from '@/components/DialogModal';
@@ -24,6 +23,7 @@ import { ICompletion } from '@/models/Completion';
 import Link from 'next/link';
 import { Modal, message } from 'antd';
 import * as XLSX from 'xlsx'
+import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
 
 interface Chat {
   prompt: string;
@@ -395,8 +395,8 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                 <div className="absolute flex right-1 z-10 text-gray-300 visible">
                   {editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleEdit(item) }}><Edit /></button>}
                   {editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleDelete(item) }}><Delete /></button>}
-                  {editingId === item?._id && <button className="p-1 hover:text-white" onClick={saveConversation}><FaCheck /></button>}
-                  {editingId === item?._id && <button className="p-1 hover:text-white" onClick={cancelEdit}><FaTimes /></button>}
+                  {editingId === item?._id && <button className="p-1 hover:text-white" onClick={saveConversation}><CheckOutlined rev='' /></button>}
+                  {editingId === item?._id && <button className="p-1 hover:text-white" onClick={cancelEdit}><CloseOutlined rev='' /></button>}
                 </div>
               </a>
             </li>
@@ -527,7 +527,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
             {
               conversationId && <div className='bg-gray-400 dark:bg-gray-900 absolute bottom-[120px] w-8 h-8 rounded-full z-10 right-6 cursor-pointer flex items-center justify-center'
                 onClick={() => exportConversation()}>
-                <FaFileDownload className='w-4 h-4'></FaFileDownload>
+                <DownloadOutlined rev='' className='w-4 h-4'>
               </div>
             }
             <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">

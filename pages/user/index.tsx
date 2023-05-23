@@ -1,6 +1,5 @@
 import useUser from "@/lib/userUser";
 import { useState, ChangeEvent, useEffect } from "react";
-import { FaShoppingCart, FaUserAlt, FaGift, FaRegCopy } from "react-icons/fa";
 import PriceCard from "@/components/PriceCard";
 import { AVATARS, USERNAME_LENGTH } from "@/utils/constants";
 import fetchJson, { CustomResponseType } from "@/lib/fetchJson";
@@ -12,6 +11,7 @@ import { InferGetServerSidePropsType } from "next";
 import { getTodayTime, formatUTCTime } from "@/utils/index";
 import Completion from "@/models/Completion";
 import { Button, Divider, QRCode, message } from "antd";
+import { AccountBookOutlined, CopyFilled, GiftTwoTone, UserOutlined } from "@ant-design/icons";
 
 function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user } = useUser();
@@ -119,7 +119,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
               setCurrentIndex(1);
             }}
           >
-            <FaShoppingCart className="w-4 h-4 mr-4" />
+            <AccountBookOutlined rev='' className="w-4 h-4 mr-4" />
             <span>账单</span>
           </li>
           <li
@@ -130,7 +130,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
               setCurrentIndex(2);
             }}
           >
-            <FaUserAlt className="w-4 h-4 mr-4" />
+            <UserOutlined rev='' className="w-4 h-4 mr-4" />
             <span>账户</span>
           </li>
           <li
@@ -141,7 +141,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
               setCurrentIndex(3);
             }}
           >
-            <FaGift className="w-4 h-4 mr-4" />
+            <GiftTwoTone rev='' className="w-4 h-4 mr-4" />
             <span>奖励</span>
           </li>
         </ul>
@@ -307,7 +307,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                   <input className="py-4 flex-1 text-gray-950 outline-none pl-2" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
                   <div className="flex py-4 items-center flex-row justify-center gap-4 text-white cursor-pointer" style={{ backgroundColor: '#212b36', width: '140px', lineHeight: '40px', userSelect: 'none' }}
                     onClick={copyUrl}>
-                    <FaRegCopy />复制
+                    <CopyFilled rev='' />复制
                   </div>
                 </div>
                 <div id="myqrcode" className="flex flex-col justify-start items-center w-1/2">

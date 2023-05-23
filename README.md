@@ -3,8 +3,7 @@
 项目基于nextjs+tailwind+headlessui实现
 
 ## Icon
-https://react-icons.github.io/react-icons/icons?name=fa
-
+https://ant.design/components/icon-cn#components-icon-demo-custom
 ## 组件库
 headlessui
 
