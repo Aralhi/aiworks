@@ -146,7 +146,7 @@ export async function getPayUrl(userOpenId: string, tradeNo: string, plan: IPric
     // TODO: gen trade no
     out_trade_no: tradeNo,
     // TODO: update expire time
-    time_expire: dayjs().format('YYYY-MM-DDTHH:mm:ssZ'),
+    time_expire: dayjs().add(2, 'hours').format('YYYY-MM-DDTHH:mm:ssZ'),
     notify_url: 'https://www.aiworks.club/api/weichat/payNotify',
     amount: {
       total: plan.price,

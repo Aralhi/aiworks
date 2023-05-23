@@ -25,6 +25,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       paidPrice: 0,
       status: OrderStatus.PENDING,
       pricing,
+      createAt: new Date(),
       extra: {
         prePayParams,
       },
