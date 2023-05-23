@@ -31,14 +31,31 @@ export async function OpenAIStream(payload: OpenAIStreamPayload) {
 
   let counter = 0;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`,
-    },
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  function getResponseByProd() {
+    return fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  function getResponseByDev() {
+    return fetch('https://www.ai-works.cn/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: payload.messages[payload.messages.length - 1].content,
+        isStream: payload.stream
+      })
+    })
+  }
+
+  const res = process.env.NODE_ENV === 'development' ? await getResponseByDev() : await getResponseByProd()
   const stream = new ReadableStream({
     async start(controller) {
       // callback

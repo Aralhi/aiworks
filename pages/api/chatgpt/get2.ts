@@ -9,9 +9,11 @@ export const config = {
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  const { prompt, isStream = true } = (await req.json()) as {
+  const { prompt, conversationId, conversationName, isStream = true } = (await req.json()) as {
     prompt?: string;
-    isStream?: boolean
+    conversationId?: string;
+    conversationName?: string;
+    isStream?: boolean;
   };
 
   if (!prompt) {

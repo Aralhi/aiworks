@@ -10,9 +10,9 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
 }
 
-export const config = {
-  runtime: "edge",
-};
+// export const config = {
+//   runtime: "edge",
+// };
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { prompt, conversationId, conversationName, isStream = true } = req.body || {};
