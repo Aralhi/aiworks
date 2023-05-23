@@ -130,7 +130,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     ])
     setPrompt('') // 清空输入框
     try {
-      const response = await fetch('/api/chatgpt/get2', {
+      const response = await fetch('/api/chatgpt/get', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
