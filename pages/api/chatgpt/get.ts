@@ -55,9 +55,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   };
   if (isStream) {
     // set response headers
-    res.setHeader("Content-Type", "text/plain");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader("Transfer-Encoding", "chunked");
   }
   //TODO WX调用需要传用户信息
