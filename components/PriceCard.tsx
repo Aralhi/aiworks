@@ -82,18 +82,18 @@ export default function PriceCard() {
             <span style={{ color: "#000000a6" }}>会话管理个性化调教</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">
               {PRICING_PLAN[0].queryCount}
             </span>
             <span style={{ color: "#000000a6" }}>次查询</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-200" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-200" />
             <span style={{ color: "#000000a6" }}>聊天记录一键导出</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-200" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-200" />
             <span style={{ color: "#000000a6" }}>一周时效性</span>
           </p>
         </div>
@@ -116,30 +116,30 @@ export default function PriceCard() {
         </button>
         <div className="px-4 flex flex-col items-start justify-center gap-1">
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>边缘计算，极速访问</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>支持上下文关联查询</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>会话管理个性化调教</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">
               {PRICING_PLAN[1].queryCount}
             </span>
             <span style={{ color: "#000000a6" }}>次查询</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>聊天记录一键导出</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">一个月</span><span style={{ color: "#000000a6" }}>深度体验</span>
           </p>
         </div>
@@ -163,32 +163,32 @@ export default function PriceCard() {
         </button>
         <div className="px-4 flex flex-col items-start justify-center gap-1">
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>边缘计算，极速访问</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>支持上下文关联查询</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>会话管理个性化调教</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">9999</span>
             <span style={{ color: "#000000a6" }}>次查询</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span style={{ color: "#000000a6" }}>聊天记录一键导出</span>
           </p>
           <p className="flex items-center">
-            <FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />
+            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">三个月</span><span style={{ color: "#000000a6" }}>无限畅玩</span>
           </p>
           <div className="flex items-start justify-center flex-col">
-            <p className="flex items-center" style={{ color: "#000000a6" }}><FaCheckCircle className="w-4 h-4 float-left mr-2 text-green-500" />专业玩家，支持设置</p>
+            <p className="flex items-center" style={{ color: "#000000a6" }}><CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />专业玩家，支持设置</p>
             <p className="text-sm" style={{ color: "#000000a6" }}>role、max_token、temperature等</p>
           </div>
         </div>

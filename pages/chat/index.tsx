@@ -62,9 +62,12 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       message.error(`最多只能创建${MAX_CONVERSATION_COUNT}个会话，您已经达到上限。`)
       localStorage.setItem('aiworks_conversation_count_message', 'true')
     }
+  }, [])
+
+  useEffect(() => {
     // 根据cid查询会话列表
     getCompletionList(cid as string)
-  }, [])
+  }, [cid, user?.isLoggedIn])
 
   function selectExample(item: string) {
     setPrompt(item)
@@ -148,7 +151,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       }
       // 区分响应体header的Content-type，因为改接口能返回Stream和Json
       const isJson = response.headers.get('Content-Type')?.includes('application/json')
-      if (!user?.isLoggedIn && isJson) {
+      if (isJson) {
         const json = await response.json()
         if (json.status === 'failed') {
           setShowLoginDialog(true)
@@ -304,7 +307,6 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     setConversationId(item._id)
     setConversationName(item.name);
     getCompletionList(item._id)
-    console.log('selectConversation', item)
     router.push({ pathname: 'chat', query: { cid: item._id }})
   }
 
@@ -390,11 +392,11 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                       onKeyDown={(e) => { handleNameKeyDown(e)}}
                     />)
                   }
-                  <div className="absolute inset-y-0 right-0 w-8 z-10 bg-gradient-to-l from-gray-800"></div>
+                  <div className="absolute inset-y-0 right-0 w-8 z-10 bg-gradient-to-l from-gray-800" style={{ display: 'none' }}></div>
                 </div>
                 <div className="absolute flex right-1 z-10 text-gray-300 visible">
-                  {editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleEdit(item) }}><Edit /></button>}
-                  {editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleDelete(item) }}><Delete /></button>}
+                  {conversationId === item?._id && editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleEdit(item) }}><Edit /></button>}
+                  {conversationId === item?._id && editingId !== item?._id && <button className="p-1 hover:text-white" onClick={() => { handleDelete(item) }}><Delete /></button>}
                   {editingId === item?._id && <button className="p-1 hover:text-white" onClick={saveConversation}><CheckOutlined rev='' /></button>}
                   {editingId === item?._id && <button className="p-1 hover:text-white" onClick={cancelEdit}><CloseOutlined rev='' /></button>}
                 </div>
@@ -527,7 +529,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
             {
               conversationId && <div className='bg-gray-400 dark:bg-gray-900 absolute bottom-[120px] w-8 h-8 rounded-full z-10 right-6 cursor-pointer flex items-center justify-center'
                 onClick={() => exportConversation()}>
-                <DownloadOutlined rev='' className='w-4 h-4'>
+                <DownloadOutlined rev='' className='w-4 h-4' />
               </div>
             }
             <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
@@ -593,8 +595,6 @@ export default Chat;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
   try {
-    const url = new URL(req.headers.referer || '')
-    const cid = url.searchParams.get('cid')
     await dbConnect()
     // 查询会话列表
     const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()

@@ -11,7 +11,7 @@ import { InferGetServerSidePropsType } from "next";
 import { getTodayTime, formatUTCTime } from "@/utils/index";
 import Completion from "@/models/Completion";
 import { Button, Divider, QRCode, message } from "antd";
-import { AccountBookOutlined, CopyFilled, GiftTwoTone, UserOutlined } from "@ant-design/icons";
+import { AccountBookOutlined, CopyFilled, GiftFilled, GiftTwoTone, UserOutlined } from "@ant-design/icons";
 
 function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user } = useUser();
@@ -141,7 +141,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
               setCurrentIndex(3);
             }}
           >
-            <GiftTwoTone rev='' className="w-4 h-4 mr-4" />
+            <GiftFilled rev='' className="w-4 h-4 mr-4" />
             <span>奖励</span>
           </li>
         </ul>
@@ -360,7 +360,6 @@ export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
     await dbConnect()
     // get today completion count by userId
     const [todayStartUTC, todayEndUTC] = getTodayTime()
-    console.log('todayStartCST', todayStartUTC, todayEndUTC)
     const result = await Completion.aggregate([
       {
         $match: {
@@ -379,7 +378,6 @@ export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
       },
     ])
     const todayQueryCount = result[0]?.count || 0
-    console.log('todayQueryCount', todayQueryCount)
     const inviteList = await User.find({ inviteCode: req.session.user?.userCode }).lean()
     return {
       props: {
