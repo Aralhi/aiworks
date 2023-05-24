@@ -15,6 +15,7 @@ export const config = {
 };
 
 const handler = async (req: Request, res: Response) => {
+  console.log('...get in get2')
   const session = await getIronSession(req, res, sessionOptions)
 
   const { prompt, conversationId, conversationName, isStream = true } = (await req.json()) as {
