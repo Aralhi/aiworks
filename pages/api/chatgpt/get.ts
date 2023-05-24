@@ -2,10 +2,10 @@ import { withIronSessionApiRoute } from 'iron-session/next';
 import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
 import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
-import Conversation from '@/models/Conversation';
 import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
 import { checkQueryCount } from '@/lib/completion';
 import { UserSession } from '../user/user';
+import { countDocuments, insertOne } from '@/lib/db';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -28,15 +28,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // 登录了才创建会话
   if (userId && !conversationId && conversationName) {
     // 查询历史会话格式
-    const count = await Conversation.countDocuments({ userId })
+    const count = await countDocuments('conversation', { userId }) || 0
     if (count < MAX_CONVERSATION_COUNT) {
       try {
-        const newDoc = await Conversation.create({
+        const newDoc = await insertOne('conversation', {
           userId,
           name: conversationName,
         })
         console.log('insert conversation success:', newDoc)
-        newConversationId = newDoc._id
+        newConversationId = newDoc?.insertedId
       } catch (error) {
         console.log('insert conversation error:', error)
       }

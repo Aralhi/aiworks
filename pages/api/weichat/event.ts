@@ -4,8 +4,7 @@ import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 import {  WXtEventMessage, getQrCacheKey, getUserInfo } from "@/lib/weichat";
 import { WXUserInfo } from "@/models/User";
 import { WX_EVENT_TYPE } from "@/utils/constants";
-import WxEvent from "@/models/WxEvent";
-import dbConnect from "@/lib/dbConnect";
+import { findOneAndUpdate, insertOne } from "@/lib/db";
 
 
 if (!process.env.WX_PUBLIC_TOKEN) {
@@ -63,8 +62,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const key = getQrCacheKey(Ticket as string)
           const value = `${userInfo.openid}_scan`
           // 缓存扫码状态，供浏览器轮询扫码状态
-          await dbConnect()
-          await WxEvent.findOneAndUpdate({
+          await findOneAndUpdate('wxevent', {
             type: WX_EVENT_TYPE.login_qr,
             key
           }, {
@@ -75,8 +73,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       const xml = builder.build({ xml: resBody })
       console.log('weichat event res', xml)
-      await dbConnect()
-      WxEvent.create({
+      insertOne('wxevent', {
         type: Event,
         message,
         response: xml,

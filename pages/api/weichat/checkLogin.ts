@@ -1,14 +1,11 @@
 import { sessionOptions } from "@/lib/session";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import cache from 'memory-cache'
 import { getQrCacheKey } from "@/lib/weichat";
-import User from "@/models/User";
 import { FINGERPRINT_KEY, LOGIN_QR_STATUS, WX_EVENT_TYPE } from "@/utils/constants";
 import { UserSession } from "../user/user";
 import { generateUserInfo } from "@/lib/api/user";
-import WxEvent from "@/models/WxEvent";
-import dbConnect from "@/lib/dbConnect";
+import { findOne, insertOne } from "@/lib/db";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { ticket, inviteCode } = req.query || {}
@@ -17,8 +14,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
   // 二维码几种状态：generate：新生成，未扫码，scan：已扫码。不存在：已过期
   const cacheKey = getQrCacheKey(ticket as string)
-  await dbConnect()
-  const result = await WxEvent.findOne({
+  const result = await findOne('wxevent', {
     type: WX_EVENT_TYPE.login_qr,
     key: cacheKey
   })
@@ -32,28 +28,31 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   } else if (qrStatus && qrStatus.includes(LOGIN_QR_STATUS.scan)) {
     // 已扫码，处理登录逻辑
     const openid = qrStatus.split('_')[0]
-    let user = await User.findOne({ openid })
-    if (!user) {
+    let oldUser = await findOne('user', { openid })
+    let newUser
+    let userInfo
+    if (!oldUser) {
       // 新用户插入DB
       const defaultInfo = generateUserInfo()
-      user = await new User(Object.assign({}, defaultInfo, {
+      userInfo = Object.assign({}, defaultInfo, {
         registerType: 'wx',
         openid,
-      })).save()
-      console.log('new wx user insert db success', user)
+      })
+      newUser = await insertOne('user', userInfo)
+      console.log('new wx user insert db success')
     }
     req.session.user = {
-      _id: user._id.toString(),
+      _id: oldUser?._id || newUser?.insertedId.toString(),
       isLoggedIn: true,
       phone: '',
-      openid: user.openid,
-      name: user.name,
-      userCode: user.userCode,
+      openid: oldUser?.openid || openid,
+      name: oldUser?.name || userInfo?.name,
+      userCode: oldUser?.userCode || userInfo?.userCode,
       inviteCode,
       fingerprint: req.headers[FINGERPRINT_KEY]
     } as UserSession
     await req.session.save()
-    console.log('wx user login success:', user)
+    console.log('wx user login success:')
     return res.status(200).json({ status: 'scan', message: "登录成功" });
   }
 }

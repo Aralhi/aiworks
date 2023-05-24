@@ -1,4 +1,3 @@
-import { Schema, model, models } from 'mongoose'
 
 export interface ICompletion {
   userId: string;
@@ -19,48 +18,3 @@ export type Usage = {
   completion_tokens: Number;
   total_tokens: Number;
 }
-
-const CompletionSchema = new Schema({
-  userId: {
-    type: String,
-  },
-  prompt: {
-    type: String,
-    required: [true, 'Please provide prompt.'],
-  },
-  chatId: {
-    type: String,
-    required: [true, 'Please provide a completion id.'],
-    unique: true,
-  },
-  createAt: {
-    type: Date,
-    default: Date.now,
-  },
-  model: {
-    type: String,
-    required: [true, 'Please provide a model.'],
-  },
-  content: {
-    type: String,
-    required: [true, 'Please provide content.'],
-  },
-  role: {
-    type: String,
-    required: [true, 'Please provide a role.'],
-  },
-  conversationId: {
-    type: String,
-  },
-  stream: {
-    type: Boolean,
-  },
-  usage: {
-    type: Object,
-  },
-  fingerprint: {
-    type: String,
-  }
-})
-
-export default models?.Completion ||  model('Completion', CompletionSchema, 'completion')

@@ -10,11 +10,10 @@ import { ChatDesc } from '../../components/ChatDesc';
 import { AnewSvg, ChatGPTLogo, ChatSvg, Copy, Delete, Edit, PlusSvg, SendSvg } from '@/components/SVG';
 import useUser from '@/lib/userUser';
 import { useRouter } from 'next/router';
-import Conversation, { IConversation } from '@/models/Conversation';
+import { IConversation } from '@/models/Conversation';
 import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_CONVERSATION_NAME_LEN } from '@/utils/constants';
 import { withIronSessionSsr } from 'iron-session/next';
 import { sessionOptions } from '@/lib/session';
-import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
 import { debounce } from 'lodash';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
@@ -24,6 +23,7 @@ import Link from 'next/link';
 import { Modal, message } from 'antd';
 import * as XLSX from 'xlsx'
 import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
+import { find } from '@/lib/db';
 
 interface Chat {
   prompt: string;
@@ -130,7 +130,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     ])
     setPrompt('') // 清空输入框
     try {
-      const response = await fetch('/api/chatgpt/get2', {
+      const response = await fetch('/api/chatgpt/get', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -595,12 +595,11 @@ export default Chat;
 
 export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
   try {
-    await dbConnect()
     // 查询会话列表
-    const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()
+    const conversationList = await find('conversation', { userId: req.session.user?._id }, { createAt: -1 })
     return {
       props: {
-        conversationList: JSON.parse(JSON.stringify(conversationList)),
+        conversationList: JSON.parse(JSON.stringify(conversationList || [])),
       },
     };
   } catch (e) {

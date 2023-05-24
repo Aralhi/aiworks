@@ -1,11 +1,10 @@
-// import { withIronSessionApiRoute } from 'iron-session/next';
 import { getIronSession } from 'iron-session/edge';
 import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream2";
 import { sessionOptions } from "@/lib/session";
-import Conversation from '@/models/Conversation';
 import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_TOKEN } from '@/utils/constants';
 import { checkQueryCount } from '@/lib/completion';
 import { UserSession } from '../user/user';
+import { countDocuments, insertOne } from '@/lib/db';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -32,34 +31,29 @@ const handler = async (req: Request, res: Response) => {
   const { _id: userId } = user
   const fingerprint = req.headers.get(FINGERPRINT_KEY) || ''
   // 校验queryCount
-  // const { status, message } = await checkQueryCount(user, fingerprint)
-  // if (status !== 'ok') {
-  //   return new Response(JSON.stringify({ status, message }), {
-  //     status: 200,
-  //     headers: {
-  //       'content-type': 'application/json;charset=UTF-8',
-  //     }
-  //   });
-  // }
-  // // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
-  // let newConversationId;
-  // // // 登录了才创建会话
-  // if (userId && !conversationId && conversationName) {
-  //   // 查询历史会话格式
-  //   const count = await Conversation.countDocuments({ userId })
-  //   if (count < MAX_CONVERSATION_COUNT) {
-  //     try {
-  //       const newDoc = await Conversation.create({
-  //         userId,
-  //         name: conversationName,
-  //       })
-  //       console.log('insert conversation success:', newDoc)
-  //       newConversationId = newDoc._id
-  //     } catch (error) {
-  //       console.log('insert conversation error:', error)
-  //     }
-  //   }
-  // }
+  const { status, message } = await checkQueryCount(user, fingerprint)
+  if (status !== 'ok') {
+    return new Response(JSON.stringify({ status, message }), {
+      status: 200,
+      headers: {
+        'content-type': 'application/json;charset=UTF-8',
+      }
+    });
+  }
+  // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
+  let newConversationId;
+  // // 登录了才创建会话
+  if (userId && !conversationId && conversationName) {
+    // 查询历史会话格式
+    const count = await countDocuments('conversation', { userId }) || 0
+    if (count < MAX_CONVERSATION_COUNT) {
+      const newDoc = await insertOne('conversation', {
+        userId,
+        name: conversationName,
+      })
+      newConversationId = newDoc?.insertedId.toString()
+    }
+  }
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
@@ -74,11 +68,15 @@ const handler = async (req: Request, res: Response) => {
   const startTime = Date.now();
   // //TODO WX调用需要传用户信息
   // const stream = await OpenAIStream({ payload, request: req, conversationId: conversationId || newConversationId, user: session.user });
-  const stream = await OpenAIStream(payload, req, session.user);
+  const stream = await OpenAIStream({
+    payload,
+    conversationId: conversationId || newConversationId || '',
+    fingerprint,
+    user: session.user
+  });
   if (isStream) {
     return new Response(stream);
   }
-
   const reader = stream.getReader();
   const decoder = new TextDecoder();
   let result = '';
@@ -90,7 +88,6 @@ const handler = async (req: Request, res: Response) => {
     value = decoder.decode(temp.value);
     result += value;
   }
-  console.log('chatgpt response:', isStream, Date.now() - startTime, result)
   return new Response(result, {
     status: 200,
     headers: {

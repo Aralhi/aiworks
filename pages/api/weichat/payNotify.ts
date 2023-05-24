@@ -1,12 +1,10 @@
-import dbConnect from "@/lib/dbConnect";
-import WxEvent from "@/models/WxEvent";
+import { insertOne } from "@/lib/db";
 import { WX_EVENT_TYPE } from "@/utils/constants";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.info('notify pay...', req.body, req.headers);
-  await dbConnect();
-  await new WxEvent({
+  await insertOne('wxevent', {
     type: WX_EVENT_TYPE.pay_notify,
     value: JSON.stringify({
       body: req.body,
@@ -19,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     body: req.body,
     headers: req.headers,
     createAt: new Date(),
-  }).save()
+  })
   res.json({
     success: 1,
   })

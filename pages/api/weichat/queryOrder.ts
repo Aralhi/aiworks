@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { sessionOptions } from "@/lib/session";
 import { withIronSessionApiRoute } from "iron-session/next";
-import Order, { OrderStatus } from "@/models/Order";
+import { OrderStatus } from "@/models/Order";
 import { queryByTradeNo } from "@/lib/wechatPay";
+import { updateMany } from "@/lib/db";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.info('paying...');
@@ -17,8 +18,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
     const orderInfo = await queryByTradeNo(tradeNo);
     if (orderInfo.trade_state === 'SUCCESS') {
-
-      Order.updateMany({
+      updateMany('order', {
         $set: {
           status: OrderStatus.COMPLETE,
           paidPrice: orderInfo.amount.total,

@@ -1,35 +1,30 @@
-import Completion, { ICompletion } from "@/models/Completion";
+import { ICompletion } from "@/models/Completion";
 import { getTodayTime } from "../utils";
-import dbConnect from "./dbConnect";
+import clientPromise from "./dbConnect";
 import cache from 'memory-cache'
-import User, { UserPricing } from "@/models/User";
-import { LOGIN_MAX_QUERY_COUNT, UNLOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
+import { UserPricing } from "@/models/User";
+import { LOGIN_MAX_QUERY_COUNT, MAX_COMPLETION_QUERY_COUNT, UNLOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
 import { UserSession } from "pages/api/user/user";
+import { ObjectId } from "mongodb";
 
 const COMPLETION_COUNT_CACHE_TIME = 1000 * 60 * 60 * 24 // 1小时
 
-export async function queryTodayCompletionCount(userId: string = '', fingerprint: string = '') {
+export async function queryTodayCompletionCount(userId: string, fingerprint: string) {
   try {
-    await dbConnect()
+    const client = await clientPromise
+    const Completion = await client.db().collection('completion')
     const [todayStartCST, todayEndCST] = getTodayTime()
-    const result = await Completion.aggregate([
-      {
-        $match: {
-          $or: [
-            { userId },
-            { fingerprint }
-          ],
-          createAt: {
-            $gte: new Date(todayStartCST),
-            $lte: new Date(todayEndCST),
-          },
-        },
+    const count = await Completion.countDocuments({
+      $or: [
+        { userId },
+        { fingerprint }
+      ],
+      createAt: {
+        $gte: new Date(todayStartCST),
+        $lte: new Date(todayEndCST),
       },
-      {
-        $count: 'count',
-      },
-    ]);
-    return result[0]?.count || 0
+    })
+    return count
   } catch (error) {
     console.error('get completion today count error', error)
     return 0
@@ -43,12 +38,14 @@ export async function queryPricingCompletionCount(userId: string) {
     return cacheCount
   }
   try {
-    await dbConnect()
-    const user = await User.findOne({ _id: userId })
+    const client = await clientPromise
+    const User = await client.db().collection('user')
+    const Completion = await client.db().collection('completion')
+    const user = await User.findOne({ _id: new ObjectId(userId) })
     const pricings = user?.pricings || []
     const pricing: UserPricing = pricings?.find((item: UserPricing) => item.name === 'chatGPT' && item.endAt > Date.now())
     if (pricing) {
-      const result = await Completion.aggregate([
+      const cursor = await Completion.aggregate([
         {
           $match: {
             $or: [
@@ -64,6 +61,7 @@ export async function queryPricingCompletionCount(userId: string) {
           $count: 'count',
         },
       ]);
+      const result = await cursor.toArray()
       const count = result[0]?.count || 0
       cache.put(getCompletionCountCacheKey(userId), count, COMPLETION_COUNT_CACHE_TIME)
       return count
@@ -85,8 +83,17 @@ export async function saveCompletion(completion: ICompletion) {
     const cacheCount = cache.get(key)
     cache.put(key, (cacheCount || 0) + 1, )
     // 插入问答记录到数据库
-    const insertRes = await new Completion(completion).save()
+    const client = await clientPromise
+    const Completion = await client.db().collection('completion')
+    const insertRes = await Completion.insertOne(completion)
+    if (insertRes.acknowledged) {
+      console.log('save completion success', insertRes)
+      return insertRes
+    } else {
+      console.log('save completion failed', insertRes)
+    }
   } catch (error) {
+    console.log('save completion error', error)
   }
 }
 
@@ -114,4 +121,16 @@ export async function checkQueryCount(user: UserSession, fingerprint: string) {
     }
   }
   return { status: 'ok'}
+}
+
+export async function queryCompletion(filter: any) {
+  try {
+    const client = await clientPromise
+    const Completion = await client.db().collection('completion')
+    const result = await Completion.find(filter).sort({ createAt: -1}).limit(MAX_COMPLETION_QUERY_COUNT).toArray()
+    return result
+  } catch (error) {
+    console.error('get completion error', error)
+    return []
+  }
 }

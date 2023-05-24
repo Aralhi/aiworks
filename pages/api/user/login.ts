@@ -4,9 +4,8 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { sessionOptions } from "@/lib/session";
 import { generateUserInfo } from "@/lib/api/user";
 import { UserSession } from "./user";
-import User from "@/models/User";
-import dbConnect from "@/lib/dbConnect";
 import { FINGERPRINT_KEY } from "@/utils/constants";
+import { findOne, insertOne } from "@/lib/db";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { phone, code, inviteCode } = req.body || {};
@@ -14,9 +13,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     res.status(400).json({ status: 'failed', message: "验证码错误" });
   }
   try {
-    await dbConnect()
     // 查询数据库用户是否存在
-    let user = await User.findOne({ phone })
+    let user = await findOne('user', { phone })
+    console.log('....login', phone, user)
     if (user) {
       // 登录过直接返回
       req.session.user = {
@@ -34,14 +33,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
     let userInfo = generateUserInfo()
     // 新建用户记录
-    const newDoc = await new User(Object.assign({}, userInfo, {
+    const newDoc = await insertOne('user', Object.assign({}, userInfo, {
       registerType: 'phone',
       phone,
       inviteCode
-    })).save()
-    console.log('new phone user login success:', newDoc)
+    }))
     const newSession: UserSession = {
-      _id: newDoc._id,
+      _id: newDoc?.insertedId.toString() || '',
       isLoggedIn: true,
       phone,
       name: userInfo.name,

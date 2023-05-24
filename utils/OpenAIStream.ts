@@ -8,8 +8,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import cache from 'memory-cache'
 import { FINGERPRINT_KEY } from "./constants";
 import { saveCompletion } from "@/lib/completion";
-import dbConnect from "@/lib/dbConnect";
-import Settings from "@/models/Settings";
+import { findOne, findOneAndUpdate } from "@/lib/db";
 
 const CHAT_CONTEXT_PRE = 'chat_context_'
 const CHAT_CONTEXT_CACHE_TIME = 5 * 60 * 1000 // 1小时
@@ -53,7 +52,6 @@ export async function OpenAIStream({
 }) {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  let counter = 0;
   // 获取上下文记忆
   const messages = await getContext(conversationId, request.headers[FINGERPRINT_KEY] as string);
   payload.messages = messages.concat(payload.messages);
@@ -135,17 +133,22 @@ export async function OpenAIStream({
   }
 }
 
-function getContext(conversationId: string, fingerprint: string) {
+async function getContext(conversationId: string, fingerprint: string) {
   let messages: ChatGPTMessage[] = []
   if (!conversationId && !fingerprint) {
-    return []
+    return messages
   }
   // 未登录用户用哦fingerPrint做为key，让用户享受到上下文功能
   const key = `${CHAT_CONTEXT_PRE}${conversationId || fingerprint}`
   const chatContextArr: chatContext[] =  cache.get(key) || [];
   // 取最近两个问题做为上下文记忆, 如果考虑节省token，可以取最近一个问题做为上下文记忆
-  if (chatContextArr.length < 1) {
-    return []
+  if (!chatContextArr.length) {
+    const settings = await findOne('settings', {
+      key
+    })
+    if (settings?.value) {
+      chatContextArr.push(...JSON.parse(settings.value))
+    }
   }
   const lastTwoQuestions: chatContext[] = chatContextArr.slice(-2);
   lastTwoQuestions.forEach((ele: chatContext) => {
@@ -160,7 +163,7 @@ function getContext(conversationId: string, fingerprint: string) {
   return messages
 }
 
-function setContext(conversationId: string, fingerprint: string, question: string, answer: string) {
+async function setContext(conversationId: string, fingerprint: string, question: string, answer: string) {
   if (!conversationId && !fingerprint) {
     return []
   }
@@ -172,7 +175,16 @@ function setContext(conversationId: string, fingerprint: string, question: strin
   });
   //TODO: 考虑文本内容可能超大，设置较短缓存过期时间，过期从数据库中读取。
   cache.put(key, chatContextArr, CHAT_CONTEXT_CACHE_TIME)
-  console.log('set cache success', key)
+  findOneAndUpdate('settings', {
+    key
+  }, {
+    $set: {
+      key,
+      value: JSON.stringify(chatContextArr),
+    }
+  }, {
+    upsert: true
+  })
 }
 
 async function completionCallback({ payload, request, content, user, chatId, conversationId, usage }: {
@@ -185,7 +197,6 @@ async function completionCallback({ payload, request, content, user, chatId, con
   usage?: any
 }) {
   try {
-    console.log('completionCallback', payload)
     // 内容全部返回完成, 将本次返回内容记录到缓存
     const fingerprint = user?._id ? '' : request.headers[FINGERPRINT_KEY] as string
     setContext(conversationId, fingerprint, payload.messages[payload.messages.length - 1].content, content)

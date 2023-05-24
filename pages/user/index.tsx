@@ -3,15 +3,14 @@ import { useState, ChangeEvent, useEffect } from "react";
 import PriceCard from "@/components/PriceCard";
 import { AVATARS, USERNAME_LENGTH } from "@/utils/constants";
 import fetchJson, { CustomResponseType } from "@/lib/fetchJson";
-import dbConnect from "@/lib/dbConnect";
-import User from "@/models/User";
 import { withIronSessionSsr } from "iron-session/next";
 import { sessionOptions } from "@/lib/session";
 import { InferGetServerSidePropsType } from "next";
-import { getTodayTime, formatUTCTime } from "@/utils/index";
-import Completion from "@/models/Completion";
+import { formatUTCTime } from "@/utils/index";
 import { Button, Divider, QRCode, message } from "antd";
-import { AccountBookOutlined, CopyFilled, GiftFilled, GiftTwoTone, UserOutlined } from "@ant-design/icons";
+import { AccountBookOutlined, CopyFilled, GiftFilled, UserOutlined } from "@ant-design/icons";
+import { queryTodayCompletionCount } from "@/lib/completion";
+import { find } from "@/lib/db";
 
 function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user } = useUser();
@@ -151,37 +150,39 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
           <div className="p-4">
             <h1 className="text-2xl">套餐</h1>
             <div className="flex gap-6 flex-row">
-              {(user?.pricings?.map(pricing => (
-                <div className="flex flex-col gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
-                <p>
-                  <span className="text-gray-400 mr-2">当前的套餐是</span>
-                  <span className="font-bold text-black">
-                    {pricing?.name || "免费"}
-                  </span>
-                </p>
-                <p>
-                  {!pricing?.name && <>
-                    <span className="text-gray-400">每天只有</span>
-                    <span className="font-bold text-black mx-2">
-                      {pricing?.queryCount || 10}
+              {(user?.pricings?.map((pricing, index) => (
+                <div key={`user_pricing_${index}`}>
+                  <div className="flex flex-col gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
+                  <p>
+                    <span className="text-gray-400 mr-2">当前的套餐是</span>
+                    <span className="font-bold text-black">
+                      {pricing?.name || "免费"}
                     </span>
-                    <span className="text-gray-400">查询次数</span>
-                  </>}
-                  {pricing?.name && <>
-                    <span className="text-gray-400">您共有</span>
-                    <span className="font-bold text-black mx-2">
-                      {pricing?.queryCount || 10}
-                    </span>
-                    <span className="text-gray-400">查询次数</span>
-                  </>}
-                </p>
-                <p>
-                  <span className="text-gray-400 mr-4">似乎不够用？</span>
-                  <a className="text-blue-600" href="/pricing">
-                    获取更多
-                  </a>
-                </p>
-              </div>
+                  </p>
+                  <p>
+                    {!pricing?.name && <>
+                      <span className="text-gray-400">每天只有</span>
+                      <span className="font-bold text-black mx-2">
+                        {pricing?.queryCount || 10}
+                      </span>
+                      <span className="text-gray-400">查询次数</span>
+                    </>}
+                    {pricing?.name && <>
+                      <span className="text-gray-400">您共有</span>
+                      <span className="font-bold text-black mx-2">
+                        {pricing?.queryCount || 10}
+                      </span>
+                      <span className="text-gray-400">查询次数</span>
+                    </>}
+                  </p>
+                  <p>
+                    <span className="text-gray-400 mr-4">似乎不够用？</span>
+                    <a className="text-blue-600" href="/pricing">
+                      获取更多
+                    </a>
+                  </p>
+                </div>
+                </div>
               )))}
               <div className="flex justify-center items-center gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
                 <div className="flex flex-col gap-5 text-center">
@@ -357,28 +358,9 @@ export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
     };
   }
   try {
-    await dbConnect()
-    // get today completion count by userId
-    const [todayStartUTC, todayEndUTC] = getTodayTime()
-    const result = await Completion.aggregate([
-      {
-        $match: {
-          $or: [
-            {userId: req.session.user?._id},
-            {fingerprint: req.session.user?.fingerprint}
-          ],
-          createAt: {
-            $gte: new Date(todayStartUTC),
-            $lte: new Date(todayEndUTC)
-          }
-        }
-      },
-      {
-        $count: 'count',
-      },
-    ])
-    const todayQueryCount = result[0]?.count || 0
-    const inviteList = await User.find({ inviteCode: req.session.user?.userCode }).lean()
+    const { user } = req.session
+    const todayQueryCount = await queryTodayCompletionCount(user?._id, user?.fingerprint)
+    const inviteList = await find('user', { inviteCode: user?.userCode })
     return {
       props: {
         todayQueryCount,

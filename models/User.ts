@@ -1,7 +1,5 @@
-import { USERNAME_LENGTH } from '@/utils/constants'
-import { Schema, model, models } from 'mongoose'
 
-export interface IUser {
+export interface IUser extends Document {
   name: string;
   userCode: string;
   registerType: string; // 注册类型，通过微信还是手机号注册
@@ -41,47 +39,3 @@ export type UserPricing = {
   startAt: number; // 开始时间戳，ms
   endAt: number; // 结束时间戳，ms
 }
-
-const UserSchema = new Schema({
-  name: {
-    type: String,
-    required: [true, 'Please provide a name.'],
-    maxlength: [USERNAME_LENGTH, `Name cannot be more than ${USERNAME_LENGTH} characters`],
-  },
-  userCode: {
-    type: String,
-    required: [true, 'Please provide a user code.']
-  },
-  registerType: {
-    type: String,
-  },
-  openid: {
-    type: String,
-    unique: true,
-    sparse: true
-  },
-  phone: {
-    type: String,
-    unique: true,
-    sparse: true
-  },
-  pricings: {
-    type: Array<UserPricing>,
-  },
-  avatarUrl: {
-    type: String,
-  },
-  inviteCode: {
-    type: String
-  },
-  createAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updateAt: {
-    type: Date,
-    default: Date.now,
-  }
-})
-
-export default models?.User ||  model('User', UserSchema, 'user')

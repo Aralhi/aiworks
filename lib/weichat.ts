@@ -1,9 +1,7 @@
-import Settings from '@/models/Settings';
 import { WXUserInfo } from '@/models/User';
 import { ACCESS_TOKEN_NAME, LOGIN_QR_STATUS, LOGIN_QR_TIME, MP_WX_API, WX_API, WX_EVENT_TYPE } from '@/utils/constants'
-import dbConnect from './dbConnect';
 import cache from 'memory-cache'
-import WxEvent from '@/models/WxEvent';
+import { findOne, insertOne } from './db';
 
 export type AccessTokenResponse = {
   access_token: string;
@@ -70,9 +68,7 @@ export async function getWXAccessToken(type: string = 'service') {
   } else {
     // read from db
     try {
-      await dbConnect()
-      const setting = await Settings.findOne({ key: ACCESS_TOKEN_NAME })
-      console.log('getWXAccessToken from db success', setting)
+      const setting = await findOne('settings', { key: ACCESS_TOKEN_NAME })
       return setting?.value
     } catch (e) {
       console.error('getWXAccessToken from db failed', e)
@@ -105,17 +101,20 @@ export async function createQrCode() {
     const result: CreateQrResponse = await res.json()
     if (!result.errcode) {
       const cacheKey = getQrCacheKey(result?.ticket)
-      await dbConnect()
-      const newDoc = await new WxEvent({
+      const newDoc = await insertOne('wxevent', {
         type: WX_EVENT_TYPE.login_qr,
         key: cacheKey,
         value: LOGIN_QR_STATUS.generated,
         expireAt: +Date.now() + result.expire_seconds
-      }).save()
-      console.log('createQrCode and insert db success', result, newDoc)
-      return result
+      })
+      if (newDoc?.acknowledged) {
+        console.log('createQrCode and insert db success', result, newDoc)
+        return result
+      } else {
+        console.error('createQrCode failed', result)
+      }
     } else {
-      console.error('createQrCode failed', result)
+      console.error('createQrCode error', result)
     }
   } catch (error) {
     console.error('createQrCode exception', error)

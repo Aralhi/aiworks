@@ -1,7 +1,5 @@
-import dbConnect from "@/lib/dbConnect";
+import { queryCompletion } from "@/lib/completion";
 import { sessionOptions } from "@/lib/session";
-import Completion from "@/models/Completion";
-import { MAX_COMPLETION_QUERY_COUNT } from "@/utils/constants";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -12,14 +10,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
   if (req.method === 'GET') {
     try {
-      await dbConnect()
-      const result = await Completion.find({
+      const result = await queryCompletion({
         conversationId: req.query.conversationId,
         userId: req.session.user?._id
-      }).sort({ created: 1 }).limit(MAX_COMPLETION_QUERY_COUNT)
-      return res.status(200).json({ status: 'ok', message: '获取问答列表成功', data: result })
+      })
+      return res.status(200).json({ status: 'ok', message: '获取问答列表成功', data: result.reverse() })
     } catch (e) {
       console.error('get conversation error', e)
+      return res.status(200).json({ status: 'failed', message: '获取问答列表失败' })
     }
   }
 }

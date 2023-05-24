@@ -1,4 +1,3 @@
-import { Schema, model, models } from 'mongoose'
 import { IPricing } from './Pricing';
 
 export interface IOrder {
@@ -9,38 +8,6 @@ export interface IOrder {
   // 第三方信息，比如微信支付订单号，回调状态等信息
 }
 
-// 套餐信息
-const OrderSchema = new Schema({
-  tradeNo: {
-    type: String,
-    required: true,
-  },
-  userId: {
-    type: String,
-    required: [true, 'Please provide user id.'],
-  },
-  paidPrice: {
-    type: Number,
-    required: [true, 'Please provide paid price.'],
-  },
-  status: {
-    type: String,
-    required: [true, 'Please provide order status.']
-  },
-  pricing: {
-    type: Object,
-    required: [true, 'Please provide pricing.'],
-  },
-  extra: {
-    type: Object,
-  },
-  createAt: {
-    type: Date,
-  },
-  updateAt: {
-    type: Date,
-  }
-})
 
 export const OrderStatus = {
   PENDING: 'PENDING',
@@ -50,5 +17,3 @@ export const OrderStatus = {
   // hold: 'hold',
   // canceled: 'canceled',
 }
-
-export default models.Order ||  model('Order', OrderSchema, 'order')

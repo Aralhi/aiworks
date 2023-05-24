@@ -2,7 +2,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getPayUrl } from '@/lib/wechatPay';
 import { sessionOptions } from "@/lib/session";
 import { withIronSessionApiRoute } from "iron-session/next";
-import Order, { OrderStatus } from "@/models/Order";
+import { OrderStatus } from "@/models/Order";
+import { insertOne } from "@/lib/db";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.info('paying...');
@@ -19,7 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       tradeNo,
       pricing,
     );
-    new Order({
+    insertOne('order', {
       userId,
       tradeNo,
       paidPrice: 0,
@@ -29,7 +30,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       extra: {
         prePayParams,
       },
-    }).save();
+    });
     res.json({
       payUrl: prePayParams,
       tradeNo,
