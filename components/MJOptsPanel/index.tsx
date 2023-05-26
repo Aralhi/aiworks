@@ -7,9 +7,7 @@ type OptType = (typeof argsOption)[number] & {
   value?: string;
 };
 
-type SelectOption = Pick<(typeof argsOption)[number], 'arg' | 'key' | 'label'> & {
-  value: string;
-};
+type SelectOption = Pick<OptType, 'arg' | 'key' | 'label' | 'value'>;
 
 export interface IMJOptsPanelProps {
   open: boolean;
