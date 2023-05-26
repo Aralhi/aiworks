@@ -3,17 +3,19 @@ import { argsOption } from './config';
 import { Checkbox, Drawer, Input, Popover, Row } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
-type SelectArray = (typeof argsOption)[number][];
-
-export interface IMJOptsPanelProps {
-  open: boolean;
-  onChange: (config: SelectArray) => void;
-  onClose: () => void;
-}
-
 type OptType = (typeof argsOption)[number] & {
   value?: string;
 };
+
+type SelectOption = Pick<(typeof argsOption)[number], 'arg' | 'key' | 'label'> & {
+  value: string;
+};
+
+export interface IMJOptsPanelProps {
+  open: boolean;
+  onChange: (config: SelectOption[]) => void;
+  onClose: () => void;
+}
 
 function MJOptsPanel({ open, onClose, onChange }: PropsWithChildren<IMJOptsPanelProps>) {
   const [opts, setOpts] = useState<OptType[]>([...argsOption]);
@@ -49,7 +51,17 @@ function MJOptsPanel({ open, onClose, onChange }: PropsWithChildren<IMJOptsPanel
   };
 
   useEffect(() => {
-    onChange(opts.filter((item) => item.checked));
+    const result = opts
+      .filter((item) => item.checked && item.value)
+      .map((item) => {
+        return {
+          arg: item.arg,
+          key: item.key,
+          value: item.value!,
+          label: item.label
+        };
+      });
+    onChange(result);
   }, [opts]);
 
   return (
