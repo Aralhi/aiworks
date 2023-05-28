@@ -48,7 +48,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       },
     }).save();
     res.json({
-      payUrl: prePayParams,
+      payUrl: prePayParams.code_url,
       tradeNo,
       orderPrice
     });
