@@ -24,29 +24,30 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     let prePayParams;
     if (type === 'h5') {
       prePayParams = await getH5PayUrl(
-        userId,
         tradeNo,
-        pricing,
+        pricing.name,
+        pricing.price,
       );
     } else if (type === 'jsapi') {
       prePayParams = await getJSAPIPayInfo(
-        openid || 'osQSQ54tnHExzI5fPwvhINFqQv1c',
         tradeNo,
-        pricing,
-      );
+        pricing.name,
+        pricing.price,
+        openid || 'osQSQ54tnHExzI5fPwvhINFqQv1c',
+        );
     } else {
       prePayParams = await getNativePayUrl(
-        userId,
         tradeNo,
-        pricing,
+        pricing.name,
+        pricing.price,
       );
-    }
-    console.log('prePayParams', prePayParams);
-    if (!prePayParams.code_url) {
-      return res.status(500).json({
-        success: false,
-        message: prePayParams.message,
-      });
+      console.log('prePayParams', prePayParams);
+      if (!prePayParams.code_url) {
+        return res.status(500).json({
+          success: false,
+          message: prePayParams.message,
+        });
+      }
     }
     await new Order({
       userId,
@@ -65,6 +66,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }).save();
     res.json({
       payUrl: prePayParams.code_url,
+      prePayParams,
       tradeNo,
       orderPrice
     });
