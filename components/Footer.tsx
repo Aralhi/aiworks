@@ -3,7 +3,7 @@ import { Douyin, RedBook, WX } from "./SVG";
 
 export default function Footer() {
   return (
-    <footer className=" pt-10 pb-10 flex flex-col justify-center items-center gap-2" style={{ backgroundColor: '#212930', color: '#6c7d8f' }}>
+    <footer className=" pt-6 pb-6 flex flex-col justify-center items-center gap-2" style={{ backgroundColor: '#212930', color: '#6c7d8f' }}>
       <div className="flex justify-center items-center">
         <span className="mr-6">联系我们:</span>
         <Popover content={<img className="md:w-[200px] md:h-[300px]" src='./douyin.JPG' />}>

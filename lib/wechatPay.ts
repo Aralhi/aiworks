@@ -119,7 +119,6 @@ async function post(url: URL, params: any) {
 async function get(url: URL) {
   const method = 'GET';
   const authToken = getAuthToken(url, method);
-  console.info('gen getAuthToken', authToken);
   // console.info('request with body', prePayParams);
   console.info('request url:', url.toString());
   const prepayRes = await fetch(url.toString(), {
@@ -155,7 +154,7 @@ export async function getPayUrl(tradeNo: string, name: string, price: number) {
   };
   const prepayRes = await post(new URL(NATIVE_PRE_PAY_API_URL), prePayParams);
   console.info('create prepay res', prepayRes);
-  return prepayRes.code_url;
+  return prepayRes;
 }
 
 

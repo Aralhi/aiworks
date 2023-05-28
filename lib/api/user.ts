@@ -27,9 +27,9 @@ export function getUpdateBody(name:string, avatarUrl: string) {
   return body
 }
 
-export async function queryUserVoucher(userCode: string | undefined, price?: number) {
+export async function queryUserVoucher(userCode: string | undefined) {
   if (!userCode) {
-    return [price]
+    return 0
   }
   // 查询用户优惠金额，邀请并付费的人数
   try {
@@ -41,18 +41,10 @@ export async function queryUserVoucher(userCode: string | undefined, price?: num
       'pricings.startAt': { $gte: startDate },
       'pricings.endAt': { $gte: new Date() }
     })
-    if (!price) {
-      return [PRICING_VOUCHER_UNIT * count, count];
-    } else {
-      // 计算优惠后价格
-      if (count > 0) {
-        const discount = PRICING_VOUCHER_UNIT * count;
-        price = Math.max(0.01, price - discount);
-      }
-      return [price, count]
-    }
+    console.log('queryUserVoucher', userCode, count)
+    return count;
   } catch (error) {
     console.error('queryUserVoucher error', error)
-    return [price, 0]
+    return 0
   }
 }

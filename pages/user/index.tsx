@@ -165,7 +165,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                   <p>
                     <span className="text-gray-400 mr-2">当前的套餐是</span>
                     <span className="font-bold text-black">
-                      {pricing.type} {pricing?.name || "免费"}
+                      {pricing?.name || "免费"}
                     </span>
                   </p>
                   <p>

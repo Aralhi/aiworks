@@ -5,6 +5,7 @@ import { Modal, Popover, QRCode, Radio, message } from 'antd';
 import { AlipayCircleOutlined, CheckCircleFilled, GiftOutlined, WechatOutlined } from '@ant-design/icons';
 import useUser from '@/lib/userUser';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
+import { calDiscountPrice, calOrderPrice } from '../utils';
 
 export default function PriceCard(payCallback: any) {
   const { user } = useUser()
@@ -14,7 +15,6 @@ export default function PriceCard(payCallback: any) {
     orderPrice: 0,
   });
   const orderPolling = useRef<number|undefined>();
-  const [voucherPrice, setVoucherPrice] = useState(0);
   const [inviteCount, setInviteCount] = useState(0);
   const [payType, setPayType] = useState(1); // 1: wechat, 2: alipay
   const [paying, setPaying] = useState(false)
@@ -45,7 +45,7 @@ export default function PriceCard(payCallback: any) {
               clearInterval(orderPolling.current);
               return
             }
-          }, 1000);
+          }, 2000);
         } else {
           message.error('获取支付信息失败');
         }
@@ -66,7 +66,6 @@ export default function PriceCard(payCallback: any) {
     const fetchVoucher = async () => {
       const res: CustomResponseType = await fetchJson(`/api/user/queryVoucher`);
       if (res.status === 'ok') {
-        setVoucherPrice(res.data?.voucherPrice);
         setInviteCount(res.data?.inviteCount)
       }
     };
@@ -80,10 +79,6 @@ export default function PriceCard(payCallback: any) {
       orderPrice: 0
     });
     clearInterval(orderPolling.current);
-  }
-
-  function countPrice(price: number) {
-    return Math.max(0.01, price - voucherPrice);
   }
 
   return (
@@ -105,11 +100,11 @@ export default function PriceCard(payCallback: any) {
           <QRCode value={payInfo?.payUrl} size={300} />
         </div>}
       </Modal>
-      {voucherPrice > 0 && <p className='w-full flex justify-center items-center'>
+      {inviteCount > 0 && <p className='w-full flex justify-center items-center'>
         <span>邀请了</span>
         <span className='text-lg text-red-500 mx-2 font-bold'>{inviteCount}</span>
         <span>个用户购买，可抵扣</span>
-        <span className='text-lg text-red-500 mx-2 font-bold'>{voucherPrice}</span>
+        <span className='text-lg text-red-500 mx-2 font-bold'>{calDiscountPrice(PRICING_PLAN[2].price, inviteCount)}</span>
         <span>元</span>
       </p>}
       <div className='w-full flex justify-center items-center'>
@@ -121,16 +116,16 @@ export default function PriceCard(payCallback: any) {
       <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <h1 className="text-lg flex justify-center items-center" style={{ color: "#637381" }}>
           {PRICING_PLAN[0].name}
-          {voucherPrice > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
+          {inviteCount > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
         </h1>
         <p className="flex items-center">
           <span className="font-bold text-2xl">
-            ￥{(!voucherPrice || voucherPrice <= 0) && <span>{PRICING_PLAN[0].price}</span>}
-            {voucherPrice > 0 && 
+            ￥{(!inviteCount || inviteCount <= 0) && <span>{PRICING_PLAN[0].price}</span>}
+            {inviteCount > 0 && 
             <>
               <span className='mr-2 text-gray-500 line-through'>{PRICING_PLAN[0].price}</span>
-              <Popover content={`邀请了${inviteCount}个用户，已抵扣${voucherPrice}元`}>
-                <span className='text-red-500 cursor-pointer'>{countPrice(PRICING_PLAN[0].price)}</span>
+              <Popover content={`邀请了${inviteCount}个用户，已抵扣${calDiscountPrice(PRICING_PLAN[0].price, inviteCount)}元`}>
+                <span className='text-red-500 cursor-pointer'>{calOrderPrice(PRICING_PLAN[0].price, inviteCount)}</span>
               </Popover>
             </>}
           </span>
@@ -178,17 +173,17 @@ export default function PriceCard(payCallback: any) {
       <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
         <h1 className="text-lg text-indigo-700 flex justify-center">
           {PRICING_PLAN[1].name}
-          {voucherPrice > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
+          {inviteCount > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
         </h1>
         <p className="flex items-center">
           <span className="font-bold text-2xl">
             ￥
-            {(!voucherPrice || voucherPrice <= 0) && <span>{PRICING_PLAN[1].price}</span>}
-            {voucherPrice > 0 && 
+            {(!inviteCount || inviteCount <= 0) && <span>{PRICING_PLAN[1].price}</span>}
+            {inviteCount > 0 && 
             <>
               <span className='mr-2 text-gray-500 line-through'>{PRICING_PLAN[1].price}</span>
-              <Popover content={`邀请了${inviteCount}个用户，已抵扣${voucherPrice}元`}>
-                <span className='text-red-500 cursor-pointer'>{countPrice(PRICING_PLAN[1].price)}</span>
+              <Popover content={`邀请了${inviteCount}个用户，已抵扣${calDiscountPrice(PRICING_PLAN[1].price, inviteCount)}元`}>
+                <span className='text-red-500 cursor-pointer'>{calOrderPrice(PRICING_PLAN[1].price, inviteCount)}</span>
               </Popover>
             </>}
           </span>
@@ -237,17 +232,17 @@ export default function PriceCard(payCallback: any) {
         <Image className="absolute top-0 left-0" src="/pro.svg" width={64} height={64} alt="logo" />
         <h1 className="text-lg text-violet-700 flex justify-center">
           {PRICING_PLAN[2].name}
-          {voucherPrice > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
+          {inviteCount > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
         </h1>
         <p className="flex items-center">
           <span className="font-bold text-2xl">
             ￥
-            {(!voucherPrice || voucherPrice <= 0) && <span>{PRICING_PLAN[2].price}</span>}
-            {voucherPrice > 0 && 
+            {(!inviteCount || inviteCount <= 0) && <span>{PRICING_PLAN[2].price}</span>}
+            {inviteCount > 0 && 
             <>
               <span className='mr-2 text-gray-500 line-through'>{PRICING_PLAN[2].price}</span>
-              <Popover content={`邀请了${inviteCount}个用户，已抵扣${voucherPrice}元`}>
-                <span className='text-red-500 cursor-pointer'>{countPrice(PRICING_PLAN[2].price)}</span>
+              <Popover content={`邀请了${inviteCount}个用户，已抵扣${calDiscountPrice(PRICING_PLAN[2].price, inviteCount)}元`}>
+                <span className='text-red-500 cursor-pointer'>{calOrderPrice(PRICING_PLAN[2].price, inviteCount)}</span>
               </Popover>
             </>}
           </span>
