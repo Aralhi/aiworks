@@ -86,7 +86,9 @@ export async function saveCompletion(completion: ICompletion) {
     cache.put(key, (cacheCount || 0) + 1, )
     // 插入问答记录到数据库
     const insertRes = await new Completion(completion).save()
+    console.log('insert completion success', insertRes._id)
   } catch (error) {
+    console.error('insert completion error', error)
   }
 }
 

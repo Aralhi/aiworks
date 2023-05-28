@@ -30,8 +30,6 @@ const CompletionSchema = new Schema({
   },
   chatId: {
     type: String,
-    required: [true, 'Please provide a completion id.'],
-    unique: true,
   },
   createAt: {
     type: Date,

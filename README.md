@@ -84,3 +84,7 @@ conversationId会记录到Completion里，用于查询该conversation中的问�
 WEXIN_PAY_MERCHANTID 商户id
 WEXIN_PAY_CERT_SERIAL_NO 序列号 使用 `15CBD8513455B5D44F93EBBF440CA77B04985198`
 WECHAT_PAY_PEM_PRIVATE_KEY 把key.pem的内容配置进去
+
+
+## API 校验
+用userId或者fingerprint作为plaintext加密，用crypto-js加密，支持edge环境

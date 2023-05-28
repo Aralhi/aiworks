@@ -45,7 +45,6 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [conversations, setConversations] = useState<Array<IConversation>>(conversationList || [])
   const [showRegenerateBtn, setShowRegenerateBtn] = useState(false)
   const [prompt, setPrompt] = useState('')
-  const [completion, setCompletion] = useState('')
   const [chatList, setChatList] = useState<Array<Chat>>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editingId, setEditingId] = useState('')
@@ -129,58 +128,79 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       { prompt: regenerate ? chatList[chatList.length - 1].prompt : prompt, completion: ''}
     ])
     setPrompt('') // 清空输入框
-    try {
-      const response = await fetch('/api/chatgpt/get2', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          [FINGERPRINT_KEY]: await getFingerprint()
-        },
-        body: JSON.stringify({
-          prompt: !regenerate ? prompt : chatList[chatList.length - 1].prompt,
-          conversationId,
-          conversationName
-        }),
-      })
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      if (!conversationId) {
-        // 默认没有conversationId会在调chatgpt时创建，此处获取更新会话列表
-        getConversationList()
-      }
-      // 区分响应体header的Content-type，因为改接口能返回Stream和Json
-      const isJson = response.headers.get('Content-Type')?.includes('application/json')
-      if (isJson) {
-        const json = await response.json()
-        if (json.status === 'failed') {
-          setShowLoginDialog(true)
-          setLoginDialogMsg(json.message)
-        }
-        return
-      }
-      // This data is a ReadableStream
-      const data = response.body;
-      if (!data) {
-        return;
-      }
-      const reader = data.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-  
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        const chunkValue = decoder.decode(value);
-        setCompletion((prev) => prev + chunkValue);
-        setChatList((pre) => {
-          let tmp = pre.pop() as Chat
-          return [...pre, { prompt: tmp.prompt, completion: tmp.completion + chunkValue }]
+    const currentPrompt = !regenerate ? prompt : chatList[chatList.length - 1].prompt
+    const checkRes = await fetch('/api/chatgpt/check', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [FINGERPRINT_KEY]: await getFingerprint()
+      },
+      body: JSON.stringify({
+        prompt: currentPrompt,
+        conversationId,
+        conversationName
+      }),
+    })
+    const checkResult = await checkRes.json()
+    if (checkResult && checkResult.status === 'ok' && checkResult.data.payload) {
+      const { payload, conversationId, plaintext } = checkResult.data
+      console.log('....payload', typeof payload, payload)
+      const token = checkRes.headers.get('Authorization')
+      try {
+        const response = await fetch('https://api.aiworks.club/api/generate', {
+          method: "POST",
+          mode: 'cors',
+          headers: {
+            "Authorization": `${token}`,
+            "x-salai-plaintext": plaintext,
+            "Content-Type": "application/json",
+            [FINGERPRINT_KEY]: await getFingerprint()
+          },
+          body: JSON.stringify({
+            payload
+          }),
         })
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        if (!conversationId) {
+          // 默认没有conversationId会在调chatgpt时创建，此处获取更新会话列表
+          getConversationList()
+        }
+        // This data is a ReadableStream
+        const data = response.body;
+        if (!data) {
+          return;
+        }
+        const reader = data.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        const arr = []
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          const chunkValue = decoder.decode(value);
+          arr.push(chunkValue)
+          setChatList((pre) => {
+            let tmp = pre.pop() as Chat
+            return [...pre, { prompt: tmp.prompt, completion: tmp.completion + chunkValue }]
+          })
+        }
+        setShowRegenerateBtn(true)
+        // 会话完成写入DB
+        fetchJson('/api/chatgpt/callback', {
+          method: "POST",
+          body: JSON.stringify({
+            conversationId,
+            payload,
+            content: arr.join(''),
+          }),
+        })
+      } catch (e) {
+        console.error('fetch failed', e)
       }
-      setShowRegenerateBtn(true)
-    } catch (e) {
-      console.error('fetch failed', e)
+    } else {
+      return message.error(checkResult.message)
     }
   }
 
