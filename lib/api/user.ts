@@ -1,8 +1,7 @@
-import { IUser } from '@/models/User';
-import { AVATARS } from '@/utils/constants';
+import User, { IUser } from '@/models/User';
+import { AVATARS, PRICING_VOUCHER_UNIT } from '@/utils/constants';
 import cryptoRandomString from 'crypto-random-string';
-
-const dbName = process.env.NODE_ENV === 'development' ? 'test' : 'aiworks'
+import dbConnect from '../dbConnect';
 
 export function generateUserCode() {
   return cryptoRandomString({length: 10, type: 'alphanumeric'})
@@ -26,4 +25,26 @@ export function getUpdateBody(name:string, avatarUrl: string) {
     body['avatarUrl'] = avatarUrl
   }
   return body
+}
+
+export async function queryUserVoucher(userCode: string | undefined) {
+  if (!userCode) {
+    return 0
+  }
+  // 查询用户优惠金额，邀请并付费的人数
+  try {
+    await dbConnect()
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const count = await User.countDocuments({
+      inviteCode: userCode,
+      'pricings.startAt': { $gte: startDate },
+      'pricings.endAt': { $gte: new Date() }
+    })
+    console.log('queryUserVoucher', userCode, count)
+    return count;
+  } catch (error) {
+    console.error('queryUserVoucher error', error)
+    return 0
+  }
 }

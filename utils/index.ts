@@ -1,4 +1,5 @@
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
+import { PRICING_VOUCHER_UNIT } from './constants';
 
 export function isPC() {
   const userAgentInfo = navigator.userAgent;
@@ -45,4 +46,17 @@ export function formatUTCTime(utcDateString: string) {
   const formattedDate = localDate.toISOString().replace('T', ' ').substr(0, 19);
   console.log(formattedDate);
   return formattedDate
+}
+
+export function calOrderPrice(price: number, discount: number) {
+  return Math.max(price / 2, price - (discount * PRICING_VOUCHER_UNIT))
+}
+
+export function calDiscountPrice(price: number, discount: number) {
+  const value = discount * PRICING_VOUCHER_UNIT
+  if (value > price / 2) {
+    return price / 2
+  } else {
+    return value;
+  }
 }

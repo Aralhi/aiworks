@@ -1,4 +1,3 @@
-import { IPricing } from "@/models/Pricing";
 import { SettleInfo } from "tencentcloud-sdk-nodejs/tencentcloud/services/cpdp/v20190820/cpdp_models";
 
 export interface PayAmout {

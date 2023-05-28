@@ -144,7 +144,6 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     const checkResult = await checkRes.json()
     if (checkResult && checkResult.status === 'ok' && checkResult.data.payload) {
       const { payload, conversationId, plaintext } = checkResult.data
-      console.log('....payload', typeof payload, payload)
       const token = checkRes.headers.get('Authorization')
       try {
         const response = await fetch('https://api.aiworks.club/api/generate', {

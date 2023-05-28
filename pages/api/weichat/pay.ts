@@ -3,36 +3,54 @@ import { getPayUrl } from '@/lib/wechatPay';
 import { sessionOptions } from "@/lib/session";
 import { withIronSessionApiRoute } from "iron-session/next";
 import Order, { OrderStatus } from "@/models/Order";
+import { PRICING_PLAN, PRICING_VOUCHER_UNIT } from "@/utils/constants";
+import { queryUserVoucher } from "@/lib/api/user";
+import { calOrderPrice } from "@/utils/index";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.info('paying...');
   try {
-    const plan = req.query.planId;
-    const { _id: userId } = req.session.user || {};
+    const planId = req.query.planId as string;
+    const { _id: userId, userCode } = req.session.user || {};
     if (!userId) {
       throw 'not login';
     }
     const tradeNo = `wechat-${new Date().getTime()}-${Math.round(Math.random()*1000)}`;
-    const pricing = { name: 'test', price: 0.01 * 100, startAt: 0, endAt: 100, queryCount: 10 };
+    const pricing = PRICING_PLAN.filter(i => i.id == planId)[0];
+    // 后台计算优惠价格
+    const count = await queryUserVoucher(userCode)
+    const orderPrice = process.env.NODE_ENV === 'development' ? 0.01 : calOrderPrice(pricing.price, count)
+    console.log('....planId', planId, pricing, count, orderPrice)
     const prePayParams = await getPayUrl(
-      userId,
       tradeNo,
-      pricing,
+      pricing.name,
+      orderPrice,
     );
-    new Order({
+    console.log('prePayParams', prePayParams);
+    if (!prePayParams.code_url) {
+      return res.status(500).json({
+        success: false,
+        message: prePayParams.message,
+      });
+    }
+    await new Order({
       userId,
       tradeNo,
       paidPrice: 0,
       status: OrderStatus.PENDING,
-      pricing,
+      pricing: Object.assign({}, pricing, {
+        orderPrice,
+        startAt: new Date(),
+        endAt: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * pricing.days),
+      }),
       createAt: new Date(),
       extra: {
         prePayParams,
       },
     }).save();
     res.json({
-      payUrl: prePayParams,
+      payUrl: prePayParams.code_url,
       tradeNo,
+      orderPrice
     });
   } catch (e) {
     res.json({

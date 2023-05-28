@@ -21,6 +21,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   const [inviteUrl, setInviteUrl] = useState('')
   if (user && (!user?.pricings || user?.pricings.length <= 0)) {
     user.pricings = [{
+      id: '0',
       type: 'free',
       name: '免费',
       status: 'active',
@@ -44,13 +45,13 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
 
   useEffect(() => {
     // 规避第一次user为空的情况
-    if (!user?.name) {
+    if (user?.name) {
       document.title = `${user?.name}-用户中心`
     }
     setUserName(user?.name || '')
     setUserAvatar(user?.avatarUrl || '')
     setInviteUrl(`${location.origin}/login?c=${user?.userCode}`)
-  }, [user])
+  }, [user?.name])
 
   async function copyCode () {
     try {
@@ -104,6 +105,13 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
     }
   };
 
+  async function payCallback() {
+    const res:CustomResponseType = await fetchJson('/api/user/user', {
+      method: 'GET'
+    })
+    message.success(res.message)
+  }
+
   return (
     <div className="w-full flex pt-[80px]">
       <div
@@ -151,52 +159,54 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
           <div className="p-4">
             <h1 className="text-2xl">套餐</h1>
             <div className="flex gap-6 flex-row">
-              {(user?.pricings?.map(pricing => (
-                <div className="flex flex-col gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
-                <p>
-                  <span className="text-gray-400 mr-2">当前的套餐是</span>
-                  <span className="font-bold text-black">
-                    {pricing?.name || "免费"}
-                  </span>
-                </p>
-                <p>
-                  {!pricing?.name && <>
-                    <span className="text-gray-400">每天只有</span>
-                    <span className="font-bold text-black mx-2">
-                      {pricing?.queryCount || 10}
+              {(user?.pricings?.map((pricing, index) => (
+              <div key={`pricing_${index}`} className="w-full flex gap-4 mt-6">
+                <div className="flex flex-col  gap-4 p-4 w-1/2 shadow-md transition duration-300 ease-out delay-0">
+                  <p>
+                    <span className="text-gray-400 mr-2">当前的套餐是</span>
+                    <span className="font-bold text-black">
+                      {pricing?.name || "免费"}
                     </span>
-                    <span className="text-gray-400">查询次数</span>
-                  </>}
-                  {pricing?.name && <>
-                    <span className="text-gray-400">您共有</span>
-                    <span className="font-bold text-black mx-2">
-                      {pricing?.queryCount || 10}
-                    </span>
-                    <span className="text-gray-400">查询次数</span>
-                  </>}
-                </p>
-                <p>
-                  <span className="text-gray-400 mr-4">似乎不够用？</span>
-                  <a className="text-blue-600" href="/pricing">
-                    获取更多
-                  </a>
-                </p>
+                  </p>
+                  <p>
+                    {!pricing?.name && <>
+                      <span className="text-gray-400">每天只有</span>
+                      <span className="font-bold text-black mx-2">
+                        {pricing?.queryCount || 10}
+                      </span>
+                      <span className="text-gray-400">查询次数</span>
+                    </>}
+                    {pricing?.name && <>
+                      <span className="text-gray-400">您共有</span>
+                      <span className="font-bold text-black mx-2">
+                        {pricing?.queryCount || 10}
+                      </span>
+                      <span className="text-gray-400">查询次数</span>
+                    </>}
+                  </p>
+                  <p>
+                    <span className="text-gray-400 mr-4">似乎不够用？</span>
+                    <a className="text-blue-600" href="/pricing">
+                      获取更多
+                    </a>
+                  </p>
+                </div>
+                <div className="flex justify-center items-center gap-4 p-4 w-1/2 shadow-md transition duration-300 ease-out delay-0">
+                  <div className="flex flex-col gap-5 text-center">
+                    <div className="text-lg text-black">{todayQueryCount < 0 ? '-' : todayQueryCount}</div>
+                    <div className="">今天的请求次数</div>
+                  </div>
+                  {/* <div className="w-[1px] bg-gray-500 h-[38px] mt-6"></div>
+                  <div className="flex flex-col gap-5 text-center">
+                    <div className="text-lg text-black">{leftQueryCount < 0 ? '-' : leftQueryCount}</div>
+                    <div className="">剩余请求次数</div>
+                  </div> */}
+                </div>
               </div>
               )))}
-              <div className="flex justify-center items-center gap-4 p-4 mt-6 w-1/2 shadow-md transition duration-300 ease-out delay-0">
-                <div className="flex flex-col gap-5 text-center">
-                  <div className="text-lg text-black">{todayQueryCount < 0 ? '-' : todayQueryCount}</div>
-                  <div className="">今天的请求次数</div>
-                </div>
-                {/* <div className="w-[1px] bg-gray-500 h-[38px] mt-6"></div>
-                <div className="flex flex-col gap-5 text-center">
-                  <div className="text-lg text-black">{leftQueryCount < 0 ? '-' : leftQueryCount}</div>
-                  <div className="">剩余请求次数</div>
-                </div> */}
-              </div>
             </div>
             <h1 className="text-2xl my-4">高级套餐</h1>
-            <PriceCard />
+            <PriceCard payCallback={payCallback}/>
           </div>
         )}
         {currentIndex === 2 && (

@@ -1,8 +1,10 @@
 import dbConnect from "@/lib/dbConnect";
+import { sessionOptions } from "@/lib/session";
 import User from "@/models/User";
+import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userCode } = req.session.user || {};
   try {
     await dbConnect()
@@ -14,3 +16,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ status: 'failed', message: "获取邀请列表失败" });
   }
 }
+
+export default withIronSessionApiRoute(handler, sessionOptions)

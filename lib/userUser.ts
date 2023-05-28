@@ -9,7 +9,7 @@ export default function useUser({
   redirectIfFound = false,
 } = {}) {
   const { data: user, mutate: mutateUser } = useSWR<IUser & UserSession>("/api/user/user");
-  console.log('...useUser', user)
+  process.env.NODE_ENV === 'development' && console.log('...useUser', user)
   useEffect(() => {
     // if no redirect needed, just return (example: already on /dashboard)
     // if user data not yet there (fetch in progress, logged in or not) then don't do anything yet

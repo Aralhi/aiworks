@@ -1,29 +1,42 @@
 export const PRICING_PLAN = [
   {
+    id: '1',
     type: 'chatGPT',
     name: '尝鲜版',
     queryCount: 300,
     price: 10,
-    period: 7,
+    days: 7,
     label: '周'
   },
   {
+    id: '2',
     type: 'chatGPT',
     name: '尊享版',
     queryCount: 2000,
     price: 39,
-    period: 30,
+    days: 30,
     label: '月'
   },
   {
+    id: '3',
     type: 'chatGPT',
     name: '荣耀季卡',
     queryCount: 9999,
     price: 99,
-    period: 90,
+    days: 90,
     label: '季度'
   }
 ]
+
+export interface PricingPlan {
+  id: string
+  type: string
+  name: string
+  queryCount: number
+  price: number
+  days: number
+  label: string
+}
 
 export const USERNAME_LENGTH = 12
 export const API_TIMEOUT = 10000
@@ -57,3 +70,4 @@ export const WX_EVENT_TYPE = {
   login_qr: 'login_qr',
   pay_notify: 'pay_notify'
 }
+export const PRICING_VOUCHER_UNIT = 0.5
