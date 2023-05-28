@@ -1,8 +1,8 @@
-import { IPricing } from '@/models/Pricing';
 import { KJUR, hextob64 } from 'jsrsasign';
 import dayjs from 'dayjs';
 import { URL } from 'url';
-import { H5PrePayRequestParams, NativePrePayRequestParams } from './wechatPay.types';
+import {  NativePrePayRequestParams } from './wechatPay.types';
+import { PricingPlan } from '@/utils/constants';
 const SIGN_ALG = 'SHA256withRSA'
 const SCHEMA = 'WECHATPAY2-SHA256-RSA2048';
 const APP_ID = process.env.SERVICE_APP_ID;
@@ -135,33 +135,26 @@ async function get(url: URL) {
   return prepayResJson;
 }
 
-export async function getPayUrl(userOpenId: string, tradeNo: string, plan: IPricing) {
+export async function getPayUrl(tradeNo: string, name: string, price: number) {
   if (!APP_ID || !WEXIN_PAY_MERCHANTID) {
     return 'server error';
   }
   const prePayParams: NativePrePayRequestParams = {
     appid: APP_ID,
     mchid: WEXIN_PAY_MERCHANTID,
-    description: plan.name,
+    description: name,
     // TODO: gen trade no
     out_trade_no: tradeNo,
     // TODO: update expire time
     time_expire: dayjs().add(2, 'hours').format('YYYY-MM-DDTHH:mm:ssZ'),
     notify_url: 'https://www.aiworks.club/api/weichat/payNotify',
+    // TODO 查询优惠数据并更新价格
     amount: {
-      total: plan.price,
+      total: price * 100,
     }
   };
   const prepayRes = await post(new URL(NATIVE_PRE_PAY_API_URL), prePayParams);
-
-  // const prepayId = (prepayResJson).prepay_id;
-  // if (!prepayId) {
-  //   throw prepayResJson
-  // }
-  // return {
-  //   prepayId,
-  //   ...getPaySign(APP_ID, `prepay_id=${prepayId}`),
-  // };
+  console.info('create prepay res', prepayRes);
   return prepayRes.code_url;
 }
 

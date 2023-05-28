@@ -34,6 +34,7 @@ export type WXUserInfo = {
 
 // 用户的套餐信息
 export type UserPricing = {
+  id: string;
   type: string; // 套餐类型，chatGPT、midjourney
   name: string; // 套餐名
   queryCount: number; // 查询次数
