@@ -1,17 +1,18 @@
-import { Schema, model, models } from 'mongoose'
+import { Schema, model, models } from "mongoose";
 
 export type ResponseError = {
-  message: string
-}
+  message: string;
+};
 
 export interface IMJMessage {
-  userId: string
-  fingerprint?: string
-  prompt: string
-  type: string
-  index?: number
-  msgId?: string
-  msgHash?: string
+  userId: string;
+  fingerprint?: string;
+  prompt: string;
+  type: string;
+  index?: number;
+  msgId?: string;
+  msgHash?: string;
+  img: string;
 }
 
 const MJMessageSchema = new Schema({
@@ -23,11 +24,16 @@ const MJMessageSchema = new Schema({
   },
   prompt: {
     type: String,
-    required: [true, 'Please provide prompt.'],
+    required: [true, "Please provide prompt."],
   },
-  type: { // imagine, upscale, variation
+  type: {
+    // imagine, upscale, variation
     type: String,
-    required: [true, 'Please provide a type.'],
+    required: [true, "Please provide a type."],
+  },
+  img: {
+    type: String,
+    require: [true, "Please provide a img."],
   },
   index: {
     type: Number,
@@ -42,6 +48,7 @@ const MJMessageSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-export default models.MJMessageSchema ||  model('MJMessage', MJMessageSchema, 'mjmessage')
+export default models.MJMessage ||
+  model("MJMessage", MJMessageSchema, "mjmessage");

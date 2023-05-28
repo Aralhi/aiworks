@@ -13,6 +13,7 @@ type ArgsOptionType = {
   inputNumberProps?: InputNumberProps;
   selectProps?: SelectProps;
   inputProps?: InputProps;
+  value?: any;
 };
 
 export const argsOption: ArgsOptionType[] = [
@@ -112,10 +113,11 @@ export const argsOption: ArgsOptionType[] = [
     arg: "--v",
     label: "模型版本",
     placeholder: "默认v4",
-    tip: "AI模型版本号,默认使用v4",
+    tip: "AI模型版本号,默认使用V5",
     type: "select",
     selectProps: {
       options: [
+        { label: "V5", value: 5 },
         { label: "V4", value: 4 },
         { label: "V3", value: 3 },
         { label: "V2", value: 2 },
