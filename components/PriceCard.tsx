@@ -5,7 +5,7 @@ import { Modal, Popover, QRCode, Radio, message } from 'antd';
 import { AlipayCircleOutlined, CheckCircleFilled, GiftOutlined, WechatOutlined } from '@ant-design/icons';
 import useUser from '@/lib/userUser';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
-import { calDiscountPrice, calOrderPrice } from '../utils';
+import { calDiscountPrice, calOrderPrice, isInWeChat } from '../utils';
 
 export default function PriceCard(payCallback: any) {
   const { user } = useUser()
@@ -23,29 +23,45 @@ export default function PriceCard(payCallback: any) {
     setPaying(true)
     try {
       if (payType === 1) {
-        const res = await fetch(`/api/weichat/pay?planId=${planId}`);
+        const type = isInWeChat() ? 'jsapi' : 'native';
+        const res = await fetch(`/api/weichat/pay?plan=${planId}&type=${type}`);
         const payInfo = (await res.json());
         setPayInfo(payInfo);
         if (payInfo.tradeNo) {
-          orderPolling.current = window.setInterval(async () => {
-            const res: CustomResponseType = await fetchJson(`/api/weichat/queryOrder?tradeNo=${payInfo.tradeNo}`);
-            if (res.status === 'COMPLETE') {
-              setPayInfo({
-                payUrl: null,
-                tradeNo: null,
-                orderPrice: 0
-              });
-              message.success('支付成功');
-              clearInterval(orderPolling.current);
-              if (payCallback && typeof payCallback === 'function') {
-                payCallback(planId);
+          if (type === 'jsapi') {
+            WeixinJSBridge.invoke('getBrandWCPayRequest', {
+              ...payInfo,
+            },
+            function(res: any) {
+                if (res.err_msg == "get_brand_wcpay_request:ok") {
+                    // 使用以上方式判断前端返回,微信团队郑重提示：
+                    //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+                    message.success('支付失败，请重试');
+                } else {
+                  message.success('支付成功');
+                }
+            });
+          } else {
+            orderPolling.current = window.setInterval(async () => {
+              const res: CustomResponseType = await fetchJson(`/api/weichat/queryOrder?tradeNo=${payInfo.tradeNo}`);
+              if (res.status === 'COMPLETE') {
+                setPayInfo({
+                  payUrl: null,
+                  tradeNo: null,
+                  orderPrice: 0
+                });
+                message.success('支付成功');
+                clearInterval(orderPolling.current);
+                if (payCallback && typeof payCallback === 'function') {
+                  payCallback(planId);
+                }
+              } else if (res.status === 'failed') {
+                message.error(res.message);
+                clearInterval(orderPolling.current);
+                return
               }
-            } else if (res.status === 'failed') {
-              message.error(res.message);
-              clearInterval(orderPolling.current);
-              return
-            }
-          }, 2000);
+            }, 2000);
+          }
         } else {
           message.error('获取支付信息失败');
         }
@@ -93,7 +109,7 @@ export default function PriceCard(payCallback: any) {
         onCancel={onCancelPay}
         footer={null}
       >
-        {payInfo?.payUrl && 
+        {payInfo?.payUrl &&
         <div className='w-full flex flex-col justify-center items-center gap-2'>
           {payType === 1 && <h1 className='font-bold'>微信扫一扫付款</h1>}
           {payInfo?.orderPrice > 0 && <p className='text-lg text-red-500 font-bold'>￥{payInfo?.orderPrice}</p>}
@@ -121,7 +137,7 @@ export default function PriceCard(payCallback: any) {
         <p className="flex items-center">
           <span className="font-bold text-2xl">
             ￥{(!inviteCount || inviteCount <= 0) && <span>{PRICING_PLAN[0].price}</span>}
-            {inviteCount > 0 && 
+            {inviteCount > 0 &&
             <>
               <span className='mr-2 text-gray-500 line-through'>{PRICING_PLAN[0].price}</span>
               <Popover content={`邀请了${inviteCount}个用户，已抵扣${calDiscountPrice(PRICING_PLAN[0].price, inviteCount)}元`}>
@@ -179,7 +195,7 @@ export default function PriceCard(payCallback: any) {
           <span className="font-bold text-2xl">
             ￥
             {(!inviteCount || inviteCount <= 0) && <span>{PRICING_PLAN[1].price}</span>}
-            {inviteCount > 0 && 
+            {inviteCount > 0 &&
             <>
               <span className='mr-2 text-gray-500 line-through'>{PRICING_PLAN[1].price}</span>
               <Popover content={`邀请了${inviteCount}个用户，已抵扣${calDiscountPrice(PRICING_PLAN[1].price, inviteCount)}元`}>
@@ -238,7 +254,7 @@ export default function PriceCard(payCallback: any) {
           <span className="font-bold text-2xl">
             ￥
             {(!inviteCount || inviteCount <= 0) && <span>{PRICING_PLAN[2].price}</span>}
-            {inviteCount > 0 && 
+            {inviteCount > 0 &&
             <>
               <span className='mr-2 text-gray-500 line-through'>{PRICING_PLAN[2].price}</span>
               <Popover content={`邀请了${inviteCount}个用户，已抵扣${calDiscountPrice(PRICING_PLAN[2].price, inviteCount)}元`}>

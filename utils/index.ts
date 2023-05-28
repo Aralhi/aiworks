@@ -60,3 +60,7 @@ export function calDiscountPrice(price: number, discount: number) {
     return value;
   }
 }
+
+export function isInWeChat(){
+  return /MicroMessenger/i.test(window.navigator.userAgent);
+}
