@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input, Button, List, Image, Typography } from 'antd';
-import { SendOutlined, SettingTwoTone } from '@ant-design/icons';
+import { SendOutlined } from '@ant-design/icons';
 import { Imagine, Upscale, Variation } from '@/lib/streamFetch';
 import { MJMessage } from 'midjourney';
-import Tag from '@/components/tag';
-import MJOptsPanel from '@/components/MJOptsPanel';
+import MJOptsPanel, { MJArgsType } from '@/components/MJOptsPanel';
+import Tags from '@/components/MJOptsPanel/Tags';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -26,17 +26,20 @@ const Midjourney: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
   const [messages, setMessages] = useState<IMidjourenyMessage[]>([]);
-  const [isOpenOptPanel, setIsOpenOptPanel] = useState(false);
+  const [args, setArgs] = useState<MJArgsType[]>([]);
 
   const handleMessageSend = async () => {
     let newMessage: IMidjourenyMessage = {
       text: inputValue.trim(),
       hasTag: false,
       progress: 'waiting start',
-      img: defaultImg
+      img: defaultImg,
     };
 
     if (newMessage.text) {
+      newMessage.text = `${newMessage.text} ${args
+        .map((item) => `${item.arg} ${Array.isArray(item.value) ? item.value.join(' ') : item.value}`)
+        .join(' ')}`;
       const oldMessages = messages;
       setInputDisable(true);
       setMessages([...oldMessages, newMessage]);
@@ -62,7 +65,7 @@ const Midjourney: React.FC = () => {
       text: `${pormpt} upscale U${index}`,
       hasTag: false,
       progress: 'waiting start',
-      img: defaultImg
+      img: defaultImg,
     };
 
     const oldMessages = messages;
@@ -78,12 +81,13 @@ const Midjourney: React.FC = () => {
     });
     setInputDisable(false);
   };
+
   const variation = async (content: string, msgId: string, msgHash: string, index: number) => {
     let newMessage: IMidjourenyMessage = {
       text: `${content} variation V${index}`,
       hasTag: false,
       progress: 'waiting start',
-      img: defaultImg
+      img: defaultImg,
     };
 
     const oldMessages = messages;
@@ -132,37 +136,53 @@ const Midjourney: React.FC = () => {
         break;
     }
   };
+
   const renderMessage = ({ text, img, hasTag, msgHash, msgID, progress, content }: IMidjourenyMessage) => {
     if (process.env.NEXT_PUBLIC_IMAGE_PREFIX) {
       img = img.replace('https://cdn.discordapp.com/', process.env.NEXT_PUBLIC_IMAGE_PREFIX);
     }
     return (
       <List.Item
-        className="flex flex-col space-y-4 justify-start items-start"
+        className="flex flex-col text-white"
         style={{
-          alignItems: 'flex-start'
+          alignItems: 'start',
+          justifyContent: 'start',
         }}
       >
-        <Text>
-          {text} {`(${progress})`}
+        <Text className="text-white opacity-90 mb-1">
+          <strong>{text}</strong> {`(${progress})`}
         </Text>
-        <Image className="ml-2 rounded-xl" width={400} src={img} />
-        {hasTag && (
+        <Image className="rounded-lg" width={350} height={350} src={img} />
+        {!hasTag && (
           <>
-            <Tag Data={['V1', 'V2', 'V3', 'V4']} onClick={(tag) => tagClick(String(content), String(msgID), String(msgHash), tag)} />
-            <Tag Data={['U1', 'U2', 'U3', 'U4']} onClick={(tag) => tagClick(String(content), String(msgID), String(msgHash), tag)} />
+            <Tags data={['U1', 'U2', 'U3', 'U4']} onItemClick={(tag) => tagClick(String(content), String(msgID), String(msgHash), tag)} />
+            <Tags data={['V1', 'V2', 'V3', 'V4']} onItemClick={(tag) => tagClick(String(content), String(msgID), String(msgHash), tag)} />
           </>
         )}
       </List.Item>
     );
   };
 
+  useEffect(() => {
+    if (messages.length) {
+      const $mjList = document.querySelector<HTMLDivElement>('#mj-list');
+      if ($mjList) {
+        const { scrollHeight } = $mjList;
+        $mjList.scrollTo({
+          top: scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [messages.length]);
+
   return (
-    <div className="w-full mx-auto px-4 h-screen overflow-y-hidden pt-p[60px] bg-gray-800 dark:text-gray-100 flex justify-center items-center">
-      <List className=" mx-auto xl:w-3/5 w-4/5 justify-center items-center overflow-y-auto" dataSource={messages} renderItem={renderMessage} />
-      <div className="absolute z-10 w-3/4 xl:w-3/5 right-0 bottom-10 left-0 mx-auto ">
+    <div className="w-full mx-auto px-4 h-screen overflow-y-hidden pt-[60px] bg-[#303338] dark:text-gray-100 flex justify-center flex-col">
+      <List id="mj-list" className="mx-auto alii w-3/4 xl:w-3/5 h-full overflow-y-auto" dataSource={messages} renderItem={renderMessage} />
+      <div className="relative w-3/4 xl:w-3/5 mx-auto pb-5 pt-3">
+        <MJOptsPanel onArgsChange={setArgs} />
         <TextArea
-          className="w-full"
+          className="w-full rounded-lg bg-[#373A3F] border-none text-white leading-5 pt-2 pb-2 pr-10 placeholder:text-white placeholder:text-opacity-50"
           disabled={inputDisable}
           value={inputValue}
           onChange={(e: any) => setInputValue(e.target.value)}
@@ -177,42 +197,16 @@ const Midjourney: React.FC = () => {
           }}
           placeholder="Start typing your main idea..."
           autoSize={{ minRows: 1, maxRows: 6 }}
-          style={{ paddingRight: 30 }}
+          style={{ boxShadow: 'unset' }}
         />
         <Button
-          className="absolute"
-          type="primary"
+          className="w-10 h-9 flex items-center justify-center absolute text-white bottom-5 right-0 opacity-70 text-lg border-none hover:opacity-100 hover:bg-none"
           onClick={handleMessageSend}
           loading={inputDisable}
-          icon={<SendOutlined style={{ color: '#000' }} rev={undefined} />}
+          icon={<SendOutlined rev={undefined} className="text-white" />}
           title="Send"
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            background: 'transparent',
-            border: 'none',
-            boxShadow: 'none'
-          }}
         />
       </div>
-      <Button
-        className="fixed right-4 shadow-lg bg-white rounded-2xl w-10 h-10 flex justify-center items-center border-none"
-        onClick={() => {
-          setIsOpenOptPanel(true);
-        }}
-      >
-        <SettingTwoTone rev="" className="text-xs" />
-      </Button>
-      <MJOptsPanel
-        open={isOpenOptPanel}
-        onClose={() => {
-          setIsOpenOptPanel(false);
-        }}
-        onChange={(val) => {
-          console.log(val);
-        }}
-      />
     </div>
   );
 };
