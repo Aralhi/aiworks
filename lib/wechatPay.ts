@@ -215,7 +215,7 @@ export async function getJSAPIPayInfo(tradeNo: string, name: string, price: numb
     throw prepayRes;
   }
   return {
-    prepayId,
+//     prepayId,
     ...getPaySign(APP_ID, `prepay_id=${prepayId}`),
   };
 }
