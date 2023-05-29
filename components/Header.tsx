@@ -45,7 +45,7 @@ export default function Header() {
   }
 
   return (
-    <header className="w-full bg-black shadow fixed z-10 md:px-6 h-[60px]">
+    <header className="w-full bg-black shadow z-10 md:px-6 h-[60px]">
       <nav className="flex justify-between items-center h-full">
         <a href="/">
           <Image width={120} height={100} alt="logo" src="/aiworks-long.png" />

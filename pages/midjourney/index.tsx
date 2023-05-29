@@ -259,7 +259,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
   }, [messages.length]);
 
   return (
-    <div className="w-full mx-auto px-4 h-screen overflow-y-hidden pt-[60px] bg-[#303338] dark:text-gray-100 flex justify-center flex-col">
+    <div className="w-full mx-auto px-4 h-screen overflow-y-hidden bg-[#303338] dark:text-gray-100 flex justify-center flex-col">
       <List id="mj-list" className="mx-auto alii w-3/4 xl:w-3/5 h-full overflow-y-auto" dataSource={messages} renderItem={renderMessage} />
       <div className="relative w-3/4 xl:w-3/5 mx-auto pb-5 pt-3">
         <MJOptsPanel onArgsChange={setArgs} />

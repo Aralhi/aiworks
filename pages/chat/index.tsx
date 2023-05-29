@@ -7,7 +7,7 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 import vscDarkPlus from "react-syntax-highlighter/dist/cjs/styles/prism/vsc-dark-plus";
 import { getFingerprint, isPC } from '../../utils';
 import { ChatDesc } from '../../components/ChatDesc';
-import { AnewSvg, ChatGPTLogo, ChatSvg, Copy, Delete, Edit, PlusSvg, SendSvg } from '@/components/SVG';
+import { AnewSvg, ChatGPTLogo, ChatSvg, Close, Copy, Delete, Edit, PlusSvg, SendSvg } from '@/components/SVG';
 import useUser from '@/lib/userUser';
 import { useRouter } from 'next/router';
 import Conversation, { IConversation } from '@/models/Conversation';
@@ -16,7 +16,6 @@ import { withIronSessionSsr } from 'iron-session/next';
 import { sessionOptions } from '@/lib/session';
 import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
-import { debounce } from 'lodash';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import DialogModal from '@/components/DialogModal';
 import { ICompletion } from '@/models/Completion';
@@ -24,6 +23,7 @@ import Link from 'next/link';
 import { Modal, message } from 'antd';
 import * as XLSX from 'xlsx'
 import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
+import MobileChatHeader from '@/components/MobileChatHeader';
 
 interface Chat {
   prompt: string;
@@ -40,7 +40,8 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [conversationId, setConversationId] = useState(cid)
   const [conversationName, setConversationName] = useState("");
   const [init, setInit] = useState(!(cid && user?.isLoggedIn))
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(true)
   // 最多显示20条历史记录
   const [conversations, setConversations] = useState<Array<IConversation>>(conversationList || [])
   const [showRegenerateBtn, setShowRegenerateBtn] = useState(false)
@@ -52,11 +53,11 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [showDelDialog, setShowDelDialog] = useState(false)
   const [deleteId, setDeleteId] = useState('')
   const [showLoginDialog, setShowLoginDialog] = useState(false)
-  const [loginDialogMsg, setLoginDialogMsg] = useState('')
 
   useEffect(() => {
     document.title = `${conversationName || 'ChatGPT'} - AI works`
     setIsOpen(isPC() ? true : false)
+    setIsMobile(isPC() ? false : true)
     if (conversations && conversations.length > MAX_CONVERSATION_COUNT && !localStorage.getItem('aiworks_conversation_count_message')) {
       message.error(`最多只能创建${MAX_CONVERSATION_COUNT}个会话，您已经达到上限。`)
       localStorage.setItem('aiworks_conversation_count_message', 'true')
@@ -253,12 +254,6 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     }
   }
 
-  const debounceNameChange = useCallback(
-    debounce(function(value) {
-      setEditingName(value);
-    }, 200)
-  ,[])
-
   function cancelEdit() {
     setEditingId('')
     setEditingName('')
@@ -354,14 +349,19 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
     XLSX.writeFile(new_workbook, `${conversationName} -会话数据.xlsx`)
   }
 
+  function toggle() {
+    setIsOpen(true)
+  }
+
   return (
-    <div className="h-screen flex overflow-hidden dark:bg-gray-800">
+    <div className="h-screen flex overflow-hidden dark:bg-gray-800 relative">
       {/* 左侧菜单栏 */}
       <div
         className={`${
-          isOpen ? "md:w-[400px] pt-[60px]" : "w-0 overflow-hidden p-2"
-        } transition-all duration-300 ease-in-out bg-black text-white`}
+          isOpen ? "md:w-[400px] " : "hidden overflow-hidden p-2"
+        } ${isMobile && "absolute z-50"} h-full transition-all duration-300 ease-in-out bg-black text-white`}
       >
+        {isMobile && isOpen && <Close className="absolute right-0 top-4" onClick={() => {setIsOpen(false)}} />}
         <a
           className="w-full flex py-3 px-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border border-white/20 hover:bg-gray-500/10 mb-1 flex-shrink-0"
           onClick={newChat}
@@ -381,7 +381,6 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           open={showLoginDialog}
           title={!user?.isLoggedIn ? '会话次数已用完' : '购买后可继续使用'}
           onCancel={() => { setShowLoginDialog(false) }}>
-            <p className='flex justify-center'>{loginDialogMsg}</p>
             {!user?.isLoggedIn && <p className='flex justify-center items-center mt-2'>登录后获得更多查询次数，
               <Link className='font-bold text-violet-500' href={{ pathname: 'login', query: router.query }}>登录</Link>
             </p>}
@@ -424,8 +423,9 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           ))}
         </ol>
       </div>
-      <main className="h-full w-full pt-[60px]">
-        <div className="relative text-gray-800 w-full h-full md:flex md:flex-col dark:text-gray-100">
+      <main className={`h-full w-full relative ${ isMobile && isOpen && 'bg-gray-500 bg-opacity-50' }`}>
+        {isMobile && <MobileChatHeader className={`${ isOpen && 'bg-gray-500 bg-opacity-50' }`} toggle={toggle} newChat={newChat}/>}
+        <div className="relative text-gray-800 w-full h-full md:flex md:flex-col dark:text-gray-100 overflow-y-scroll">
           {init && <ChatDesc onExampleClick={selectExample} />}
           {!init && chatList && chatList.length > 0 && (
             <ScrollToBottom className="overflow-hidden dark:dark-theme">
@@ -544,7 +544,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
               <div className="w-full h-32 md:h-48 flex-shrink-0"></div>
             </ScrollToBottom>
           )}
-          <div className="w-full absolute bottom-0 left-0 border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent md:bg-vert-light-gradient md:dark:bg-vert-dark-gradient pt-2">
+          <div className="w-full fixed bottom-0 left-0 border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent md:bg-vert-light-gradient md:dark:bg-vert-dark-gradient pt-2">
             {
               conversationId && <div className='bg-gray-400 dark:bg-gray-900 absolute bottom-[120px] w-8 h-8 rounded-full z-10 right-6 cursor-pointer flex items-center justify-center'
                 onClick={() => exportConversation()}>
@@ -552,13 +552,13 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
               </div>
             }
             <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
-              <div className="relative flex h-full flex-1 items-stretch md:flex-col">
+              <div className="relative flex h-full flex-1 items-stretch flex-col">
                 <div className="">
                   <div className="h-full flex ml-1 md:w-full md:m-auto md:mb-2 gap-0 md:gap-2 justify-center"></div>
                 </div>
                 {showRegenerateBtn && (
                   <div
-                    className="h-full flex ml-1 md:w-full md:m-auto md:mb-2 gap-0 md:gap-2 justify-center cursor-pointer"
+                    className="h-full flex ml-1 md:w-full md:m-auto md:mb-2 gap-0 md:gap-2 justify-center cursor-pointer mb-1"
                     onClick={() => {
                       sendConversation(true);
                     }}

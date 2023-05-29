@@ -112,7 +112,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   }
 
   return (
-    <div className="w-full flex pt-[80px]">
+    <div className="w-full flex">
       <div
         id="user-menu"
         className="md:w-[250px] md:min-w-[200px] bg-white border-gray-400 border-r float-left"

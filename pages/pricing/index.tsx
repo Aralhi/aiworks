@@ -66,7 +66,7 @@ const whyUs = (
 export default function Pricing() {
 
   return (
-    <div className="flex flex-col gap-4 w-full pt-[90px]"
+    <div className="flex flex-col gap-4 w-full"
       style={{ background: 'url(/pricing_bg.png) no-repeat', backgroundColor: '#01031f', backgroundSize: '476px 100%', height: '100vh' }}>
       <div className="flex flex-col flex-1 w-full items-center justify-center gap-4 dark">
         <h1 className="text-white text-2xl md:text-4xl font-{800}">使用 AI works 提高生产力</h1>
