@@ -16,6 +16,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (!tradeNo) {
       throw 'no trade no';
     }
+    const order = await Order.findOne({ tradeNo });
+    if (order.status === OrderStatus.COMPLETE) {
+      res.json({
+        tradeNo,
+        status: OrderStatus.COMPLETE,
+        message: 'Already Paid',
+      });
+    }
     const orderInfo = await queryByTradeNo(tradeNo);
     if (orderInfo.code) {
       res.json({
@@ -56,6 +64,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       res.json({
         tradeNo,
         status: OrderStatus.COMPLETE,
+        message: 'success',
       });
     } else {
       res.json({
