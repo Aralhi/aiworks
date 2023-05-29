@@ -387,7 +387,7 @@ export function Close({ className, onClick }: { className?: any, onClick: Functi
   return (
     <div
       className={`${className} bg-gray-500 rounded-full`}
-      onClick={() => {onClick}}>
+      onClick={() => {onClick()}}>
       <svg
         stroke="currentColor"
         fill="none"
