@@ -1,55 +1,51 @@
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import useUser from "@/lib/userUser";
-import fetchJson from "@/lib/fetchJson";
-import { useRouter } from "next/router";
-import { AVATARS } from "@/utils/constants";
-
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import useUser from '@/lib/userUser';
+import fetchJson from '@/lib/fetchJson';
+import { useRouter } from 'next/router';
+import { AVATARS } from '@/utils/constants';
 
 export default function Header() {
-  const [showMenu, setShowMenu] = useState(false)
-  const { user, mutateUser } = useUser()
-  const router = useRouter()
-  const query = router.query
+  const [showMenu, setShowMenu] = useState(false);
+  const { user, mutateUser } = useUser();
+  const router = useRouter();
+  const query = router.query;
 
-  function avatarClick () {
-    setShowMenu(!showMenu)
+  function avatarClick() {
+    setShowMenu(!showMenu);
   }
 
-  function userInfoClick () {
-    setShowMenu(false)
+  function userInfoClick() {
+    setShowMenu(false);
     if (!user?.isLoggedIn) {
       // 未登录跳转到登录页
       if (router.pathname !== '/login') {
         router.push({
           pathname: '/login',
-          query: Object.assign({}, query, { originUrl: router.pathname })
-        })
+          query: Object.assign({}, query, { originUrl: router.pathname }),
+        });
       }
-      return
+      return;
     }
-    router.push({ pathname: 'user', query}) 
+    router.push({ pathname: 'user', query });
   }
 
   async function logout() {
-    setShowMenu(false)
-    mutateUser(
-      await fetchJson('/api/user/logout', { method: 'POST' }),
-      false
-    )
+    setShowMenu(false);
+    mutateUser(await fetchJson('/api/user/logout', { method: 'POST' }), false);
     router.push({
       pathname: '/login',
-      query: Object.assign({}, query, { originUrl: router.pathname })
-    })
+      query: Object.assign({}, query, { originUrl: router.pathname }),
+    });
   }
 
   return (
     <header className="w-full bg-black shadow fixed z-10 md:px-6 h-[60px]">
       <nav className="flex justify-between items-center h-full">
-        <a href="/">
+        <Link href="/">
           <Image width={120} height={100} alt="logo" src="/aiworks-long.png" />
-        </a>
+        </Link>
         <div className="navigation text-white">
           <ul className="flex">
             <li className="mr-6 flex items-center">
@@ -57,7 +53,6 @@ export default function Header() {
             </li>
             <li className="mr-6 flex items-center">
               <Link href={{ pathname: 'midjourney', query }}>Midjourney</Link>
-              <a href="#"></a>
             </li>
             {/* <li className="mr-6 flex items-center">
               <Link href={{ pathname: 'tutorial', query }}>教程</Link>
@@ -67,18 +62,24 @@ export default function Header() {
             </li>
             <li className="hidden md:block relative" onClick={avatarClick}>
               <a href="#">
-                <img
-                  src={user?.avatarUrl || AVATARS[0]}
-                  alt="Avatar"
-                  className="rounded-full w-8 h-8"
-                />
+                <img src={user?.avatarUrl || AVATARS[0]} alt="Avatar" className="rounded-full w-8 h-8" />
               </a>
-              {showMenu && <div className="absolute bg-black text-white mt-2 translate-x-[-50%]">
-                <div className="w-20 h-10 text-center flex flex-col justify-center border-b border-gray-200 dark:border-gray-800 cursor-pointer"
-                  onClick={userInfoClick}>用户中心</div>
-                <div className="w-20 h-10 text-center flex flex-col justify-center border-b border-gray-200 dark:border-gray-800 cursor-pointer"
-                  onClick={logout}>登出</div>
-                </div>}
+              {showMenu && (
+                <div className="absolute bg-black text-white mt-2 translate-x-[-50%]">
+                  <div
+                    className="w-20 h-10 text-center flex flex-col justify-center border-b border-gray-200 dark:border-gray-800 cursor-pointer"
+                    onClick={userInfoClick}
+                  >
+                    用户中心
+                  </div>
+                  <div
+                    className="w-20 h-10 text-center flex flex-col justify-center border-b border-gray-200 dark:border-gray-800 cursor-pointer"
+                    onClick={logout}
+                  >
+                    登出
+                  </div>
+                </div>
+              )}
             </li>
           </ul>
         </div>
