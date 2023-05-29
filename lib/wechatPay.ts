@@ -174,7 +174,7 @@ export async function getH5PayUrl(tradeNo: string, name: string, price: number) 
       }
     },
     amount: {
-      total: price,
+      total: price * 100,
     }
   };
   const prepayRes = await post(new URL(H5_PRE_PAY_API_URL), prePayParams);
@@ -205,7 +205,7 @@ export async function getJSAPIPayInfo(tradeNo: string, name: string, price: numb
     time_expire: dayjs().add(2, 'hours').format('YYYY-MM-DDTHH:mm:ssZ'),
     notify_url: 'https://www.aiworks.club/api/weichat/payNotify',
     amount: {
-      total: price,
+      total: price * 100,
     }
   };
   const prepayRes = await post(new URL(JSAPI_PRE_PAY_API_URL), prePayParams);
