@@ -60,7 +60,7 @@ export default function Header() {
             <li className="mr-6 flex items-center">
               <Link href={{ pathname: 'pricing', query }}>价格</Link>
             </li>
-            <li className="hidden md:block relative" onClick={avatarClick}>
+            <li className="relative z-50" onClick={avatarClick}>
               <a href="#">
                 <img src={user?.avatarUrl || AVATARS[0]} alt="Avatar" className="rounded-full w-8 h-8" />
               </a>
