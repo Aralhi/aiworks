@@ -27,7 +27,7 @@ export function getUpdateBody(name:string, avatarUrl: string) {
   return body
 }
 
-export async function queryUserVoucher(userCode: string | undefined) {
+export async function queryInviteUserCount(userCode: string | undefined) {
   if (!userCode) {
     return 0
   }
@@ -41,10 +41,10 @@ export async function queryUserVoucher(userCode: string | undefined) {
       'pricings.startAt': { $gte: startDate },
       'pricings.endAt': { $gte: new Date() }
     })
-    console.log('queryUserVoucher', userCode, count)
+    console.log('queryInviteUserCount', userCode, count)
     return count;
   } catch (error) {
-    console.error('queryUserVoucher error', error)
+    console.error('queryInviteUserCount error', error)
     return 0
   }
 }

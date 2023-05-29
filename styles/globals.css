@@ -198,3 +198,11 @@ table {
 .dark .ant-radio-wrapper {
   color: white;
 }
+.dark #pay-type-radio {
+  border-radius: 12px;
+  background-color: #353459;
+}
+.dark #pricing-type-radio {
+  border-radius: 12px;
+  background-color: #353459;
+}

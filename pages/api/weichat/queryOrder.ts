@@ -41,15 +41,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       if (!user.pricings?.length) {
         updatedPricings = order.pricing
       } else {
-        updatedPricings = (user.pricings || []).map((pricing: UserPricing) => {
-          if (pricing.id === order.pricing.id) {
-            return { ...pricing, ...order.pricing };
-          }
-          return pricing;
-        });
+        const updateIndex = user.pricings.findIndex((i: UserPricing) => i.type === order.pricing.type)
+        if (updateIndex !== -1) {
+          user.pricings[updateIndex] = order.pricing
+        } else {
+          user.pricings.push(order.pricing)
+        }
       }
       const userRes = await User.findByIdAndUpdate(userId, {
-        pricings: updatedPricings,
+        pricings: user.pricings,
         updateAt: new Date()
       });
       console.log('update user pricings success', userRes);
