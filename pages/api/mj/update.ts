@@ -1,6 +1,6 @@
 import { sessionOptions } from "@/lib/session";
 import MJMessage, { IMJMessage } from "@/models/MJMessage";
-import { withIronSessionApiRoute } from "iron-session/next/dist";
+import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
 type MJUpdatePayloadType = Partial<IMJMessage>;
@@ -21,6 +21,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       );
       return res.json({ status: "ok" });
     } catch (e) {
+      console.error("update midjourney record failed", e);
       return res.status(500).json({ status: "failed" });
     }
   }

@@ -9,7 +9,9 @@ export interface IMJMessage {
   index?: number;
   msgId?: string;
   msgHash?: string;
+  /** oss图片地址 */
   img?: string;
+  /** 原图 */
   originImg?: string;
   content?: string;
   createAt?: Date;
@@ -60,4 +62,5 @@ const MJMessageSchema = new Schema<IMJMessage>({
 
 MJMessageSchema.index({ userId: 1, createAt: -1 });
 
-export default models.MJMessage || model("MJMessage", MJMessageSchema, "mjmessage");
+export default models.MJMessage ||
+  model("MJMessage", MJMessageSchema, "mjmessage");

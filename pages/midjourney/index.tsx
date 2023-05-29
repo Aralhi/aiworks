@@ -10,7 +10,7 @@ import { sessionOptions } from '@/lib/session';
 import { InferGetServerSidePropsType } from 'next';
 import { FINGERPRINT_KEY } from '@/utils/constants';
 import { getFingerprint } from '@/utils/index';
-import fetchJson from '@/lib/fetchJson';
+import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { BasicModel } from 'types';
 
 const { TextArea } = Input;
@@ -71,33 +71,43 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
       // const tempUriArr: string[] = [];
 
       let done = false;
-      let result = { type, ...newItem };
+      let mjMessage: Partial<IMJMessage> = {
+        type: newItem.type,
+        prompt: newItem.prompt,
+        progress: newItem.progress,
+        msgId: newItem.msgId,
+        msgHash: newItem.msgHash,
+      };
 
-      const record = await fetchJson<BasicModel<IMJMessage>>('/api/mj/record', {
+      const recordResult = await fetchJson<CustomResponseType>('/api/mj/record', {
         method: 'POST',
-        body: JSON.stringify(result),
+        body: JSON.stringify(mjMessage),
       });
+      const record = recordResult.data as MidjourneyMessage;
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
 
         const chunkValue = decoder.decode(value);
-        const uri = getMatchValue(chunkValue, 'uri');
-        const curProgress = getMatchValue(chunkValue, 'progress');
-        const hash = getMatchValue(chunkValue, 'hash');
-        const msgId = getMatchValue(chunkValue, 'id');
-        const curContent = getMatchValue(chunkValue, 'content');
+        const mjUri = getMatchValue(chunkValue, 'uri');
+        const mjProgress = getMatchValue(chunkValue, 'progress');
+        const mjHash = getMatchValue(chunkValue, 'hash');
+        const mjId = getMatchValue(chunkValue, 'id');
+        const mjContent = getMatchValue(chunkValue, 'content');
 
         // let tempUri = '';
 
+        /** 更新数据 */
         fetchJson(`/api/mj/update?id=${record._id}`, {
           method: 'PATCH',
           body: JSON.stringify({
-            curContent,
-            hash,
-            curProgress,
-            uri,
+            img: mjUri,
+            originImg: mjUri,
+            content: mjContent,
+            msgId: mjId,
+            msgHash: mjHash,
+            progress: mjProgress,
           }),
         });
 
@@ -119,14 +129,14 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
         // }
 
         setMessages((state) => {
-          const { img, progress, msgHash, prompt } = state[messageIdx];
+          const { img, progress, msgHash, prompt, msgId } = state[messageIdx];
           state[messageIdx] = {
             ...state[messageIdx],
-            img: uri ?? img,
-            msgId,
-            progress: curProgress ?? progress,
-            msgHash: hash ?? msgHash,
-            prompt: curContent ?? prompt,
+            img: mjUri ?? img,
+            progress: mjProgress ?? progress,
+            msgId: mjId ?? msgId,
+            msgHash: mjHash ?? msgHash,
+            content: mjContent ?? prompt,
           };
           return [...state];
         });
@@ -164,10 +174,10 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
     }
   };
 
-  const upscale = async (pormpt: string, msgId: string, msgHash: string, index: number) => {
+  const upscale = async (content: string, msgId: string, msgHash: string, index: number) => {
     const newMessage: Partial<IMJMessage> = {
       type: 'upscale',
-      prompt: `${pormpt} upscale U${index}`,
+      prompt: `${content} upscale U${index}`,
       progress: 'waiting start',
       img: defaultImg,
     };
@@ -175,7 +185,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
     setInputDisable(true);
 
     try {
-      fetchMJ('upscale', { content: pormpt, index, msgId, msgHash }, newMessage);
+      fetchMJ('upscale', { content, index, msgId, msgHash }, newMessage);
     } catch (e) {
       console.error(e);
     } finally {
@@ -201,7 +211,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
     }
   };
 
-  const renderMessage = ({ prompt, img, msgHash, progress }: Partial<MidjourneyMessage>) => {
+  const renderMessage = ({ prompt, content, img, msgHash, progress, msgId, type }: Partial<MidjourneyMessage>) => {
     if (process.env.NEXT_PUBLIC_IMAGE_PREFIX) {
       img = img?.replace('https://cdn.discordapp.com/', process.env.NEXT_PUBLIC_IMAGE_PREFIX);
     }
@@ -216,11 +226,11 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
         <Text className="text-white opacity-90 mb-1">
           <strong>{prompt}</strong> {`(${progress})`}
         </Text>
-        <Image className="rounded-lg" width={350} height={350} src={img} />
-        {progress === 'done' && (
+        <Image className="rounded-lg" width={350} height={350} src={img || defaultImg} />
+        {progress === 'done' && type !== 'upscale' && (
           <>
-            {/* <Tags data={['U1', 'U2', 'U3', 'U4']} onItemClick={(tagNum) => upscale(String(prompt), String(msgID), String(msgHash), tagNum)} />
-            <Tags data={['V1', 'V2', 'V3', 'V4']} onItemClick={(tagNum) => variation(String(prompt), String(msgID), String(msgHash), tagNum)} /> */}
+            <Tags data={['U1', 'U2', 'U3', 'U4']} onItemClick={(tagNum) => upscale(String(content), String(msgId), String(msgHash), tagNum)} />
+            <Tags data={['V1', 'V2', 'V3', 'V4']} onItemClick={(tagNum) => variation(String(content), String(msgId), String(msgHash), tagNum)} />
           </>
         )}
       </List.Item>
@@ -280,9 +290,7 @@ export default Midjourney;
 export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
   try {
     await dbConnect();
-    const historyList = await MJMessageSchema.find({ userId: req.session.user?._id || req.session.user?.fingerprint })
-      .sort({ createAt: -1 })
-      .lean();
+    const historyList = await MJMessageSchema.find({ userId: req.session.user?._id }).sort({ createAt: 1 }).lean();
     return {
       props: {
         historyList: JSON.parse(JSON.stringify(historyList)) as IMJMessage[],
