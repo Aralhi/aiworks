@@ -9,10 +9,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.info('paying...');
   try {
     const tradeNo = req.query.tradeNo as string;
-    const { _id: userId } = req.session.user || {};
-    if (!userId) {
-      throw 'not login';
-    }
+    // const { _id: userId } = req.session.user || {};
+    // if (!userId) {
+    //   throw 'not login';
+    // }
     if (!tradeNo) {
       throw 'no trade no';
     }
@@ -36,7 +36,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           updateAt: new Date()
         }
       });
-      const user = await User.findById(userId);
+      const user = await User.findById(order.userId);
       let updatedPricings = []
       if (!user.pricings?.length) {
         updatedPricings = order.pricing
@@ -48,7 +48,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           user.pricings.push(order.pricing)
         }
       }
-      const userRes = await User.findByIdAndUpdate(userId, {
+      const userRes = await User.findByIdAndUpdate(order.userId, {
         pricings: user.pricings,
         updateAt: new Date()
       });
