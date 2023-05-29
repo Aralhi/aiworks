@@ -1,21 +1,23 @@
 import { Schema, model, models } from "mongoose";
 
-export type ResponseError = {
-  message: string;
-};
-
 export interface IMJMessage {
-  userId: string;
+  userId?: string;
   fingerprint?: string;
   prompt: string;
-  type: string;
+  progress?: string;
+  type: "imagine" | "upscale" | "variation";
   index?: number;
   msgId?: string;
   msgHash?: string;
-  img: string;
+  /** oss图片地址 */
+  img?: string;
+  /** 原图 */
+  originImg?: string;
+  content?: string;
+  createAt?: Date;
 }
 
-const MJMessageSchema = new Schema({
+const MJMessageSchema = new Schema<IMJMessage>({
   userId: {
     type: String,
   },
@@ -26,6 +28,12 @@ const MJMessageSchema = new Schema({
     type: String,
     required: [true, "Please provide prompt."],
   },
+  progress: {
+    type: String,
+  },
+  content: {
+    type: String,
+  },
   type: {
     // imagine, upscale, variation
     type: String,
@@ -33,7 +41,9 @@ const MJMessageSchema = new Schema({
   },
   img: {
     type: String,
-    require: [true, "Please provide a img."],
+  },
+  originImg: {
+    type: String,
   },
   index: {
     type: Number,
@@ -52,4 +62,5 @@ const MJMessageSchema = new Schema({
 
 MJMessageSchema.index({ userId: 1, createAt: -1 });
 
-export default models.MJMessage || model("MJMessage", MJMessageSchema, "mjmessage");
+export default models.MJMessage ||
+  model("MJMessage", MJMessageSchema, "mjmessage");

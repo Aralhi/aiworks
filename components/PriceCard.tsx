@@ -39,22 +39,26 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
         const type = isInWeChat() ? 'jsapi' : 'native';
         const res = await fetch(`/api/weichat/pay?planId=${planId}&type=${type}`);
         const payInfo = (await res.json());
+        if (res.status === 401 || payInfo.message === 'not login') {
+          window.location.href = `/login?originUrl=${encodeURIComponent(window.location.href)}`
+        }
         setPayInfo(payInfo);
         if (payInfo.tradeNo) {
           if (type === 'jsapi') {
             WeixinJSBridge.invoke('getBrandWCPayRequest', {
               ...payInfo.prePayParams,
             },
-            function(res: any) {
+            async function(res: any) {
                 if (res.err_msg == "get_brand_wcpay_request:ok") {
                     // 使用以上方式判断前端返回,微信团队郑重提示：
                     //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+                    const res: CustomResponseType = await fetchJson(`/api/weichat/queryOrder?tradeNo=${payInfo.tradeNo}`);
+                    message.success('支付成功');
+                    if (payCallback && typeof payCallback === 'function') {
+                      payCallback(planId);
+                    }
+                  } else {
                     message.success('支付失败，请重试');
-                } else {
-                  message.success('支付成功');
-                  if (payCallback && typeof payCallback === 'function') {
-                    payCallback(planId);
-                  }
                 }
             });
           } else {

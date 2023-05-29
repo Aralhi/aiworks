@@ -9,9 +9,10 @@ import { calOrderPrice } from "@/utils/index";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { planId, type } = req.query;
+    const { planId, type, debug } = req.query;
     const { _id: userId, userCode, openid } = req.session.user || {};
     if (!userId) {
+      res.status(401);
       throw 'not login';
     }
     const tradeNo = `wechat-${new Date().getTime()}-${Math.round(Math.random()*1000)}`;
