@@ -82,8 +82,8 @@ function getPaySign(appid: string, body: string) {
   const timestamp = Math.round(new Date().getTime()/1000);
   const paySign = new SignBuilder([
     appid,
-    nonceStr,
     `${timestamp}`,
+    nonceStr,
     body,
   ]).build();
   return {
