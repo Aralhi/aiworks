@@ -63,7 +63,7 @@ function MJOptsPanel({ onArgsChange }: PropsWithChildren<IMJOptsPanelProps>) {
     });
   };
 
-  const handleDrawerClose = () => {
+  const handleMJTags = () => {
     const result: MJArgsType[] = opts
       .filter((item) => item.checked && item.value)
       .map((item) => {
@@ -76,8 +76,17 @@ function MJOptsPanel({ onArgsChange }: PropsWithChildren<IMJOptsPanelProps>) {
       });
     setMJTags(result);
     onArgsChange(result);
+  };
+
+  const handleDrawerClose = () => {
+    handleMJTags();
     setOpen(false);
   };
+
+  /** 初始化一遍选项 */
+  useEffect(() => {
+    handleMJTags();
+  }, []);
 
   return (
     <>

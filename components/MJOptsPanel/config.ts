@@ -115,6 +115,8 @@ export const argsOption: ArgsOptionType[] = [
     placeholder: "默认v4",
     tip: "AI模型版本号,默认使用V5",
     type: "select",
+    checked: true,
+    value: 5,
     selectProps: {
       options: [
         { label: "V5", value: 5 },
