@@ -3,8 +3,8 @@ import { getNativePayUrl, getH5PayUrl, getJSAPIPayInfo } from '@/lib/wechatPay';
 import { sessionOptions } from "@/lib/session";
 import { withIronSessionApiRoute } from "iron-session/next";
 import Order, { OrderStatus } from "@/models/Order";
-import { PRICING_PLAN, PRICING_VOUCHER_UNIT } from "@/utils/constants";
-import { queryUserVoucher } from "@/lib/api/user";
+import { PRICING_PLAN } from "@/utils/constants";
+import { queryInviteUserCount } from "@/lib/api/user";
 import { calOrderPrice } from "@/utils/index";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -18,7 +18,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const tradeNo = `wechat-${new Date().getTime()}-${Math.round(Math.random()*1000)}`;
     const pricing = PRICING_PLAN.filter(i => i.id == planId)[0];
     // 后台计算优惠价格
-    const count = await queryUserVoucher(userCode)
+    const count = await queryInviteUserCount(userCode)
     console.log('....pricing', pricing, count, req.session.user)
     const orderPrice = process.env.NODE_ENV === 'development' ? 0.01 : calOrderPrice(pricing.price, count)
     console.log('....planId', planId, pricing, count, orderPrice)
@@ -27,7 +27,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       prePayParams = await getH5PayUrl(
         tradeNo,
         pricing.name,
-        pricing.price,
+        orderPrice,
       );
     } else if (type === 'jsapi') {
       prePayParams = await getJSAPIPayInfo(
@@ -40,7 +40,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       prePayParams = await getNativePayUrl(
         tradeNo,
         pricing.name,
-        pricing.price,
+        orderPrice,
       );
       console.log('prePayParams', prePayParams);
       if (!prePayParams.code_url) {

@@ -106,10 +106,9 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   };
 
   async function payCallback() {
-    const res:CustomResponseType = await fetchJson('/api/user/user', {
+    await fetchJson('/api/user/user', {
       method: 'GET'
     })
-    message.success(res.message)
   }
 
   return (

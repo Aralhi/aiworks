@@ -1,13 +1,6 @@
 import PriceCard from "@/components/PriceCard";
 import { AppstoreFilled, BulbFilled, SafetyCertificateFilled, TrophyFilled } from "@ant-design/icons";
-import { Popover, Radio, RadioChangeEvent } from 'antd'
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-
-const PRICING_TYPES = [
-  { label: 'chatGPT', value: 'chatGPT'},
-  { label: 'Midjourney', value: 'Midjourney', disabled: true }
-]
+import { Popover } from 'antd'
 
 const whyUs = (
   <section className="bg-gray-100 md:py-10 p-6 md:max-w-[800px]">
@@ -15,7 +8,7 @@ const whyUs = (
     <div className="lg:text-center">
       <h2 className="text-base font-semibold tracking-wide uppercase" style={{ color: '#CD500C' }}>为什么选择我们</h2>
       <p className="mt-4 max-w-2xl md:text-xl lg:mx-auto">
-        AI works 平台是由多名字节&阿里技术专家联合打造，旨在帮助所有人抓住 AI 浪潮中的机会，提高生产力，实现让 AI 触手可及的目标。
+        AI works 平台是由多名<b>字节</b>&<b>阿里</b>技术专家联合打造，旨在帮助所有人抓住 AI 浪潮中的机会，提高生产力，实现让 AI 触手可及的目标。
       </p>
     </div>
     <div className="mt-10">
@@ -71,20 +64,6 @@ const whyUs = (
 )
 
 export default function Pricing() {
-  const router = useRouter();
-  console.log(router.query, )
-  const [selected, setSelected] = useState(PRICING_TYPES[0].value)
-  const radioChange = ({ target: { value } }: RadioChangeEvent) => {
-    setSelected(value);
-  };
-
-  useEffect(() => {
-    document.title = '订阅 | AI works';
-    if (router.query?.type) {
-      setSelected(router.query.type as string);
-    }
-  }, []);
-
 
   return (
     <div className="flex flex-col gap-4 w-full pt-[90px]"
@@ -97,10 +76,6 @@ export default function Pricing() {
             <span className="text-violet-500">为什么选择我们？</span>
           </Popover>
         </h3>
-        <div className="flex items-center px-4 py-4" style={{ borderRadius: '12px', backgroundColor: '#353459' }}>
-          <Radio.Group value={selected} options={PRICING_TYPES} onChange={radioChange} className="flex flex-1 gap-4">
-          </Radio.Group>
-        </div>
         <PriceCard />
       </div>
     </div>

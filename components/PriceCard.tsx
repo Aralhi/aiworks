@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { PRICING_PLAN } from "@/utils/constants";
 import Image from "next/image";
-import { Modal, Popover, QRCode, Radio, message } from 'antd';
+import { Modal, Popover, QRCode, Radio, RadioChangeEvent, message } from 'antd';
 import { AlipayCircleOutlined, CheckCircleFilled, GiftOutlined, WechatOutlined } from '@ant-design/icons';
 import useUser from '@/lib/userUser';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { calDiscountPrice, calOrderPrice, isInWeChat } from '../utils';
+import { useRouter } from 'next/router';
 
-export default function PriceCard(payCallback: any) {
+const PRICING_TYPES = [
+  { label: 'chatGPT', value: 'chatGPT'},
+  { label: 'Midjourney', value: 'Midjourney', disabled: true }
+]
+
+export default function PriceCard({ payCallback }: { payCallback?: Function }) {
   const { user } = useUser()
   const [payInfo, setPayInfo] = useState({
     payUrl: null,
@@ -18,6 +24,11 @@ export default function PriceCard(payCallback: any) {
   const [inviteCount, setInviteCount] = useState(0);
   const [payType, setPayType] = useState(1); // 1: wechat, 2: alipay
   const [paying, setPaying] = useState(false)
+  const router = useRouter();
+  const [selected, setSelected] = useState(PRICING_TYPES[0].value)
+  const radioChange = ({ target: { value } }: RadioChangeEvent) => {
+    setSelected(value);
+  };
 
   async function buy (planId: number) {
     setPaying(true)
@@ -39,6 +50,9 @@ export default function PriceCard(payCallback: any) {
                     message.success('支付失败，请重试');
                 } else {
                   message.success('支付成功');
+                  if (payCallback && typeof payCallback === 'function') {
+                    payCallback(planId);
+                  }
                 }
             });
           } else {
@@ -88,6 +102,13 @@ export default function PriceCard(payCallback: any) {
     fetchVoucher();
   }, [user?.userCode]);
 
+  useEffect(() => {
+    document.title = '订阅 | AI works';
+    if (router.query?.type) {
+      setSelected(router.query.type as string);
+    }
+  }, []);
+
   function onCancelPay () {
     setPayInfo({
       payUrl: null,
@@ -102,6 +123,11 @@ export default function PriceCard(payCallback: any) {
       className="text-black w-full min-h-[300px] rounded-3xl flex justify-center items-center py-6 gap-5 flex-wrap"
       style={{ backgroundColor: "rgba(56,114,224,.04)" }}
     >
+
+      <div className="flex items-center px-4 py-2 price-radio" id="pricing-type-radio">
+        <Radio.Group value={selected} options={PRICING_TYPES} onChange={radioChange} className="flex flex-1 gap-4">
+        </Radio.Group>
+      </div>
       <Modal
         title={`${payType === 1 ? '微信' : '支付宝'}支付`}
         width="fit-content"
@@ -124,7 +150,7 @@ export default function PriceCard(payCallback: any) {
         <span>元</span>
       </p>}
       <div className='w-full flex justify-center items-center'>
-        <Radio.Group name="radiogroup" defaultValue={payType} className='flex justify-center items-center' onChange={e => { setPayType(e.target.value) }}>
+        <Radio.Group name="radiogroup" defaultValue={payType} className='flex justify-center items-center px-4 py-2' id="pay-type-radio" onChange={e => { setPayType(e.target.value) }}>
           <Radio value={1}><WechatOutlined className='text-lg mr-2 text-green-600' rev='' />微信支付</Radio>
           <Radio value={2} disabled><AlipayCircleOutlined className='text-lg mr-2 text-blue-500' rev='' />支付宝支付</Radio>
         </Radio.Group>
