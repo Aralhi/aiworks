@@ -38,6 +38,9 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
       if (payType === 1) {
         const type = isInWeChat() ? 'jsapi' : 'native';
         const res = await fetch(`/api/weichat/pay?planId=${planId}&type=${type}`);
+        if (res.status === 401) {
+          window.location.href = `/login?originUrl=${encodeURIComponent(window.location.href)}`
+        }
         const payInfo = (await res.json());
         setPayInfo(payInfo);
         if (payInfo.tradeNo) {
