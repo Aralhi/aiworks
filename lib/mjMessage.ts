@@ -28,6 +28,7 @@ export async function checkQueryCount(user: UserSession, fingerprint: string) {
   const pricing: UserPricing | undefined = pricings?.find(
     (item: UserPricing) => item.name === "midjourney" && item.endAt > Date.now()
   );
+  console.log(user, pricings, pricing, userId)
   if (isLoggedIn && pricing && userId) {
     const count = await queryPricingCompletionCount(userId);
     if (count >= pricing.queryCount) {
