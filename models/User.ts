@@ -85,4 +85,6 @@ const UserSchema = new Schema({
   }
 })
 
+UserSchema.index({ inviteCode: 1, createAt: -1, updateAt: -1 })
+
 export default models?.User ||  model('User', UserSchema, 'user')

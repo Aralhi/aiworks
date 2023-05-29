@@ -51,4 +51,6 @@ export const OrderStatus = {
   // canceled: 'canceled',
 }
 
+OrderSchema.index({ userId: 1, createAt: -1, updateAt: -1 })
+
 export default models.Order ||  model('Order', OrderSchema, 'order')

@@ -61,4 +61,6 @@ const CompletionSchema = new Schema({
   }
 })
 
+CompletionSchema.index({ userId: 1, conversationId: 1, createAt: -1 })
+
 export default models?.Completion ||  model('Completion', CompletionSchema, 'completion')
