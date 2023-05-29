@@ -19,7 +19,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     // 后台计算优惠价格
     const count = await queryInviteUserCount(userCode)
     console.log('....pricing', pricing, count, req.session.user)
-    const orderPrice = process.env.NODE_ENV === 'development' ? 0.01 : calOrderPrice(pricing.price, count)
+    const orderPrice = process.env.NODE_ENV === 'development' || req.query.debug ? 0.01 : calOrderPrice(pricing.price, count)
     console.log('....planId', planId, pricing, count, orderPrice)
     let prePayParams;
     if (type === 'h5') {
