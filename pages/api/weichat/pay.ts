@@ -19,6 +19,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const pricing = PRICING_PLAN.filter(i => i.id == planId)[0];
     // 后台计算优惠价格
     const count = await queryUserVoucher(userCode)
+    console.log('....pricing', pricing, count)
     const orderPrice = process.env.NODE_ENV === 'development' ? 0.01 : calOrderPrice(pricing.price, count)
     console.log('....planId', planId, pricing, count, orderPrice)
     let prePayParams;
@@ -72,6 +73,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       orderPrice
     });
   } catch (e) {
+    console.error(e);
     res.json({
       succes: false,
       message: e
