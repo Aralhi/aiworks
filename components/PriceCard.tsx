@@ -37,7 +37,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
     try {
       if (payType === 1) {
         const type = isInWeChat() ? 'jsapi' : 'native';
-        const res = await fetch(`/api/weichat/pay?planId=${planId}&type=${type}&debug=true`);
+        const res = await fetch(`/api/weichat/pay?planId=${planId}&type=${type}`);
         if (res.status === 401) {
           window.location.href = `/login?originUrl=${encodeURIComponent(window.location.href)}`
         }
