@@ -88,7 +88,7 @@ function getPaySign(appid: string, body: string) {
   ]).build();
   return {
     appId: appid,
-    timestamp,
+    timeStamp: timestamp,
     nonceStr,
     package: body,
     paySign,
