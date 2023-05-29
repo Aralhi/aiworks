@@ -39,6 +39,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       user = await new User(Object.assign({}, defaultInfo, {
         registerType: 'wx',
         openid,
+        inviteCode,
       })).save()
       console.log('new wx user insert db success', user)
     }

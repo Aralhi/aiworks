@@ -59,9 +59,9 @@ export default function Header() {
               <Link href={{ pathname: 'midjourney', query }}>Midjourney</Link>
               <a href="#"></a>
             </li>
-            <li className="mr-6 flex items-center">
+            {/* <li className="mr-6 flex items-center">
               <Link href={{ pathname: 'tutorial', query }}>教程</Link>
-            </li>
+            </li> */}
             <li className="mr-6 flex items-center">
               <Link href={{ pathname: 'pricing', query }}>价格</Link>
             </li>

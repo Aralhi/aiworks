@@ -15,6 +15,7 @@ export type UserSession = {
   fingerprint: string;
   phone?: string;
   name?: string;
+  openid?: string;
   pricings?: Array<UserPricing>;
 };
 

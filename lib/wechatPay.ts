@@ -1,15 +1,15 @@
 import { KJUR, hextob64 } from 'jsrsasign';
 import dayjs from 'dayjs';
 import { URL } from 'url';
-import {  NativePrePayRequestParams } from './wechatPay.types';
-import { PricingPlan } from '@/utils/constants';
+import { H5PrePayRequestParams, JSAPIPrePayRequestParams, NativePrePayRequestParams } from './wechatPay.types';
 const SIGN_ALG = 'SHA256withRSA'
 const SCHEMA = 'WECHATPAY2-SHA256-RSA2048';
 const APP_ID = process.env.SERVICE_APP_ID;
 const WEXIN_PAY_MERCHANTID = process.env.WEXIN_PAY_MERCHANTID;
 const WEXIN_PAY_CERT_SERIAL_NO = process.env.WEXIN_PAY_CERT_SERIAL_NO;
-const H5_PRE_PAY_API_URL = 'https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi';
+const JSAPI_PRE_PAY_API_URL = 'https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi';
 const NATIVE_PRE_PAY_API_URL = 'https://api.mch.weixin.qq.com/v3/pay/transactions/native';
+const H5_PRE_PAY_API_URL = 'https://api.mch.weixin.qq.com/v3/pay/transactions/h5';
 const QUERY_TRANSACATIONS_BY_TRADE_NO_URL = 'https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no/';
 const PRIVATE_KEY = process.env.WECHAT_PAY_PEM_PRIVATE_KEY || `-----BEGIN PRIVATE KEY-----
 MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC1cqD8tUc6j8wA
@@ -87,8 +87,8 @@ function getPaySign(appid: string, body: string) {
     body,
   ]).build();
   return {
-    appid,
-    timestamp,
+    appId: appid,
+    timeStamp: timestamp,
     nonceStr,
     package: body,
     paySign,
@@ -134,7 +134,7 @@ async function get(url: URL) {
   return prepayResJson;
 }
 
-export async function getPayUrl(tradeNo: string, name: string, price: number) {
+export async function getNativePayUrl(tradeNo: string, name: string, price: number) {
   if (!APP_ID || !WEXIN_PAY_MERCHANTID) {
     return 'server error';
   }
@@ -144,7 +144,6 @@ export async function getPayUrl(tradeNo: string, name: string, price: number) {
     description: name,
     // TODO: gen trade no
     out_trade_no: tradeNo,
-    // TODO: update expire time
     time_expire: dayjs().add(2, 'hours').format('YYYY-MM-DDTHH:mm:ssZ'),
     notify_url: 'https://www.aiworks.club/api/weichat/payNotify',
     // TODO 查询优惠数据并更新价格
@@ -155,6 +154,70 @@ export async function getPayUrl(tradeNo: string, name: string, price: number) {
   const prepayRes = await post(new URL(NATIVE_PRE_PAY_API_URL), prePayParams);
   console.info('create prepay res', prepayRes);
   return prepayRes;
+}
+
+export async function getH5PayUrl(tradeNo: string, name: string, price: number) {
+  if (!APP_ID || !WEXIN_PAY_MERCHANTID) {
+    return 'server error';
+  }
+  const prePayParams: H5PrePayRequestParams = {
+    appid: APP_ID,
+    mchid: WEXIN_PAY_MERCHANTID,
+    description: name,
+    out_trade_no: tradeNo,
+    time_expire: dayjs().add(2, 'hours').format('YYYY-MM-DDTHH:mm:ssZ'),
+    notify_url: 'https://www.aiworks.club/api/weichat/payNotify',
+    scene_info: {
+      payer_client_ip: '127.0.0.1',
+      h5_info: {
+        type: 'Wap',
+      }
+    },
+    amount: {
+      total: price,
+    }
+  };
+  const prepayRes = await post(new URL(H5_PRE_PAY_API_URL), prePayParams);
+  console.info(prepayRes)
+  // const prepayId = (prepayResJson).prepay_id;
+  // if (!prepayId) {
+  //   throw prepayResJson
+  // }
+  // return {
+  //   prepayId,
+  //   ...getPaySign(APP_ID, `prepay_id=${prepayId}`),
+  // };
+  return prepayRes.h5_url;
+}
+
+export async function getJSAPIPayInfo(tradeNo: string, name: string, price: number, openid: string) {
+  if (!APP_ID || !WEXIN_PAY_MERCHANTID) {
+    return 'server error';
+  }
+  const prePayParams: JSAPIPrePayRequestParams = {
+    appid: APP_ID,
+    mchid: WEXIN_PAY_MERCHANTID,
+    description: name,
+    out_trade_no: tradeNo,
+    payer: {
+      openid: openid,
+    },
+    time_expire: dayjs().add(2, 'hours').format('YYYY-MM-DDTHH:mm:ssZ'),
+    notify_url: 'https://www.aiworks.club/api/weichat/payNotify',
+    amount: {
+      total: price,
+    }
+  };
+  const prepayRes = await post(new URL(JSAPI_PRE_PAY_API_URL), prePayParams);
+
+  const prepayId = (prepayRes).prepay_id;
+  if (!prepayId) {
+    throw prepayRes;
+  }
+  return {
+//     prepayId,
+    ...getPaySign(APP_ID, `prepay_id=${prepayId}`),
+  };
 }
 
 

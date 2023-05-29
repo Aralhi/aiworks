@@ -58,5 +58,6 @@ const MJMessageSchema = new Schema<IMJMessage>({
   },
 });
 
-export default models.MJMessage ||
-  model("MJMessage", MJMessageSchema, "mjmessage");
+MJMessageSchema.index({ userId: 1, createAt: -1 });
+
+export default models.MJMessage || model("MJMessage", MJMessageSchema, "mjmessage");

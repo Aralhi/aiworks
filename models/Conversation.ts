@@ -22,5 +22,7 @@ const ConversationSchema = new Schema({
   },
 })
 
+ConversationSchema.index({ userId: 1, createAt: -1 })
+
 export default models?.Conversation ||  model('Conversation', ConversationSchema, 'conversation')
 
