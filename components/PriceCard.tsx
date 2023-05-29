@@ -337,22 +337,18 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span style={{ color: "#000000a6" }}>支持上下文关联查询</span>
+            <span style={{ color: "#000000a6" }}>全球最智能的作图系统</span>
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span style={{ color: "#000000a6" }}>会话管理个性化调教</span>
+            <span style={{ color: "#000000a6" }}>个性化参数设置</span>
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">
-              {chatPlans[0].queryCount}
+              {mjPlans[0].queryCount}
             </span>
-            <span style={{ color: "#000000a6" }}>次查询</span>
-          </p>
-          <p className="flex items-center">
-            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span style={{ color: "#000000a6" }}>聊天记录一键导出</span>
+            <span style={{ color: "#000000a6" }}>次作图</span>
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
@@ -395,26 +391,22 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span style={{ color: "#000000a6" }}>支持上下文关联查询</span>
+            <span style={{ color: "#000000a6" }}>全球最智能的作图系统</span>
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span style={{ color: "#000000a6" }}>会话管理个性化调教</span>
+            <span style={{ color: "#000000a6" }}>个性化参数设置</span>
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
             <span className="font-bold mr-1">
-              {chatPlans[0].queryCount}
+              {mjPlans[1].queryCount}
             </span>
-            <span style={{ color: "#000000a6" }}>次查询</span>
+            <span style={{ color: "#000000a6" }}>次作图</span>
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span style={{ color: "#000000a6" }}>聊天记录一键导出</span>
-          </p>
-          <p className="flex items-center">
-            <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span style={{ color: "#000000a6" }}>一周时效性</span>
+            <span style={{ color: "#000000a6" }}>三个月畅玩</span>
           </p>
         </div>
       </div>
