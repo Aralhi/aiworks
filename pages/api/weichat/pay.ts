@@ -9,8 +9,7 @@ import { calOrderPrice } from "@/utils/index";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const planId = req.query.planId as string;
-    const type = req.query.type as string;
+    const { planId, type } = req.query;
     const { _id: userId, userCode, openid } = req.session.user || {};
     if (!userId) {
       throw 'not login';

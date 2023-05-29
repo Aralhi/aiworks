@@ -25,6 +25,24 @@ export const PRICING_PLAN = [
     price: 99,
     days: 90,
     label: '季度'
+  },
+  {
+    id: '4',
+    type: 'midjourney',
+    name: '尊享版',
+    queryCount: 200,
+    price: 49,
+    days: 30,
+    label: '月'
+  },
+  {
+    id: '5',
+    type: 'midjourney',
+    name: '荣耀季卡',
+    queryCount: 1000,
+    price: 199,
+    days: 90,
+    label: '季度'
   }
 ]
 
