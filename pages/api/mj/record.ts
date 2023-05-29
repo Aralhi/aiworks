@@ -5,13 +5,8 @@ import { IMJMessage } from "@/models/MJMessage";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export type MJRecordPayloadType = Pick<
-  IMJMessage,
-  "msgHash" | "msgId" | "type" | "prompt" | "index" | "img"
->;
-
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const body = (req.body as MJRecordPayloadType) ?? {};
+  const body = (req.body as Omit<IMJMessage, "userId" | "fingerprint">) ?? {};
   const { user: { isLoggedIn, _id, fingerprint } = {} } = req.session;
   // if (!isLoggedIn || !_id || !fingerprint) {
   //   return res
@@ -21,14 +16,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     try {
       const message: IMJMessage = {
-        img: body.img,
-        userId: _id ?? "xxx",
+        userId: _id,
         fingerprint,
-        prompt: body.prompt,
-        index: body.index,
-        type: body.type,
-        msgId: body.msgId,
-        msgHash: body.msgHash,
+        ...body,
       };
       await dbConnect();
       const result = await insertMessage(message);

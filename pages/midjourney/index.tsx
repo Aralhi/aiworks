@@ -10,7 +10,6 @@ import { sessionOptions } from '@/lib/session';
 import { InferGetServerSidePropsType } from 'next';
 import { FINGERPRINT_KEY } from '@/utils/constants';
 import { getFingerprint } from '@/utils/index';
-import { MJRecordPayloadType } from 'pages/api/mj/record';
 import fetchJson from '@/lib/fetchJson';
 import { BasicModel } from 'types';
 
@@ -26,7 +25,7 @@ const defaultImg =
 function getMatchValue(str: string, key: string) {
   const regex = new RegExp(`"${key}":"(.*?)"`, 'g');
   let match;
-  let lastUri = null;
+  let lastUri = undefined;
   while ((match = regex.exec(str)) !== null) {
     lastUri = match[1];
   }
@@ -72,10 +71,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
       // const tempUriArr: string[] = [];
 
       let done = false;
-      let result: MJRecordPayloadType = {
-        type,
-        prompt: payload.text || payload.content || payload.prompt,
-      };
+      let result = { type, ...newItem };
 
       const record = await fetchJson<BasicModel<IMJMessage>>('/api/mj/record', {
         method: 'POST',
@@ -90,6 +86,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
         const uri = getMatchValue(chunkValue, 'uri');
         const curProgress = getMatchValue(chunkValue, 'progress');
         const hash = getMatchValue(chunkValue, 'hash');
+        const msgId = getMatchValue(chunkValue, 'id');
         const curContent = getMatchValue(chunkValue, 'content');
 
         // let tempUri = '';
@@ -126,6 +123,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
           state[messageIdx] = {
             ...state[messageIdx],
             img: uri ?? img,
+            msgId,
             progress: curProgress ?? progress,
             msgHash: hash ?? msgHash,
             prompt: curContent ?? prompt,

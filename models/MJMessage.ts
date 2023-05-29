@@ -1,7 +1,7 @@
 import { Schema, model, models } from "mongoose";
 
 export interface IMJMessage {
-  userId: string;
+  userId?: string;
   fingerprint?: string;
   prompt: string;
   progress?: string;
@@ -11,13 +11,11 @@ export interface IMJMessage {
   msgHash?: string;
   img?: string;
   originImg?: string;
+  content?: string;
+  createAt?: Date;
 }
 
-type MJMessageModel = IMJMessage & {
-  createAt: Date;
-};
-
-const MJMessageSchema = new Schema<MJMessageModel>({
+const MJMessageSchema = new Schema<IMJMessage>({
   userId: {
     type: String,
   },
@@ -29,6 +27,9 @@ const MJMessageSchema = new Schema<MJMessageModel>({
     required: [true, "Please provide prompt."],
   },
   progress: {
+    type: String,
+  },
+  content: {
     type: String,
   },
   type: {
