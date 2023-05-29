@@ -49,6 +49,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         });
       }
     }
+    console.log('prePayParams', prePayParams);
     await new Order({
       userId,
       tradeNo,
