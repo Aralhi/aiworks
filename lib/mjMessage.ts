@@ -32,37 +32,11 @@ export async function checkQueryCount(user: UserSession, fingerprint: string) {
     const count = await queryPricingCompletionCount(userId);
     if (count >= pricing.queryCount) {
       return { status: "failed", message: "您的套餐内查询次数已用完" };
+    } else {
+      return { status: "ok" };
     }
   }
-  return { status: "ok" };
-}
-
-export async function queryTodayCompletionCount(
-  userId: string = "",
-  fingerprint: string = ""
-) {
-  try {
-    await dbConnect();
-    const [todayStartCST, todayEndCST] = getTodayTime();
-    const result = await Completion.aggregate([
-      {
-        $match: {
-          $or: [{ userId }, { fingerprint }],
-          createAt: {
-            $gte: new Date(todayStartCST),
-            $lte: new Date(todayEndCST),
-          },
-        },
-      },
-      {
-        $count: "count",
-      },
-    ]);
-    return result[0]?.count || 0;
-  } catch (error) {
-    console.error("get completion today count error", error);
-    return 0;
-  }
+  return { status: "failed", message: "您的套餐内查询次数已用完" };
 }
 
 export function getCompletionCountCacheKey(userId: string) {

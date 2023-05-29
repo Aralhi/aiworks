@@ -12,6 +12,7 @@ import { FINGERPRINT_KEY } from '@/utils/constants';
 import { getFingerprint } from '@/utils/index';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { BasicModel } from 'types';
+import { useRouter } from 'next/router';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -38,6 +39,8 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
   const [messages, setMessages] = useState<Partial<MidjourneyMessage>[]>(historyList);
   const [args, setArgs] = useState<MJArgsType[]>([]);
 
+  const router = useRouter();
+
   const fetchMJ = async (type: MJMessageType, payload: Record<string, any>, newItem: Partial<MidjourneyMessage>) => {
     const checkRes = await fetch('/api/mj/check', {
       method: 'POST',
@@ -47,6 +50,16 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
       },
     });
     const checkResult = await checkRes.json();
+
+    if (checkRes.status === 400) {
+      router.push({ pathname: 'login', query: Object.assign({}, router.query, { originUrl: router.pathname }) });
+      return;
+    }
+    if (checkResult.status !== 'ok') {
+      message.warning(checkResult.message);
+      router.push({ pathname: 'pricing', query: Object.assign({}, router.query, { originUrl: router.pathname }) });
+      return;
+    }
     if (checkResult && checkResult.status === 'ok' && checkResult.data.plaintext) {
       setMessages([...messages, newItem]);
       const token = checkRes.headers.get('Authorization');
@@ -161,8 +174,6 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
       newMessage.prompt = `${newMessage.prompt} ${args
         .map((item) => `${item.arg} ${Array.isArray(item.value) ? item.value.join(' ') : item.value}`)
         .join(' ')}`;
-      setInputDisable(true);
-      setMessages([...messages, newMessage]);
       try {
         fetchMJ('imagine', { prompt: newMessage.prompt }, newMessage);
       } catch (e) {

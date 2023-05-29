@@ -7,8 +7,12 @@ import { UserSession } from "../user/user";
 import { checkQueryCount } from "@/lib/mjMessage";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const user = req.session.user as UserSession;
+  const user = req.session.user;
   const fingerprint = req.headers[FINGERPRINT_KEY] as string;
+
+  if (!user || !fingerprint) {
+    return res.status(400).json({ status: "NO_LOGIN" });
+  }
 
   const { status, message } = await checkQueryCount(
     user as UserSession,
