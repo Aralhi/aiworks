@@ -36,7 +36,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           updateAt: new Date()
         }
       });
-      console.log('...order', order)
       const user = await User.findById(userId);
       let updatedPricings = []
       if (!user.pricings?.length) {
