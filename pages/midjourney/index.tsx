@@ -38,6 +38,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
   const [inputDisable, setInputDisable] = useState(false);
   const [messages, setMessages] = useState<Partial<MidjourneyMessage>[]>(historyList);
   const [args, setArgs] = useState<MJArgsType[]>([]);
+  const [val, setVal] = useState('');
 
   const router = useRouter();
 
@@ -125,8 +126,8 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
         });
 
         /** 服务代理请求图片返回数据流 */
-        // if (uri) {
-        //   const imgResp = await fetch(`https://api.aiworks.club/api/mj/?url=${encodeURIComponent(uri)}`, {
+        // if (mjUri) {
+        //   const imgResp = await fetch(`https://api.aiworks.club/api/mj/?url=${encodeURIComponent(mjUri)}`, {
         //     method: 'GET',
         //     headers: {
         //       responseType: 'blob',
@@ -262,9 +263,14 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
   }, [messages.length]);
 
   return (
-    <div className="w-full mx-auto px-4 h-screen overflow-y-hidden bg-[#303338] dark:text-gray-100 flex justify-center flex-col">
-      <List id="mj-list" className="mx-auto alii w-3/4 xl:w-3/5 h-full overflow-y-auto" dataSource={messages} renderItem={renderMessage} />
-      <div className="relative w-3/4 xl:w-3/5 mx-auto pb-5 pt-3">
+    <div
+      className="w-full mx-auto px-4 overflow-y-hidden bg-[#303338] dark:text-gray-100 flex justify-center flex-col"
+      style={{
+        height: 'calc(100vh - 60px)',
+      }}
+    >
+      <List id="mj-list" className="mx-auto w-4/5 h-full overflow-y-auto" dataSource={messages} renderItem={renderMessage} />
+      <div className="relative w-4/5 mx-auto pb-5 pt-3">
         <MJOptsPanel onArgsChange={setArgs} />
         <TextArea
           className="w-full rounded-lg bg-[#373A3F] border-none text-white leading-5 pt-2 pb-2 pr-10 placeholder:text-white placeholder:text-opacity-50"
