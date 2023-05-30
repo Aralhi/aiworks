@@ -13,6 +13,7 @@ import { getFingerprint } from '@/utils/index';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { BasicModel } from 'types';
 import { useRouter } from 'next/router';
+import MJExplain from '@/components/MJOptsPanel/MJExplain';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -269,8 +270,16 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
         height: 'calc(100vh - 60px)',
       }}
     >
-      <List id="mj-list" className="mx-auto w-4/5 h-full overflow-y-auto" dataSource={messages} renderItem={renderMessage} />
-      <div className="relative w-4/5 mx-auto pb-5 pt-3">
+      <List
+        id="mj-list"
+        className="mx-auto w-full md:w-3/4 lg:w-4/5 xl:w-3/5 h-full overflow-y-auto"
+        dataSource={messages}
+        renderItem={renderMessage}
+        locale={{
+          emptyText: <MJExplain />,
+        }}
+      />
+      <div className="relative w-full md:w-3/4 lg:w-4/5 xl:w-3/5 mx-auto pb-5 pt-3">
         <MJOptsPanel onArgsChange={setArgs} />
         <TextArea
           className="w-full rounded-lg bg-[#373A3F] border-none text-white leading-5 pt-2 pb-2 pr-10 placeholder:text-white placeholder:text-opacity-50"
