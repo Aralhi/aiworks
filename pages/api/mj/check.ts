@@ -1,10 +1,10 @@
 import { encrypt } from "@/lib/crypto";
+import getQueryCount from "@/lib/queryCount";
 import { sessionOptions } from "@/lib/session";
 import { FINGERPRINT_KEY } from "@/utils/constants";
+import MJMessage from "@/models/MJMessage";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { UserSession } from "../user/user";
-import { checkQueryCount } from "@/lib/mjMessage";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const user = req.session.user;
@@ -14,13 +14,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ status: "NO_LOGIN" });
   }
 
-  const { status, message } = await checkQueryCount(
-    user as UserSession,
-    fingerprint
-  );
+  const count = await getQueryCount(user, "midjourney", MJMessage);
 
-  if (status !== "ok") {
-    return res.status(200).json({ status, message });
+  if (!count) {
+    return res
+      .status(200)
+      .json({ status: "failed", message: "您的套餐内查询次数已用完" });
   }
 
   const plaintext = user?._id || fingerprint;
