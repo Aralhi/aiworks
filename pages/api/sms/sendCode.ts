@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import * as tencentcloud from "tencentcloud-sdk-nodejs";
 import cache from 'memory-cache'
 import { getCodeKey } from "@/lib/sms";
+import { FINGERPRINT_KEY } from "@/utils/constants";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { phone } = req.body || {};
@@ -9,6 +10,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
     res.status(400).json({ status: 'failed' , message: "手机号格式不正确" });
     return;
+  }
+  const fingerprint = req.headers[FINGERPRINT_KEY]
+  if (!fingerprint) {
+    res.status(400).json({ status: 'failed' , message: "参数不正确" });
   }
   const code = Math.random().toString().slice(-6);//生成6位数随机验证码
   // 导入对应产品模块的client models。

@@ -53,7 +53,7 @@ const whyUs = (
           <div className="ml-4">
             <dt className="md:text-lg leading-6 font-medium text-gray-900">丰富的产品形态</dt>
             <dd className="mt-2 md:text-base text-gray-500">
-              我们有丰富的产品形态，让你生活工作全方位使用AI。包括PC、手机浏览器、微信机器人、订阅号、Chrome插件等。
+              我们有丰富的产品形态，让你生活工作全方位使用AI。包括PC、手机浏览器、订阅号、Chrome插件等。
             </dd>
           </div>
           </div>

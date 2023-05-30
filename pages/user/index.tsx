@@ -8,10 +8,19 @@ import User from "@/models/User";
 import { withIronSessionSsr } from "iron-session/next";
 import { sessionOptions } from "@/lib/session";
 import { InferGetServerSidePropsType } from "next";
-import { getTodayTime, formatUTCTime } from "@/utils/index";
+import { getTodayTime, formatUTCTime, isPC } from "@/utils/index";
 import Completion from "@/models/Completion";
-import { Button, Divider, QRCode, message } from "antd";
+import { Button, Card, Divider, QRCode, Table, message } from "antd";
 import { AccountBookOutlined, CopyFilled, GiftFilled, GiftTwoTone, UserOutlined } from "@ant-design/icons";
+
+const columns = [{
+  title: '昵称',
+  dataIndex: 'name',
+}, {
+  title: '注册时间',
+  dataIndex: 'createAt',
+  render: (text: string) => formatUTCTime(text)
+}]
 
 function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user } = useUser();
@@ -19,6 +28,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   const [userName, setUserName] = useState(user?.name || '')
   const [userAvatar, setUserAvatar] = useState(user?.avatarUrl || '')
   const [inviteUrl, setInviteUrl] = useState('')
+  const [isMobile, setIsMobile] = useState(true)
   if (user && (!user?.pricings || user?.pricings.length <= 0)) {
     user.pricings = [{
       id: '0',
@@ -42,6 +52,10 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   function selectAvatar(index: number) {
     setUserAvatar(AVATARS[index])
   }
+
+  useEffect(() => {
+    setIsMobile(isPC() ? false : true)
+  })
 
   useEffect(() => {
     // 规避第一次user为空的情况
@@ -85,7 +99,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
 
   async function copyUrl() {
     try {
-      await navigator.clipboard.writeText(inviteUrl)
+      await navigator.clipboard.writeText(`${inviteUrl} 发现一个不错的AI平台，有chatGPT、Mid Journey，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！`)
       message.success('复制成功')
     } catch (err) {
       console.error('Failed to copy: ', err)
@@ -115,50 +129,50 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
     <div className="w-full flex">
       <div
         id="user-menu"
-        className="md:w-[250px] md:min-w-[200px] bg-white border-gray-400 border-r float-left"
+        className="w-[60px] md:w-[250px] md:min-w-[200px] bg-white border-gray-400 border-r float-left"
       >
-        <ul className="w-full md:px-4">
+        <ul className="w-full md:px-4 flex justify-center items-center flex-col">
           <li
-            className={`cursor-pointer flex items-center md:px-6 sm:px-2 py-2 ${
+            className={`w-full flex items-center justify-center cursor-pointer md:px-6 sm:px-2 py-4 ${
               currentIndex === 1 ? "bg-gray-200 text-cyan-700" : "text-gray-700"
             } hover:bg-gray-100`}
             onClick={() => {
               setCurrentIndex(1);
             }}
           >
-            <AccountBookOutlined rev='' className="w-4 h-4 mr-4" />
-            <span>账单</span>
+            <AccountBookOutlined rev='' className="w-4 h-4 md:mr-4" style={{ fontSize: '16px' }}/>
+            {!isMobile && <span>账单</span>}
           </li>
           <li
-            className={`cursor-pointer flex items-center md:px-6 sm:px-2 py-2 ${
+            className={`w-full flex items-center justify-center cursor-pointer md:px-6 sm:px-2 py-4 ${
               currentIndex === 2 ? "bg-gray-200 text-cyan-700" : "text-gray-700"
             } hover:bg-gray-100`}
             onClick={() => {
               setCurrentIndex(2);
             }}
           >
-            <UserOutlined rev='' className="w-4 h-4 mr-4" />
-            <span>账户</span>
+            <UserOutlined rev='' className="w-4 h-4 md:mr-4" />
+            {!isMobile && <span>账户</span>}
           </li>
           <li
-            className={`cursor-pointer flex items-center md:px-6 sm:px-2 py-2 ${
+            className={`w-full flex items-center justify-center cursor-pointer md:px-6 sm:px-2 py-4 ${
               currentIndex === 3 ? "bg-gray-200 text-cyan-700" : "text-gray-700"
             } hover:bg-gray-100`}
             onClick={() => {
               setCurrentIndex(3);
             }}
           >
-            <GiftFilled rev='' className="w-4 h-4 mr-4" />
-            <span>奖励</span>
+            <GiftFilled rev='' className="w-4 h-4 md:mr-4" />
+            {!isMobile && <span>奖励</span>}
           </li>
         </ul>
       </div>
-      <div id="user-info" className="h-screen w-full">
+      <div id="user-info" className="h-screen w-full overflow-x-hidden">
         {currentIndex === 1 && (
           <div className="p-4">
             <h1 className="text-2xl">套餐</h1>
             {(user?.pricings?.map((pricing, index) => (
-              <div className="flex gap-6 flex-row">
+              <div className="flex gap-6 flex-row" key={`user_pricing_${index}`}>
                 <div key={`pricing_${index}`} className="w-full flex gap-4 mt-6">
                   <div className="flex flex-col  gap-4 p-4 w-full md:w-1/2 shadow-md transition duration-300 ease-out delay-0">
                     <p>
@@ -170,14 +184,14 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                     <p>
                       {!pricing?.name && <>
                         <span className="text-gray-400">每天只有</span>
-                        <span className="font-bold text-black mx-2">
+                        <span className="font-bold text-violet-600 mx-2">
                           {pricing?.queryCount || 10}
                         </span>
                         <span className="text-gray-400">查询次数</span>
                       </>}
                       {pricing?.name && <>
                         <span className="text-gray-400">您共有</span>
-                        <span className="font-bold text-black mx-2">
+                        <span className="font-bold text-violet-600 mx-2">
                           {pricing?.queryCount || 10}
                         </span>
                         <span className="text-gray-400">查询次数</span>
@@ -286,66 +300,53 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
           </div>
         )}
         {currentIndex === 3 && (
-          <div className="p-4 w-[900px]">
+          <div className="p-4 md:w-[900px]">
             <h1 className="text-2xl">参与过程</h1>
             <div
               className="flex flex-col p-6 justify-center rounded-2xl my-6"
               style={{ backgroundColor: "rgba(56, 114, 224, 0.04)" }}
             >
               <div className="items-center flex flex-row gap-5 justify-center">
-                <div className="w-[40px] h-[40px] bg-white flex justify-center items-center border-2 border-solid border-{reward-gray} border-rad rounded-full" style={{ WebkitBoxShadow: '0 0 0 2px #fff' }}>🔗</div>
-                <div className="flex items-center flex-row w-[190px]">
+                <div className="w-[20px] h-[20px] md:w-[40px] md:h-[40px] bg-white flex justify-center items-center border-2 border-solid border-{reward-gray} border-rad rounded-full" style={{ WebkitBoxShadow: '0 0 0 2px #fff' }}>🔗</div>
+                <div className="flex items-center flex-row w-[120px] md:w-[190px]">
                   <div className="flex-1" style={{ height: '1px', border: '1px dashed rgba(56,114,224,.56)' }}></div>
                   <div className="rotate-90" style={{borderBottom: '6px solid rgba(56,114,224,.56)', borderLeft: '3px solid transparent', borderRight: '3px solid transparent' }}></div>
                 </div>
-                <div className="w-[40px] h-[40px] bg-white flex justify-center items-center border-2 border-solid border-{reward-gray} border-rad rounded-full" style={{ WebkitBoxShadow: '0 0 0 2px #fff' }}>🖥️</div>
-                <div className="flex items-center flex-row w-[190px]">
+                <div className="w-[20px] h-[20px] md:w-[40px] md:h-[40px] bg-white flex justify-center items-center border-2 border-solid border-{reward-gray} border-rad rounded-full" style={{ WebkitBoxShadow: '0 0 0 2px #fff' }}>🖥️</div>
+                <div className="flex items-center flex-row w-[120px] md:w-[190px]">
                   <div className="flex-1" style={{ height: '1px', border: '1px dashed rgba(56,114,224,.56)' }}></div>
                   <div className="rotate-90" style={{borderBottom: '6px solid rgba(56,114,224,.56)', borderLeft: '3px solid transparent', borderRight: '3px solid transparent' }}></div>
                 </div>
-                <div className="w-[40px] h-[40px] bg-white flex justify-center items-center border-2 border-solid border-{reward-gray} border-rad rounded-full" style={{ WebkitBoxShadow: '0 0 0 2px #fff' }}>🎁</div>
+                <div className="w-[20px] h-[20px] md:w-[40px] bg-white flex justify-center items-center border-2 border-solid border-{reward-gray} border-rad rounded-full" style={{ WebkitBoxShadow: '0 0 0 2px #fff' }}>🎁</div>
               </div>
               <div className="items-center flex flex-row gap-5 justify-center mt-4">
                 <p className="flex-1 text-center">通过邀请链接邀请好友</p>
                 <p className="flex-1 text-center">好友注册账户</p>
-                <p className="flex-1 text-center">您和您的朋友各获得1个MJ调用额</p>
+                {isMobile && <p className="flex-1 text-center">获得0.5元奖励，最高享五折</p>}
+                {!isMobile && <p className="flex-1 text-center">您将获得0.5元奖励，下次订阅时使用，最高享五折</p>}
               </div>
               <Divider />
-              <div className="flex justify-between items-center">
-                <div className="bg-white flex h-[40px] overflow-hidden w-1/2 mt-6" style={{ border: '1px solid #212b36', borderRadius: '8px' }}>
-                  <input className="py-4 flex-1 text-gray-950 outline-none pl-2" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
-                  <div className="flex py-4 items-center flex-row justify-center gap-4 text-white cursor-pointer" style={{ backgroundColor: '#212b36', width: '140px', lineHeight: '40px', userSelect: 'none' }}
-                    onClick={copyUrl}>
-                    <CopyFilled rev='' />复制
+              <div className="flex flex-col md:flex-row justify-between items-center">
+                <div className="flex flex-col justify-center items-center gap-4 md:w-1/2 w-full">
+                  <div className="bg-white flex h-[40px] w-full mt-6" style={{ border: '1px solid #212b36', borderRadius: '8px' }}>
+                    <input className="py-4 text-gray-950 outline-none pl-2 w-full" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
+                    <div className="flex py-4 items-center flex-row justify-center gap-4 text-white cursor-pointer" style={{ backgroundColor: '#212b36', width: '140px', lineHeight: '40px', userSelect: 'none' }}
+                      onClick={copyUrl}>
+                      <CopyFilled rev='' />复制
+                    </div>
                   </div>
+                  <Card>
+                    <p>{inviteUrl} 发现一个不错的AI平台，有chatGPT、Mid Journey，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！</p>
+                  </Card>
                 </div>
-                <div id="myqrcode" className="flex flex-col justify-start items-center w-1/2">
+                <div id="myqrcode" className="flex flex-col justify-start items-center md:w-1/2 w-full gap-4">
                   <QRCode className="mt-2" value={inviteUrl}/>
                   <Button className="w-[100px]" onClick={downloadQRCode}>下载</Button>
                 </div>
               </div>
             </div>
             <h1 className="text-2xl">记录</h1>
-            <table className="flex justify-center items-center flex-1 w-full flex-row flex-wrap p-4">
-              <thead className="w-full">
-                <tr className="w-full flex justify-center flex-row flex-1 bg-gray-100">
-                  <th className="w-1/2 py-4" style={{ border: '1px solid violet', borderRight: 'none' }}>用户</th>
-                  <th className="w-1/2 py-4" style={{ border: '1px solid violet' }}>创建时间</th>
-                </tr>
-              </thead>
-              <tbody className="w-full">
-                {(inviteList || []).map((item: any, index: number) => (
-                  <tr key={`invite_${index}`} className="w-full flex justify-center items-center flex-row flex-1">
-                    <td className="w-1/2 text-center h-[48px]" style={{ lineHeight: '48px', border: '1px solid violet', borderRight: 'none', borderTop: index === 0 ? 'none' : '' }}>
-                      {item.name}
-                    </td>
-                    <td className="w-1/2 text-center h-[48px]" style={{ lineHeight: '48px', border: '1px solid violet', borderTop: index === 0 ? 'none' : '' }}>
-                      {item.createAt ? formatUTCTime(item.createAt) : '-'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <Table dataSource={inviteList} columns={columns} />
           </div>
         )}
       </div>

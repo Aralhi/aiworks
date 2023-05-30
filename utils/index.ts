@@ -41,6 +41,9 @@ export function getTodayTime() {
 }
 
 export function formatUTCTime(utcDateString: string) {
+  if (!utcDateString) {
+    return ''
+  }
   const utcDate = new Date(utcDateString);
   const localDate = new Date(utcDate.getTime() + (new Date().getTimezoneOffset() * 60000 * -1));
   const formattedDate = localDate.toISOString().replace('T', ' ').substr(0, 19);

@@ -423,7 +423,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           ))}
         </ol>
       </div>
-      <main className={`h-full w-full relative ${ isMobile && isOpen && 'bg-gray-500 bg-opacity-50' }`}>
+      <main className={`w-full relative ${ isMobile && isOpen && 'bg-gray-500 bg-opacity-50' }`} style={{ height: 'calc(100% - 60px)'}}>
         {isMobile && <MobileChatHeader className={`${ isOpen && 'bg-gray-500 bg-opacity-50' }`} toggle={toggle} newChat={newChat}/>}
         <div className="relative text-gray-800 w-full h-full md:flex md:flex-col dark:text-gray-100 overflow-y-scroll">
           {init && <ChatDesc onExampleClick={selectExample} />}
@@ -439,7 +439,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                       <div className="w-full flex gap-4 text-base md:gap-6 lg:px-0 m-auto ">
                         <div
                           id="user-avatar"
-                          className='class="flex-shrink-0 flex flex-col relative items-end"'
+                          className='flex-shrink-0 flex flex-col relative items-end'
                         >
                           <img className="w-[30px]" src={user?.avatarUrl} />
                         </div>
@@ -473,7 +473,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                         className="relative flex w-[calc(100%-50px)] flex-col gap-1 md:gap-3 lg:w-[calc(100%-115px)]"
                       >
                         <div className="flex flex-grow flex-col gap-3">
-                          <div className="min-h-[20px] flex flex-col items-start gap-4 break-words">
+                          <div className="min-h-[20px] flex flex-col items-start gap-4 break-words overflow-auto">
                             <div className="markdown prose w-full break-words dark:prose-invert light">
                               <ReactMarkdown
                                 children={item.completion}
@@ -541,16 +541,17 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
                   </div>
                 </div>
               ))}
-              <div className="w-full h-32 md:h-48 flex-shrink-0"></div>
+              <div className="w-full h-12 md:h-48 flex-shrink-0 flex justify-end items-center pr-2 md:pr-6">
+                {
+                conversationId && <div className={`bg-gray-400 dark:bg-gray-900 w-8 h-8 rounded-full z-10 cursor-pointer flex items-center justify-center`}
+                  onClick={() => exportConversation()}>
+                  <DownloadOutlined rev='' className='w-4 h-4' />
+                </div>
+              }
+              </div>
             </ScrollToBottom>
           )}
-          <div className="w-full fixed bottom-0 left-0 border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent md:bg-vert-light-gradient md:dark:bg-vert-dark-gradient pt-2">
-            {
-              conversationId && <div className='bg-gray-400 dark:bg-gray-900 absolute bottom-[120px] w-8 h-8 rounded-full z-10 right-6 cursor-pointer flex items-center justify-center'
-                onClick={() => exportConversation()}>
-                <DownloadOutlined rev='' className='w-4 h-4' />
-              </div>
-            }
+          <div className={`w-full ${isMobile ? "static" : "absolute bottom-0 left-0"} ${init ? 'mt-20' : ''} border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent md:bg-vert-light-gradient md:dark:bg-vert-dark-gradient pt-2`}>
             <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
               <div className="relative flex h-full flex-1 items-stretch flex-col">
                 <div className="">

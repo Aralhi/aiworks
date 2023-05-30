@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { PRICING_PLAN } from "@/utils/constants";
-import Image from "next/image";
+import { Image } from 'antd';
 import { Modal, Popover, QRCode, Radio, RadioChangeEvent, message } from 'antd';
 import { AlipayCircleOutlined, CheckCircleFilled, GiftOutlined, WechatOutlined } from '@ant-design/icons';
 import useUser from '@/lib/userUser';
@@ -26,6 +26,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
   const [inviteCount, setInviteCount] = useState(0);
   const [payType, setPayType] = useState(1); // 1: wechat, 2: alipay
   const [paying, setPaying] = useState(false)
+  const [payStatus, setPayStatus] = useState('')
   const router = useRouter();
   const [selected, setSelected] = useState(PRICING_TYPES[0].value)
   const radioChange = ({ target: { value } }: RadioChangeEvent) => {
@@ -53,7 +54,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
                     // 使用以上方式判断前端返回,微信团队郑重提示：
                     //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
                     const res: CustomResponseType = await fetchJson(`/api/weichat/queryOrder?tradeNo=${payInfo.tradeNo}`);
-                    message.success('支付成功');
+                    setPayStatus('success')
                     if (payCallback && typeof payCallback === 'function') {
                       payCallback(planId);
                     }
@@ -70,7 +71,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
                   tradeNo: null,
                   orderPrice: 0
                 });
-                message.success('支付成功');
+                setPayStatus('success')
                 clearInterval(orderPolling.current);
                 if (payCallback && typeof payCallback === 'function') {
                   payCallback(planId);
@@ -242,7 +243,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
         </div>
       </div>
       <div className="relative bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3">
-        <Image className="absolute top-0 left-0" src="/pro.svg" width={64} height={64} alt="logo" />
+        <Image rootClassName="absolute top-0 left-0" src="/pro.svg" width={64} height={64} alt="pro" />
         <h1 className="text-lg text-violet-700 flex justify-center">
           {chatPlans[2].name}
           {inviteCount > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
@@ -361,7 +362,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
         </div>
       </div>
       <div className="bg-white rounded-3xl md:min-w-[250px] md:min-h-[350px] flex flex-col items-center justify-center p-4 gap-3 relative">
-        <Image className="absolute top-0 left-0" src="/pro.svg" width={64} height={64} alt="logo" />
+        <Image rootClassName="absolute top-0 left-0" src="/pro.svg" width={64} height={64} alt="pro" />
         <h1 className="text-lg flex justify-center items-center text-violet-700">
           {mjPlans[1].name}
           {inviteCount > 0 && <GiftOutlined rev='' className='text-red-500 ml-2' />}
@@ -439,6 +440,19 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
           {payInfo?.orderPrice > 0 && <p className='text-lg text-red-500 font-bold'>￥{payInfo?.orderPrice}</p>}
           <QRCode value={payInfo?.payUrl} size={300} />
         </div>}
+      </Modal>
+      <Modal
+        title="支付成功"
+        open={payStatus === 'success'}
+        onOk={() => {setPayStatus('')}}
+        onCancel={() => {setPayStatus('')}}
+        okText="确定"
+        cancelText="取消"
+      >
+          <div className='flex justify-center items-center w-full flex-col gap-4'>
+            <h1 className='w-full text-center font-bold text-violet-500'>加入会员俱乐部，不仅有客服答疑，更有更多AI知识分享。</h1>
+            <img src="/wx_group_1.png" alt="aiworks club" className='w-[250px] h-[250px]' />
+          </div>
       </Modal>
       {inviteCount > 0 && <p className='w-full flex justify-center items-center'>
         <span>邀请了</span>

@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useEffect } from 'react';
+import { ChangeEvent, useState, useEffect, useRef } from 'react';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
 import { Tabs, Checkbox, Input, message } from 'antd';
@@ -25,6 +25,7 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
   const [qrStatus, setQrStatus] = useState('');
   const router = useRouter();
   const inviteCode = router.query?.c
+  const countdownRef = useRef<HTMLElement>(null);
 
   const tabItems: TabsProps['items'] = [
     {
@@ -50,20 +51,13 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
       return message.warning('请阅读并同意用户协议')
     }
     setCountdown(SMS_TIMEOUT);
-    const res = await fetch('/api/sms/sendCode', {
+    const res: CustomResponseType = await fetchJson('/api/sms/sendCode', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         phone
       })
     })
-    if (!res.ok) {
-      return message.error('验证码发送失败')
-    }
-    const result = await res.json();
-    if (result.status === 'ok') {
+    if (res.status === 'ok') {
       return message.success('验证码发送成功')
     }
   };
@@ -100,7 +94,19 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
     }
     let timer: any = null;
     timer = setInterval(() => {
-      setCountdown((prevCountdown) => prevCountdown - 1);
+      if (countdownRef.current) {
+        const count = Number(countdownRef.current?.innerText)
+        if (count <= 0) {
+          setCountdown(-1);
+          clearInterval(timer);
+        }
+        try {
+          countdownRef.current.innerText = (count - 1).toString();
+        } catch (e) {
+          clearInterval(timer);
+          setCountdown(-1);
+        }
+      }
     }, 1000);
     return () => clearInterval(timer);
   }, [countdown])
@@ -212,7 +218,9 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
             defaultValue={code}
             placeholder='请输入验证码'
             onBlur={codeBlur}
-            addonAfter={<span className='cursor-pointer' onClick={handleSendCode}>{countdown > 0 ? `${countdown} 秒重新获取` : '获取验证码'}</span>}
+            addonAfter={<span className='cursor-pointer' onClick={handleSendCode}>
+              {countdown > 0 && <span ref={countdownRef}>{countdown}</span>}获取验证码
+              </span>}
             className='w-full h-[40px]'
           />
           <label className='text-red-400 text-xs'>{!codeCheck && '请输入正确的验证码'}</label>

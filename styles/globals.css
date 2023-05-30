@@ -187,7 +187,28 @@ table {
 .markdown ol li, .markdown ol li>p, .markdown ol ol, .markdown ol ul, .markdown ul li, .markdown ul li>p, .markdown ul ol, .markdown ul ul {
   margin: 0;
 }
-
+.markdown pre {
+  word-wrap: normal;
+}
+.markdown pre>code {
+  padding: 0;
+  margin: 0;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+.markdown pre code, .markdown pre tt {
+  display: inline;
+  max-width: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
 :where(.css-dev-only-do-not-override-15rg2km).ant-radio-wrapper {
   color: white;
 }
@@ -205,4 +226,8 @@ table {
 .dark #pricing-type-radio {
   border-radius: 12px;
   background-color: #353459;
+}
+
+:where(.css-dev-only-do-not-override-w8mnev).ant-btn-primary {
+  background-color: #1677ff !important;
 }

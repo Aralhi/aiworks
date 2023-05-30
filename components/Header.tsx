@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { Image } from 'antd';
 import Link from 'next/link';
 import { useState } from 'react';
 import useUser from '@/lib/userUser';
@@ -44,7 +44,7 @@ export default function Header() {
     <header className="w-full bg-black shadow z-10 md:px-6 h-[60px]">
       <nav className="flex justify-between items-center h-full">
         <Link href="/">
-          <Image width={120} height={100} alt="logo" src="/aiworks-long.png" />
+          <Image width={120}alt="logo" src="/aiworks-long.png" />
         </Link>
         <div className="navigation text-white">
           <ul className="flex">
