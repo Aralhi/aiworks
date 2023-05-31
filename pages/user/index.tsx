@@ -99,7 +99,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
 
   async function copyUrl() {
     try {
-      await navigator.clipboard.writeText(`${inviteUrl} 发现一个不错的AI平台，有chatGPT、Mid Journey，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！`)
+      await navigator.clipboard.writeText(`${inviteUrl} 发现一个不错的AI平台，有GPT、AIGC等工具，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！`)
       message.success('复制成功')
     } catch (err) {
       console.error('Failed to copy: ', err)
@@ -336,7 +336,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                     </div>
                   </div>
                   <Card>
-                    <p>{inviteUrl} 发现一个不错的AI平台，有chatGPT、Mid Journey，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！</p>
+                    <p>{inviteUrl} 发现一个不错的AI平台，有chatAI、AIGC等工具，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！</p>
                   </Card>
                 </div>
                 <div id="myqrcode" className="flex flex-col justify-start items-center md:w-1/2 w-full gap-4">

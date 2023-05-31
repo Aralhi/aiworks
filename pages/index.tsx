@@ -45,7 +45,7 @@ const Home: NextPage = () => {
               className="mb-4"
             />
             <p className="text-gray-600 mb-4">
-              用chatGPT帮你写代码，一分钟搞定技术难点
+              用chatAI帮你写代码，一分钟搞定技术难点
             </p>
             <Link className="underline text-center" href={'/chat'}>了解更多</Link>
           </div>

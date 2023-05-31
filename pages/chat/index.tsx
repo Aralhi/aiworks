@@ -55,7 +55,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [showLoginDialog, setShowLoginDialog] = useState(false)
 
   useEffect(() => {
-    document.title = `${conversationName || 'ChatGPT'} - AI works`
+    document.title = `${conversationName || 'ChatAI'} - AI works`
     setIsOpen(isPC() ? true : false)
     setIsMobile(isPC() ? false : true)
     if (conversations && conversations.length > MAX_CONVERSATION_COUNT && !localStorage.getItem('aiworks_conversation_count_message')) {
