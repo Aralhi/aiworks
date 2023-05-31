@@ -1,6 +1,7 @@
 import { ArrowDownOutlined } from '@ant-design/icons';
-import { Row, Table, TableColumnsType, Tag } from 'antd';
+import { Row, Table, Tag } from 'antd';
 import { ColumnsType } from 'antd/es/table';
+import Image from 'next/image';
 
 interface DataType {
   arg: string;
@@ -10,6 +11,7 @@ interface DataType {
 const columns: ColumnsType<DataType> = [
   {
     title: '参数',
+    key: 'arg',
     dataIndex: 'arg',
     render: (val) => <Tag>{val}</Tag>,
   },
@@ -21,14 +23,13 @@ const columns: ColumnsType<DataType> = [
 ];
 
 const data: DataType[] = [
-  { arg: '--v', desc: '模型版本号，默认使用最新版本V5' },
-  { arg: '--no', desc: '负面加权（–no red 会尝试移除红色）' },
+  { arg: '--v', desc: '模型版本号，可选版本1 ~ 5，默认使用最新版本V5' },
+  { arg: '--no', desc: '负面加权（–-no red 会尝试移除红色）' },
   { arg: '--iw', desc: '设置图片提示的权重' },
-  { arg: '--ar', desc: '图像宽高比' },
-  { arg: '--w', desc: '图像的宽度。必须是 64 的倍数（可选 128 --hd）效果更好' },
-  { arg: '--h', desc: '图像的高度。必须是 64 的倍数（可选 128 --hd）效果更好' },
+  { arg: '--ar', desc: '图像宽高比，必须为整数' },
+  { arg: '--w', desc: '图像的宽度。必须是 64 的倍数' },
+  { arg: '--h', desc: '图像的高度。必须是 64 的倍数' },
   { arg: '--seed', desc: '设置随机种子，这可以帮助在几代图像之间保持更稳定/可重复性' },
-  { arg: '--fast', desc: '更快的渲染速度，但图像的一致性会更少' },
   { arg: '--hd', desc: '使用不同的算法，该算法可能更适合较大的图像，但构图的一致性较差，适合抽象和风景提示。' },
   { arg: '--stop', desc: '在设定的百分比处停止生成。必须在 10-100 之间' },
 ];
@@ -52,15 +53,21 @@ function MJExplain() {
             例如：<Tag>A dog in space</Tag>(只支持全英文输入)，会输出以下结果
             <ArrowDownOutlined rev="" />
           </p>
-          <img className="w-full md:w-1/2 lg:w-1/2 xl:w-1/2 rounded-lg shadow-lg" src="case-1.jpg" />
+          <Image className="w-full md:w-1/2 lg:w-1/2 xl:w-1/2 rounded-lg shadow-lg" width={300} height={300} src='/case-1.jpg' alt="" />
           <p>
             也可以输入更多生成参数，例如：<Tag>A dog in space --v 4</Tag>，其中<Tag>--v 4</Tag>为使用模型V4版本
           </p>
           <p>
-            更多参数可参考遗下表格
+            更多参数可参考以下表格
             <ArrowDownOutlined rev="" />
           </p>
           <Table pagination={false} bordered columns={columns} dataSource={data}></Table>
+          <p>
+            <Tag>U1 ~ U4</Tag>选项说明：选定图1 - 4任意一张输出图片
+          </p>
+          <p>
+            <Tag>V1 ~ V4</Tag>选项说明：选定图1 - 4任意一张为变化参考继续生成
+          </p>
         </div>
       </Row>
       <Row className="block flex-col flex-1">
