@@ -39,7 +39,6 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
   const [inputDisable, setInputDisable] = useState(false);
   const [messages, setMessages] = useState<Partial<MidjourneyMessage>[]>(historyList);
   const [args, setArgs] = useState<MJArgsType[]>([]);
-  const [val, setVal] = useState('');
 
   const router = useRouter();
 
@@ -65,7 +64,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
     if (checkResult && checkResult.status === 'ok' && checkResult.data.plaintext) {
       setMessages([...messages, newItem]);
       const token = checkRes.headers.get('Authorization');
-      const resp = await fetch(`https://api.aiworks.club/api/mj/${type}`, {
+      const resp = await fetch(`http://47.242.197.46:3000/api/mj/${type}`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -83,7 +82,6 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
       const reader = data.getReader();
       const decoder = new TextDecoder();
       const messageIdx = messages.length;
-      // const tempUriArr: string[] = [];
 
       let done = false;
       let mjMessage: Partial<IMJMessage> = {
@@ -111,13 +109,37 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
         const mjId = getMatchValue(chunkValue, 'id');
         const mjContent = getMatchValue(chunkValue, 'content');
 
-        // let tempUri = '';
+        let ossUrl: string | undefined;
 
+        /** 服务代理请求图片返回数据流 */
+        if (mjUri) {
+          const { data } = await fetchJson<CustomResponseType>(`http://47.242.197.46:3000/api/mj/image`, {
+            method: 'POST',
+            headers: {
+              Authorization: `${token}`,
+              'x-salai-plaintext': checkResult.data.plaintext,
+              [FINGERPRINT_KEY]: await getFingerprint(),
+            },
+            body: JSON.stringify({ url: mjUri }),
+          });
+          ossUrl = data.url;
+          setMessages((state) => {
+            const { progress, msgHash, prompt, msgId } = state[messageIdx];
+            state[messageIdx] = {
+              ...state[messageIdx],
+              progress: data.url ?? progress,
+              msgId: mjId ?? msgId,
+              msgHash: mjHash ?? msgHash,
+              content: mjContent ?? prompt,
+            };
+            return [...state];
+          });
+        }
         /** 更新数据 */
         fetchJson(`/api/mj/update?id=${record._id}`, {
           method: 'PATCH',
           body: JSON.stringify({
-            img: mjUri,
+            img: ossUrl,
             originImg: mjUri,
             content: mjContent,
             msgId: mjId,
@@ -125,42 +147,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
             progress: mjProgress,
           }),
         });
-
-        /** 服务代理请求图片返回数据流 */
-        // if (mjUri) {
-        //   const imgResp = await fetch(`https://api.aiworks.club/api/mj/?url=${encodeURIComponent(mjUri)}`, {
-        //     method: 'GET',
-        //     headers: {
-        //       responseType: 'blob',
-        //       Authorization: `${token}`,
-        //       'x-salai-plaintext': checkResult.data.plaintext,
-        //       [FINGERPRINT_KEY]: await getFingerprint(),
-        //     },
-        //   });
-        //   const blob = await imgResp.blob();
-        //   tempUri = URL.createObjectURL(blob);
-        //   /** 未完成时的临时文件地址记录下来，完成时一并释放资源 */
-        //   !doneReading && tempUriArr.push(tempUri);
-        // }
-
-        setMessages((state) => {
-          const { img, progress, msgHash, prompt, msgId } = state[messageIdx];
-          state[messageIdx] = {
-            ...state[messageIdx],
-            img: mjUri ?? img,
-            progress: mjProgress ?? progress,
-            msgId: mjId ?? msgId,
-            msgHash: mjHash ?? msgHash,
-            content: mjContent ?? prompt,
-          };
-          return [...state];
-        });
       }
-
-      /** 临时资源释放 */
-      // tempUriArr.forEach((uri) => {
-      //   URL.revokeObjectURL(uri);
-      // });
     }
   };
 
