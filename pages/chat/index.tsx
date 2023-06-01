@@ -17,7 +17,6 @@ import { sessionOptions } from '@/lib/session';
 import dbConnect from '@/lib/dbConnect';
 import { InferGetServerSidePropsType } from 'next';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
-import DialogModal from '@/components/DialogModal';
 import { ICompletion } from '@/models/Completion';
 import Link from 'next/link';
 import { Modal, message } from 'antd';
@@ -369,14 +368,14 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           <PlusSvg />
           New chat
         </a>
-        <DialogModal
-          isOpen={showDelDialog}
+        <Modal
+          open={showDelDialog}
           title='删除会话'
-          desc={<>您确认要删除<strong className='px-1'>{editingName}</strong>会话吗</>}
-          onClose={() => { setShowDelDialog(false) }}
-          cancelCallback={cancelDelete}
-          saveCallback={delConversation}
-        />
+          onCancel={cancelDelete}
+          onOk={delConversation}
+        >
+          <p className='flex justify-center my-4'>您确认要删除<strong className='px-1'>{editingName}</strong>会话吗</p>
+        </Modal>
         <Modal
           open={showLoginDialog}
           title={!user?.isLoggedIn ? '会话次数已用完' : '购买后可继续使用'}
