@@ -35,7 +35,9 @@ async function dbConnect() {
   }
 
   try {
+    console.time('首次连接数据库')
     cached.conn = await cached.promise
+    console.timeEnd('首次连接数据库')
   } catch (e) {
     cached.promise = null
     throw e
