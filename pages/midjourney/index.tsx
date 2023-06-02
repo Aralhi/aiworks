@@ -303,7 +303,9 @@ export default Midjourney;
 export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
   try {
     await dbConnect();
+    console.time('数据请求时间')
     const historyList = await MJMessageSchema.find({ userId: req.session.user?._id }).sort({ createAt: 1 }).lean();
+    console.timeEnd('数据请求时间')
     return {
       props: {
         historyList: JSON.parse(JSON.stringify(historyList)) as IMJMessage[],
