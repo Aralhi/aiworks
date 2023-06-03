@@ -7,7 +7,7 @@ import WxEvent from '@/models/WxEvent';
 // import redis from './redis';
 import { getUserInfoByOpenid } from './api/user';
 import { UserSession } from 'pages/api/user/user';
-import { checkQueryCount, getPayload } from './completion';
+import { checkQueryCount, createConversation, getPayload, saveCompletion } from './completion';
 
 export type AccessTokenResponse = {
   access_token: string;
@@ -179,13 +179,14 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
     // 聊天模式
     const user = await getUserInfoByOpenid(FromUserName)
     console.log('wechat chatGPT user', user?._id, user)
+    const conversationId = await createConversation(user?._id, '', Content.slice(0, 20))
     // 查询次数
     const { status, message } = await checkQueryCount(user as UserSession, '')
     if (status !== 'ok') {
       return message
     }
     const { payload, plaintext, token } = await getPayload({
-      conversationId: chatCacheKey,
+      conversationId,
       prompt: Content,
       isStream: false,
       userId: user?._id.toString() || '',
@@ -204,10 +205,23 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
         payload
       }),
     })
-    const completion = await response.json()
+    const res = await response.json()
+    const completion = res?.choices[0].message
     console.log('weichat chatGPT response success', completion)
     // 写到缓存，避免微信5s超时无法响应。回复“继续”直接从缓存读取
     cache.put(chatCacheKey, completion, CHAT_CACHE_TIME * 1000)
+    saveCompletion({
+      userId: user?._id || '',
+      prompt: payload.messages[payload.messages.length - 1].content,
+      role: payload.messages[0].role,
+      stream: payload.stream,
+      chatId: '',
+      model: payload.model,
+      conversationId,
+      content: completion,
+      usage: res.usage,
+      fingerprint: ''
+    })
     return completion
   }
 }
