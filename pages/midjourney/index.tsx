@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Input, Button, List, Image, Typography, message } from 'antd';
+import { Input, Button, List, Image, Typography, message, Skeleton } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 import MJOptsPanel, { MJArgsType } from '@/components/MJOptsPanel';
 import Tags from '@/components/MJOptsPanel/Tags';
-import MJMessageSchema, { IMJMessage } from '@/models/MJMessage';
-import { withIronSessionSsr } from 'iron-session/next';
-import dbConnect from '@/lib/dbConnect';
-import { sessionOptions } from '@/lib/session';
-import { InferGetServerSidePropsType } from 'next';
+import { IMJMessage } from '@/models/MJMessage';
 import { FINGERPRINT_KEY } from '@/utils/constants';
 import { getFingerprint } from '@/utils/index';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
