@@ -25,7 +25,7 @@ export function ChatDesc(props: any) {
   return (
     <>
       {!isHome && <h1 className="text-4xl font-semibold flex items-center justify-center py-6 md:py-12 lg:my-20">
-        ChatAI
+        ChatGPT
       </h1>}
       <div className="md:flex items-start text-center gap-3.5 md:my-10 px-6 lg:px-10">
         <div

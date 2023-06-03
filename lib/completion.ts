@@ -3,10 +3,103 @@ import { getTodayTime } from "../utils";
 import dbConnect from "./dbConnect";
 import cache from 'memory-cache'
 import User, { UserPricing } from "@/models/User";
-import { LOGIN_MAX_QUERY_COUNT, UNLOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
+import { LOGIN_MAX_QUERY_COUNT, MAX_TOKEN, UNLOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
 import { UserSession } from "pages/api/user/user";
+import Settings from "@/models/Settings";
+import { encrypt } from "./crypto";
 
 const COMPLETION_COUNT_CACHE_TIME = 1000 * 60 * 60 * 24 // 1小时
+
+type ChatGPTAgent = "user" | "system" | "assistant";
+export const CHAT_CONTEXT_PRE = 'chat_context_'
+
+export interface chatContext {
+  question: string,
+  answer: string
+}
+
+export interface ChatGPTMessage {
+  role: ChatGPTAgent;
+  content: string;
+}
+export interface OpenAIStreamPayload {
+  model: string;
+  messages: ChatGPTMessage[];
+  temperature: number;
+  top_p: number;
+  frequency_penalty: number;
+  presence_penalty: number;
+  max_tokens: number;
+  stream: boolean;
+  n: number;
+}
+
+async function getContext(conversationId: string, fingerprint: string) {
+  let messages: ChatGPTMessage[] = []
+  if (!conversationId && !fingerprint) {
+    return []
+  }
+  // 未登录用户用哦fingerPrint做为key，让用户享受到上下文功能
+  const key = `${CHAT_CONTEXT_PRE}${conversationId || fingerprint}`
+  const chatContextArr: chatContext[] =  cache.get(key) || [];
+  // 取最近两个问题做为上下文记忆, 如果考虑节省token，可以取最近一个问题做为上下文记忆
+  if (!chatContextArr.length) {
+    await dbConnect()
+    const settings = await Settings.findOne({
+      key
+    })
+    if (settings?.value) {
+      chatContextArr.push(...JSON.parse(settings.value))
+    }
+  }
+  const lastTwoQuestions: chatContext[] = chatContextArr.slice(-2);
+  lastTwoQuestions.forEach((ele: chatContext) => {
+    messages.push({
+      role: 'user',
+      content: ele.question
+    }, {
+      role: 'assistant',
+      content: ele.answer
+    });
+  });
+  return messages
+}
+
+export async function getPayload({
+  prompt,
+  isStream,
+  conversationId,
+  fingerprint,
+  userId
+}: {
+  prompt: string;
+  isStream: boolean;
+  conversationId: string;
+  fingerprint: string;
+  userId: string;
+}) {
+  const payload: OpenAIStreamPayload = {
+    model: "gpt-3.5-turbo",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 1,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    max_tokens: !isStream ? MAX_TOKEN / 2 : MAX_TOKEN, // 非流式请求最大token数为流式请求的一半，防止一次请求返回太多数据，场景主要是微信调用
+    stream: !!isStream,
+    n: 1,
+  };
+  // 获取上下文记忆
+  const messages = await getContext(conversationId, fingerprint);
+  payload.messages = messages.concat(payload.messages);
+  const plaintext = userId || fingerprint
+  const token = encrypt(plaintext)
+  return {
+    payload,
+    plaintext,
+    token
+  }
+}
 
 export async function queryTodayCompletionCount(userId: string = '', fingerprint: string = '') {
   try {
@@ -92,8 +185,7 @@ export async function saveCompletion(completion: ICompletion) {
   }
 }
 
-export async function checkQueryCount(user: UserSession, fingerprint: string) {
-  // TODO兼容微信调用，用openid
+export async function checkQueryCount(user: UserSession, fingerprint: string = '') {
   if (!user && !fingerprint) {
     return { status: 'ok' }
   }

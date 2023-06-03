@@ -12,6 +12,7 @@ import { getTodayTime, formatUTCTime, isPC } from "@/utils/index";
 import Completion from "@/models/Completion";
 import { Button, Card, Divider, QRCode, Table, message } from "antd";
 import { AccountBookOutlined, CopyFilled, GiftFilled, GiftTwoTone, UserOutlined } from "@ant-design/icons";
+import { useRouter } from "next/router";
 
 const columns = [{
   title: '昵称',
@@ -24,11 +25,12 @@ const columns = [{
 
 function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { user } = useUser();
-  const [currentIndex, setCurrentIndex] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState<string>('1');
   const [userName, setUserName] = useState(user?.name || '')
   const [userAvatar, setUserAvatar] = useState(user?.avatarUrl || '')
   const [inviteUrl, setInviteUrl] = useState('')
   const [isMobile, setIsMobile] = useState(true)
+  const router = useRouter()
   if (user && (!user?.pricings || user?.pricings.length <= 0)) {
     user.pricings = [{
       id: '0',
@@ -55,7 +57,8 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
 
   useEffect(() => {
     setIsMobile(isPC() ? false : true)
-  })
+    setCurrentIndex((router.query.t as string) || '1')
+  }, [])
 
   useEffect(() => {
     // 规避第一次user为空的情况
@@ -134,10 +137,10 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
         <ul className="w-full md:px-4 flex justify-center items-center flex-col">
           <li
             className={`w-full flex items-center justify-center cursor-pointer md:px-6 sm:px-2 py-4 ${
-              currentIndex === 1 ? "bg-gray-200 text-cyan-700" : "text-gray-700"
+              currentIndex === '1' ? "bg-gray-200 text-cyan-700" : "text-gray-700"
             } hover:bg-gray-100`}
             onClick={() => {
-              setCurrentIndex(1);
+              setCurrentIndex('1');
             }}
           >
             <AccountBookOutlined rev='' className="w-4 h-4 md:mr-4" style={{ fontSize: '16px' }}/>
@@ -145,10 +148,10 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
           </li>
           <li
             className={`w-full flex items-center justify-center cursor-pointer md:px-6 sm:px-2 py-4 ${
-              currentIndex === 2 ? "bg-gray-200 text-cyan-700" : "text-gray-700"
+              currentIndex === '2' ? "bg-gray-200 text-cyan-700" : "text-gray-700"
             } hover:bg-gray-100`}
             onClick={() => {
-              setCurrentIndex(2);
+              setCurrentIndex('2');
             }}
           >
             <UserOutlined rev='' className="w-4 h-4 md:mr-4" />
@@ -156,10 +159,10 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
           </li>
           <li
             className={`w-full flex items-center justify-center cursor-pointer md:px-6 sm:px-2 py-4 ${
-              currentIndex === 3 ? "bg-gray-200 text-cyan-700" : "text-gray-700"
+              currentIndex === '3' ? "bg-gray-200 text-cyan-700" : "text-gray-700"
             } hover:bg-gray-100`}
             onClick={() => {
-              setCurrentIndex(3);
+              setCurrentIndex('3');
             }}
           >
             <GiftFilled rev='' className="w-4 h-4 md:mr-4" />
@@ -168,7 +171,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
         </ul>
       </div>
       <div id="user-info" className="h-screen w-full overflow-x-hidden">
-        {currentIndex === 1 && (
+        {currentIndex === '1' && (
           <div className="p-4">
             <h1 className="text-2xl">套餐</h1>
             {(user?.pricings?.map((pricing, index) => (
@@ -222,7 +225,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
             <PriceCard payCallback={payCallback}/>
           </div>
         )}
-        {currentIndex === 2 && (
+        {currentIndex === '2' && (
           <div className="p-4">
             <h1 className="text-2xl">账户信息</h1>
             <div className="flex gap-6 flex-wrap justify-start p-6">
@@ -288,6 +291,15 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                   复制邀请码
                 </span>
               </div>
+              {
+                user?.openid && (
+                  <div className="w-full flex-grow">
+                    <span className="font-bold md:w-[120px] inline-block mr-4">
+                    扫码绑定微信:
+                    </span>
+                  </div>
+                )
+              }
               <div className="flex-grow">
                 <button
                   className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -299,7 +311,7 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
             </div>
           </div>
         )}
-        {currentIndex === 3 && (
+        {currentIndex === '3' && (
           <div className="p-4 md:w-[900px]">
             <h1 className="text-2xl">参与过程</h1>
             <div

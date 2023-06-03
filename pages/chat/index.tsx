@@ -353,7 +353,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   }
 
   return (
-    <div className="h-screen flex overflow-hidden dark:bg-gray-800 relative">
+    <div className="flex overflow-hidden dark:bg-gray-800 relative" style={{ height: 'calc(100vh - 60px)'}}>
       {/* 左侧菜单栏 */}
       <div
         className={`${
@@ -422,7 +422,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
           ))}
         </ol>
       </div>
-      <main className={`w-full relative ${ isMobile && isOpen && 'bg-gray-500 bg-opacity-50' }`} style={{ height: 'calc(100% - 60px)'}}>
+      <main className={`w-full relative ${ isMobile && isOpen && 'bg-gray-500 bg-opacity-50' }`}>
         {isMobile && <MobileChatHeader className={`${ isOpen && 'bg-gray-500 bg-opacity-50' }`} toggle={toggle} newChat={newChat}/>}
         <div className="relative text-gray-800 w-full h-full md:flex md:flex-col dark:text-gray-100 overflow-y-scroll">
           {init && <ChatDesc onExampleClick={selectExample} />}

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import crypto from 'crypto'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
-import {  WXtEventMessage, getQrCacheKey, getUserInfo } from "@/lib/weichat";
+import {  WXtEventMessage, getQrCacheKey, getUserInfo, handleWechatTextMsg } from "@/lib/weichat";
 import { WXUserInfo } from "@/models/User";
 import { WX_EVENT_TYPE } from "@/utils/constants";
 import WxEvent from "@/models/WxEvent";
@@ -15,7 +15,6 @@ if (!process.env.WX_PUBLIC_TOKEN) {
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     console.log('weichat event req.query', req.url)
-    console.log('weichat event req.body', typeof req.body, req.body)
     // 验证微信消息
     if (req.method === 'GET') {
       const { signature, nonce, timestamp, echostr } = req.query || {}
@@ -31,7 +30,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const message: WXtEventMessage = parser.parse(req.body).xml;
       console.log('weichat event message', message)
       // https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_event_pushes.html
-      let { MsgType, Event, EventKey, FromUserName, Ticket } = message
+      let { MsgType, Event, EventKey, FromUserName, Ticket, Content } = message
       const resBody = {
         ToUserName: message.FromUserName,
         FromUserName: message.ToUserName,
@@ -41,6 +40,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       const builder = new XMLBuilder();
       res.setHeader('Content-Type', 'application/xml')
+      // 事件类型的消息
       if (MsgType === 'event') {
         switch (Event) {
           case 'subscribe':
@@ -52,7 +52,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             break
           // 关注后扫码
           case  'SCAN':
-            resBody.Content = '登录成功'
+            resBody.Content = '登录成功，分享给好友可得丰厚奖励哦，快来看看吧。<a href="https://aiworks.club/user?t=3">https://aiworks.club/user?t=3</a>'
             break
         }
         if(!!EventKey) {
@@ -64,7 +64,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const value = `${userInfo.openid}_scan`
           // 缓存扫码状态，供浏览器轮询扫码状态
           await dbConnect()
-          await WxEvent.findOneAndUpdate({
+          const user = await WxEvent.findOneAndUpdate({
             type: WX_EVENT_TYPE.login_qr,
             key
           }, {
@@ -72,9 +72,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             updateAt: Date.now(),
           }, { upsert: true })
         }
+      } else if (MsgType === 'text') {
+        resBody.Content = await handleWechatTextMsg(message)
       }
       const xml = builder.build({ xml: resBody })
-      console.log('weichat event res', xml)
       await dbConnect()
       WxEvent.create({
         type: Event,
