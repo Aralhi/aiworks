@@ -3,25 +3,23 @@ import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
 import { Tabs, Checkbox, Input, message } from 'antd';
 import type { TabsProps } from 'antd';
-import { createQrCode } from '@/lib/weichat';
 import Link from 'next/link';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import React from 'react';
-import { InferGetServerSidePropsType } from 'next';
 import { MP_WX_API } from '@/utils/constants';
 
 const SMS_TIMEOUT = process.env.NODE_ENV === 'development' ? 5 : 60;
 let protocolChecked = false;
 
-const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Login = () => {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [phoneCheck, setPhoneCheck] = useState(true);
   const [codeCheck, setCodeCheck] = useState(true);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(-1);
-  const [qr, setQr] = useState(qrUrl);
-  const [ticket, setTicket] = useState(defaultTicket);
+  const [qr, setQr] = useState('');
+  const [ticket, setTicket] = useState('');
   const [qrStatus, setQrStatus] = useState('');
   const router = useRouter();
   const inviteCode = router.query?.c
@@ -63,8 +61,12 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
   };
 
   useEffect(() => {
+    refreshQRCode()
+  }, [])
+
+  useEffect(() => {
     document.title = '登录 | AI works';
-    if (ticket && qrUrl) {
+    if (ticket && qr) {
       // 生成二维码成功，轮询二维码扫码状态
       const checkLogin = async () => {
         const res: CustomResponseType = await fetchJson(`/api/weichat/checkLogin?ticket=${ticket}&inviteCode=${inviteCode || ''}`, {
@@ -174,7 +176,7 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
 
   async function refreshQRCode() {
     const result: CustomResponseType = await fetchJson(`/api/weichat/genLoginQR`)
-    const { ticket } = result?.data;
+    const ticket = result?.data?.ticket;
     if (ticket) {
       setTicket(ticket);
       setQr(generateQrUrl(ticket))
@@ -260,27 +262,6 @@ const Login = ({ qrUrl, defaultTicket }: InferGetServerSidePropsType<typeof getS
 };
 
 export default Login;
-
-export async function getServerSideProps() {
-  console.log('login getServerSideProps');
-  // 生成二维码
-  const result = await createQrCode();
-  if (result?.ticket) {
-    return {
-      props: {
-        defaultTicket: result?.ticket,
-        qrUrl: generateQrUrl(result?.ticket)
-      }
-    }
-  }
-  console.log('login getServerSideProps create qr', result);
-  return {
-    props: {
-      defaultTicket: null,
-      qr: null
-    }
-  }
-}
 
 function generateQrUrl(ticket: string) {
   return`${MP_WX_API}/cgi-bin/showqrcode?ticket=${encodeURIComponent(ticket)}`

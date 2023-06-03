@@ -101,7 +101,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
       return;
     }
     const fetchVoucher = async () => {
-      const res: CustomResponseType = await fetchJson(`/api/user/queryVoucher`);
+      const res: CustomResponseType = await fetchJson(`/api/user/invitePaidCount`);
       if (res.status === 'ok') {
         setInviteCount(res.data?.inviteCount)
       }
