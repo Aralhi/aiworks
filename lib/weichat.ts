@@ -1,5 +1,5 @@
 import Settings from '@/models/Settings';
-import { WXUserInfo } from '@/models/User';
+import User, { WXUserInfo } from '@/models/User';
 import { ACCESS_TOKEN_NAME, FINGERPRINT_KEY, LOGIN_QR_STATUS, LOGIN_QR_TIME, MP_WX_API, WX_API, WX_EVENT_TYPE } from '@/utils/constants'
 import dbConnect from './dbConnect';
 import cache from 'memory-cache'
@@ -169,7 +169,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
       const user = await getUserInfoByOpenid(FromUserName)
       const userId = user?._id.toString()
       console.log('wechat chatGPT user', userId, user)
-      const conversationId = await createConversation(userId, '', Content.slice(0, 20))
+      const conversationId = await createConversation(userId, '', `微信聊天${+new Date()}}`)
       cache.put(`${userId}_userinfo`, user, CHAT_CACHE_TIME * 1000)
       cache.put(chatCacheKey, `${userId}_${conversationId}`, CHAT_CACHE_TIME * 1000)
       return '请输入您的问题'
@@ -181,52 +181,56 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
     if (Content === '继续') {
       return chatCache
     }
-    // 聊天模式
-    const [userId, conversationId] = chatCache.split('_')
-    const user = JSON.parse(await cache.get(`${userId}_userinfo`))
-    // 查询次数
-    const { status, message } = await checkQueryCount(user as UserSession, '')
-    if (status !== 'ok') {
-      return message
+    try {
+      // 聊天模式
+      const [userId, conversationId] = chatCache.split('_')
+      const user = await User.findById({ _id: userId })
+      // 查询次数
+      const { status, message } = await checkQueryCount(user as UserSession, '')
+      if (status !== 'ok') {
+        return message
+      }
+      const { payload, plaintext, token } = await getPayload({
+        conversationId,
+        prompt: Content,
+        isStream: false,
+        userId: user?._id.toString() || '',
+        fingerprint: ''
+      })
+      // 调用接口
+      const response = await fetch('https://api.aiworks.club/api/generate', {
+        method: "POST",
+        headers: {
+          "Authorization": `${token}`,
+          "x-salai-plaintext": plaintext,
+          "Content-Type": "application/json",
+          [FINGERPRINT_KEY]: ''
+        },
+        body: JSON.stringify({
+          payload
+        }),
+      })
+      const res = await response.json()
+      const completion = res?.choices[0].message?.content
+      console.log('weichat chatGPT response success', completion)
+      // 写到缓存，避免微信5s超时无法响应。回复“继续”直接从缓存读取
+      cache.put(chatCacheKey, completion, CHAT_CACHE_TIME * 1000)
+      saveCompletion({
+        userId: user?._id || '',
+        prompt: payload.messages[payload.messages.length - 1].content,
+        role: payload.messages[0].role,
+        stream: payload.stream,
+        chatId: '',
+        model: payload.model,
+        conversationId,
+        content: completion,
+        usage: res.usage,
+        fingerprint: ''
+      })
+      return completion
+    } catch (e) {
+      console.error('wechat chatGPT exception', e)
     }
-    const { payload, plaintext, token } = await getPayload({
-      conversationId,
-      prompt: Content,
-      isStream: false,
-      userId: user?._id.toString() || '',
-      fingerprint: ''
-    })
-    // 调用接口
-    const response = await fetch('https://api.aiworks.club/api/generate', {
-      method: "POST",
-      headers: {
-        "Authorization": `${token}`,
-        "x-salai-plaintext": plaintext,
-        "Content-Type": "application/json",
-        [FINGERPRINT_KEY]: ''
-      },
-      body: JSON.stringify({
-        payload
-      }),
-    })
-    const res = await response.json()
-    const completion = res?.choices[0].message?.content
-    console.log('weichat chatGPT response success', completion)
-    // 写到缓存，避免微信5s超时无法响应。回复“继续”直接从缓存读取
-    cache.put(chatCacheKey, completion, CHAT_CACHE_TIME * 1000)
-    saveCompletion({
-      userId: user?._id || '',
-      prompt: payload.messages[payload.messages.length - 1].content,
-      role: payload.messages[0].role,
-      stream: payload.stream,
-      chatId: '',
-      model: payload.model,
-      conversationId,
-      content: completion,
-      usage: res.usage,
-      fingerprint: ''
-    })
-    return completion
   }
 }
 
