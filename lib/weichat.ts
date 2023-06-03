@@ -164,6 +164,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
     } else {
       // 开始聊天模式
       redis.set(chatCacheKey, 'start', 'EX', CHAT_CACHE_TIME)
+      return '请输入您的问题'
     }
   } else if (Content?.startsWith('/mj')) {
     // 作图
