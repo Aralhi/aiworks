@@ -50,7 +50,7 @@ html, html body {
   }
 }
 .prose {
-  --tw-prose-body: #374151;
+  /* --tw-prose-body: #374151; */
   /* --tw-prose-headings: #111827; */
   --tw-prose-lead: #4b5563;
   --tw-prose-links: #111827;
@@ -238,7 +238,6 @@ table {
 }
 
 .prose :where(h1):not(:where([class~=not-prose] *)) {
-  color: var(--tw-prose-headings);
   font-weight: 800;
   font-size: 2.25em;
   margin-top: 0;

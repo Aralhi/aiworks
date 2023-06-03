@@ -49,16 +49,16 @@ export default function Header() {
         <div className="navigation text-white">
           <ul className="flex">
             <li className="mr-6 flex items-center">
-              <Link href={{ pathname: 'chat', query }}>Chat</Link>
+              <Link href={{ pathname: '/chat', query }}>Chat</Link>
             </li>
             <li className="mr-6 flex items-center">
-              <Link href={{ pathname: 'midjourney', query }}>Midjourney</Link>
+              <Link href={{ pathname: '/midjourney', query }}>Midjourney</Link>
             </li>
-            {/* <li className="mr-6 flex items-center">
-              <Link href={{ pathname: 'tutorial', query }}>教程</Link>
-            </li> */}
             <li className="mr-6 flex items-center">
-              <Link href={{ pathname: 'pricing', query }}>价格</Link>
+              <Link href={{ pathname: '/tutorial', query }}>教程</Link>
+            </li>
+            <li className="mr-6 flex items-center">
+              <Link href={{ pathname: '/pricing', query }}>价格</Link>
             </li>
             <li className="relative z-50" onClick={avatarClick}>
               <a href="#">
