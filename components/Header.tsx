@@ -1,16 +1,22 @@
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useUser from '@/lib/userUser';
 import fetchJson from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
 import { AVATARS } from '@/utils/constants';
 import Image from 'next/image';
+import { isPC } from '../utils';
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, mutateUser } = useUser();
   const router = useRouter();
   const query = router.query;
+
+  useEffect(() => {
+    setIsMobile(isPC() ? false : true);
+  })
 
   function avatarClick() {
     setShowMenu(!showMenu);
@@ -48,19 +54,19 @@ export default function Header() {
         </Link>
         <div className="navigation text-white">
           <ul className="flex">
-            <li className="mr-6 flex items-center">
+            <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/chat', query }}>Chat</Link>
             </li>
-            <li className="mr-6 flex items-center">
+            <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/midjourney', query }}>Midjourney</Link>
             </li>
-            <li className="mr-6 flex items-center">
+            {!isMobile && <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/tutorial', query }}>教程</Link>
-            </li>
-            <li className="mr-6 flex items-center">
+            </li>}
+            <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/pricing', query }}>价格</Link>
             </li>
-            <li className="relative z-50" onClick={avatarClick}>
+            {!isMobile && <li className="relative z-50" onClick={avatarClick}>
               <a href="#">
                 <img src={user?.avatarUrl || AVATARS[0]} alt="Avatar" className="rounded-full w-8 h-8" />
               </a>
@@ -80,7 +86,7 @@ export default function Header() {
                   </div>
                 </div>
               )}
-            </li>
+            </li>}
           </ul>
         </div>
       </nav>

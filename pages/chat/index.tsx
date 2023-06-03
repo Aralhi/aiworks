@@ -321,7 +321,7 @@ function Chat() {
   }
 
   async function getCompletionList(id: string) {
-    if(!conversationId || !user?.isLoggedIn) {
+    if(!id || !user?.isLoggedIn) {
       return
     }
     const res: CustomResponseType = await fetchJson(`/api/completion?conversationId=${id || conversationId}`)
@@ -354,10 +354,10 @@ function Chat() {
       {/* 左侧菜单栏 */}
       <div
         className={`${
-          isOpen ? "md:w-[400px] " : "hidden overflow-hidden p-2"
+          isOpen ? "min-w-[300px] md:w-[400px] " : "hidden overflow-hidden p-2"
         } ${isMobile && "absolute z-50"} h-full transition-all duration-300 ease-in-out bg-black text-white`}
       >
-        {isMobile && isOpen && <Close className="absolute right-0 top-4" onClick={() => {setIsOpen(false)}} />}
+        {isMobile && isOpen && <Close className="absolute top-4" onClick={() => {setIsOpen(false)}} />}
         <a
           className="w-full flex py-3 px-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border border-white/20 hover:bg-gray-500/10 mb-1 flex-shrink-0"
           onClick={newChat}
@@ -421,7 +421,7 @@ function Chat() {
       </div>
       <main className={`w-full relative ${ isMobile && isOpen && 'bg-gray-500 bg-opacity-50' }`}>
         {isMobile && <MobileChatHeader className={`${ isOpen && 'bg-gray-500 bg-opacity-50' }`} toggle={toggle} newChat={newChat}/>}
-        <div className="relative text-gray-800 w-full h-full md:flex md:flex-col dark:text-gray-100 overflow-y-scroll">
+        <div className="relative text-gray-800 w-full h-full md:flex md:flex-col dark:text-gray-100 overflow-y-scroll pb-24">
           {init && <ChatDesc onExampleClick={selectExample} />}
           {!init && chatList && chatList.length > 0 && (
             <ScrollToBottom className="overflow-hidden dark:dark-theme">
@@ -537,7 +537,7 @@ function Chat() {
                   </div>
                 </div>
               ))}
-              <div className="w-full h-12 md:h-48 flex-shrink-0 flex justify-end items-center pr-2 md:pr-6">
+              <div className="w-full h-24 flex-shrink-0 flex justify-end items-center pr-2 md:pr-6">
                 {
                 conversationId && <div className={`bg-gray-400 dark:bg-gray-900 w-8 h-8 rounded-full z-10 cursor-pointer flex items-center justify-center`}
                   onClick={() => exportConversation()}>
@@ -547,7 +547,7 @@ function Chat() {
               </div>
             </ScrollToBottom>
           )}
-          <div className={`w-full ${isMobile ? "static" : "absolute bottom-0 left-0"} ${init ? 'mt-20' : ''} border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent md:bg-vert-light-gradient md:dark:bg-vert-dark-gradient pt-2`}>
+          <div className={`w-full ${isMobile ? "fixed" : "absolute"} bottom-0 left-0 border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent md:bg-vert-light-gradient md:dark:bg-vert-dark-gradient pt-2`}>
             <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
               <div className="relative flex h-full flex-1 items-stretch flex-col">
                 <div className="">

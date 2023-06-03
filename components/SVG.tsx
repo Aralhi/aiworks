@@ -386,7 +386,8 @@ export function RedBook() {
 export function Close({ className, onClick }: { className?: any, onClick: Function }) {
   return (
     <div
-      className={`${className} bg-gray-500 rounded-full`}
+      className={`${className} rounded-full`}
+      style={{ right: '-30px' }}
       onClick={() => {onClick()}}>
       <svg
         stroke="currentColor"
