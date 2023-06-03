@@ -166,7 +166,11 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
     } else {
       // 开始聊天模式
       // redis.set(chatCacheKey, 'start', 'EX', CHAT_CACHE_TIME)
-      cache.put(chatCacheKey, 'start', CHAT_CACHE_TIME * 1000)
+      const user = await getUserInfoByOpenid(FromUserName)
+      console.log('wechat chatGPT user', user?._id, user)
+      const conversationId = await createConversation(user?._id, '', Content.slice(0, 20))
+      cache.put(`${user?.id}_userinfo`, user, CHAT_CACHE_TIME * 1000)
+      cache.put(chatCacheKey, `${user?.id}_${conversationId}`, CHAT_CACHE_TIME * 1000)
       return '请输入您的问题'
     }
   } else if (Content?.startsWith('/mj')) {
@@ -177,9 +181,8 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
       return chatCache
     }
     // 聊天模式
-    const user = await getUserInfoByOpenid(FromUserName)
-    console.log('wechat chatGPT user', user?._id, user)
-    const conversationId = await createConversation(user?._id, '', Content.slice(0, 20))
+    const [userId, conversationId] = chatCache.split('_')
+    const user = JSON.parse(await cache.get(`${userId}_userinfo`))
     // 查询次数
     const { status, message } = await checkQueryCount(user as UserSession, '')
     if (status !== 'ok') {

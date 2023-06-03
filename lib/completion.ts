@@ -224,7 +224,7 @@ export async function createConversation(userId: string, conversationId: string,
           name: conversationName,
         })
         console.log('insert conversation success:', newDoc)
-        return newDoc._id
+        return newDoc._id.toString()
       } catch (error) {
         console.log('insert conversation error:', error)
       }
