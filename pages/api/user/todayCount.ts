@@ -1,4 +1,3 @@
-import { queryInviteUserCount } from "@/lib/api/user";
 import dbConnect from "@/lib/dbConnect";
 import { sessionOptions } from "@/lib/session";
 import Completion from "@/models/Completion";
