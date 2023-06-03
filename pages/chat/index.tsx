@@ -10,12 +10,8 @@ import { ChatDesc } from '../../components/ChatDesc';
 import { AnewSvg, ChatGPTLogo, ChatSvg, Close, Copy, Delete, Edit, PlusSvg, SendSvg } from '@/components/SVG';
 import useUser from '@/lib/userUser';
 import { useRouter } from 'next/router';
-import Conversation, { IConversation } from '@/models/Conversation';
+import { IConversation } from '@/models/Conversation';
 import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT, MAX_CONVERSATION_NAME_LEN } from '@/utils/constants';
-import { withIronSessionSsr } from 'iron-session/next';
-import { sessionOptions } from '@/lib/session';
-import dbConnect from '@/lib/dbConnect';
-import { InferGetServerSidePropsType } from 'next';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { ICompletion } from '@/models/Completion';
 import Link from 'next/link';
@@ -32,7 +28,7 @@ interface Chat {
 const COPY_CODE = 'Copy code'
 const COPIED = 'Copied'
 
-function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function Chat() {
   const { user } = useUser()
   const router = useRouter()
   const { cid } = router.query
@@ -42,7 +38,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(true)
   // 最多显示20条历史记录
-  const [conversations, setConversations] = useState<Array<IConversation>>(conversationList || [])
+  const [conversations, setConversations] = useState<Array<IConversation>>([])
   const [showRegenerateBtn, setShowRegenerateBtn] = useState(false)
   const [prompt, setPrompt] = useState('')
   const [chatList, setChatList] = useState<Array<Chat>>([])
@@ -54,6 +50,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
   const [showLoginDialog, setShowLoginDialog] = useState(false)
 
   useEffect(() => {
+    getConversationList()
     document.title = `${conversationName || 'ChatAI'} - AI works`
     setIsOpen(isPC() ? true : false)
     setIsMobile(isPC() ? false : true)
@@ -328,7 +325,7 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
       return
     }
     const res: CustomResponseType = await fetchJson(`/api/completion?conversationId=${id || conversationId}`)
-    if (res && res.status === 'ok' && res?.data?.length) {
+    if (res && res.status === 'ok') {
       setInit(false)
       setChatList((res?.data || []).map((item: ICompletion) => {
         return {
@@ -611,23 +608,3 @@ function Chat({ conversationList }: InferGetServerSidePropsType<typeof getServer
 }
 
 export default Chat;
-
-export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
-  try {
-    await dbConnect()
-    // 查询会话列表
-    const conversationList = await Conversation.find({ userId: req.session.user?._id }).sort({ createAt: -1 }).lean()
-    return {
-      props: {
-        conversationList: JSON.parse(JSON.stringify(conversationList)),
-      },
-    };
-  } catch (e) {
-    console.error('getServerSideProps error', e)
-    return {
-      props: {
-        conversationList: [],
-      },
-    };
-  }
-}, sessionOptions)
