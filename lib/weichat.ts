@@ -4,7 +4,7 @@ import { ACCESS_TOKEN_NAME, FINGERPRINT_KEY, LOGIN_QR_STATUS, LOGIN_QR_TIME, MP_
 import dbConnect from './dbConnect';
 import cache from 'memory-cache'
 import WxEvent from '@/models/WxEvent';
-import redis from './redis';
+// import redis from './redis';
 import { getUserInfoByOpenid } from './api/user';
 import { UserSession } from 'pages/api/user/user';
 import { checkQueryCount, getPayload } from './completion';
@@ -155,15 +155,18 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
   }
   const chatCacheKey = getEventCacheKey(FromUserName, 'chat')
   const mjCacheKey = getEventCacheKey(FromUserName, 'mj')
-  const chatCache = await redis.get(chatCacheKey)
+  // const chatCache = await redis.get(chatCacheKey)
+  const chatCache = await cache.get(chatCacheKey)
   if (Content === '/chat') {
     // chatGPT聊天模式开始或结束
     if (chatCache) {
       // 结束聊天模式
-      redis.del(chatCacheKey)
+      // redis.del(chatCacheKey)
+      cache.del(chatCacheKey)
     } else {
       // 开始聊天模式
-      redis.set(chatCacheKey, 'start', 'EX', CHAT_CACHE_TIME)
+      // redis.set(chatCacheKey, 'start', 'EX', CHAT_CACHE_TIME)
+      cache.put(chatCacheKey, 'start', CHAT_CACHE_TIME * 1000)
       return '请输入您的问题'
     }
   } else if (Content?.startsWith('/mj')) {
@@ -203,7 +206,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
     const completion = await response.json()
     console.log('weichat chatGPT response success', completion)
     // 写到缓存，避免微信5s超时无法响应。回复“继续”直接从缓存读取
-    redis.set(chatCacheKey, completion, 'EX', CHAT_CACHE_TIME)
+    cache.put(chatCacheKey, completion, CHAT_CACHE_TIME * 1000)
     return completion
   }
 }
