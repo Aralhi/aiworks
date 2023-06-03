@@ -3,13 +3,7 @@ import { useState, ChangeEvent, useEffect } from "react";
 import PriceCard from "@/components/PriceCard";
 import { AVATARS, USERNAME_LENGTH } from "@/utils/constants";
 import fetchJson, { CustomResponseType } from "@/lib/fetchJson";
-import dbConnect from "@/lib/dbConnect";
-import User from "@/models/User";
-import { withIronSessionSsr } from "iron-session/next";
-import { sessionOptions } from "@/lib/session";
-import { InferGetServerSidePropsType } from "next";
-import { getTodayTime, formatUTCTime, isPC } from "@/utils/index";
-import Completion from "@/models/Completion";
+import { formatUTCTime, isPC } from "@/utils/index";
 import { Button, Card, Divider, QRCode, Table, message } from "antd";
 import { AccountBookOutlined, CopyFilled, GiftFilled, GiftTwoTone, UserOutlined } from "@ant-design/icons";
 import { useRouter } from "next/router";
@@ -23,13 +17,15 @@ const columns = [{
   render: (text: string) => formatUTCTime(text)
 }]
 
-function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function UserFC() {
   const { user } = useUser();
   const [currentIndex, setCurrentIndex] = useState<string>('1');
   const [userName, setUserName] = useState(user?.name || '')
   const [userAvatar, setUserAvatar] = useState(user?.avatarUrl || '')
   const [inviteUrl, setInviteUrl] = useState('')
   const [isMobile, setIsMobile] = useState(true)
+  const [todayQueryCount, setTodayQueryCount] = useState(-1)
+  const [inviteList, setInviteList] = useState([])
   const router = useRouter()
   if (user && (!user?.pricings || user?.pricings.length <= 0)) {
     user.pricings = [{
@@ -56,6 +52,8 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   }
 
   useEffect(() => {
+    getTodayQueryCount()
+    getInviteList()
     setIsMobile(isPC() ? false : true)
     setCurrentIndex((router.query.t as string) || '1')
   }, [])
@@ -69,6 +67,20 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
     setUserAvatar(user?.avatarUrl || '')
     setInviteUrl(`${location.origin}/login?c=${user?.userCode}`)
   }, [user?.name])
+
+  async function getTodayQueryCount() {
+    const res:CustomResponseType = await fetchJson('/api/user/todayCount', {
+      method: 'GET'
+    })
+    setTodayQueryCount(res.data)
+  }
+
+  async function getInviteList() {
+    const res:CustomResponseType = await fetchJson('/api/user/invite', {
+      method: 'GET'
+    })
+    setInviteList(res.data)
+  }
 
   async function copyCode () {
     try {
@@ -366,53 +378,3 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
   );
 }
 export default UserFC;
-
-export const getServerSideProps = withIronSessionSsr(async ({ req, res }) => {
-  const defaultProps = { todayQueryCount: -1, leftQueryCount: -1, inviteList: [] }
-  if (!req.session.user || !req.session.user?.isLoggedIn) {
-    // 未登录重定向到登录页
-    res.statusCode = 302
-    res.setHeader('Location', '/login')
-    res.end()
-    return {
-      props: defaultProps,
-    };
-  }
-  try {
-    await dbConnect()
-    // get today completion count by userId
-    const [todayStartUTC, todayEndUTC] = getTodayTime()
-    const result = await Completion.aggregate([
-      {
-        $match: {
-          $or: [
-            {userId: req.session.user?._id},
-            {fingerprint: req.session.user?.fingerprint}
-          ],
-          createAt: {
-            $gte: new Date(todayStartUTC),
-            $lte: new Date(todayEndUTC)
-          }
-        }
-      },
-      {
-        $count: 'count',
-      },
-    ])
-    const todayQueryCount = result[0]?.count || 0
-    const inviteList = await User.find({ inviteCode: req.session.user?.userCode }).lean()
-    return {
-      props: {
-        todayQueryCount,
-        //TODO 统计剩余的次数
-        leftQueryCount: -1,
-        inviteList: JSON.parse(JSON.stringify(inviteList))
-      },
-    };
-  } catch (err) {
-    console.log('get user inviteList error', err)
-    return {
-      props: defaultProps,
-    };
-  }
-}, sessionOptions)
