@@ -1,6 +1,8 @@
 import { Menu, MenuProps } from "antd"
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { isPC } from "../utils";
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -39,16 +41,20 @@ export default function TutorialLayout({
   const router = useRouter()
   let defaultPath = router.pathname.replace('/tutorial/', '').replace('/tutorial', '')
   defaultPath = defaultPath === '' ? 'start' : defaultPath
+  const [mode, setMode] = useState('vertical')
+  useEffect(() => {
+    setMode(isPC() ? 'vertical' : 'horizontal')
+  })
+
   return (
     <>
-      <Menu className='md:flex w-[284px] md:shrink-0 sticky h-[calc(100vh-121px)] md:flex-col md:justify-start' style={{ minHeight: 'calc(100vh - 60px)' }}
+      <Menu className='md:flex w-[284px] md:shrink-0 sticky md:h-[calc(100vh-121px)] md:flex-col md:justify-start'
         defaultSelectedKeys={[defaultPath]}
         defaultOpenKeys={['chatgpt', 'mj']}
-        mode="inline"
-        inlineCollapsed={false}
+        mode={mode}
         items={items}
       />
-      <main className='w-full flex justify-start'>
+      <main className='w-full flex justify-start py-4'>
         <div className='w-full prose prose-vercel max-w-none'>
           <section>{children}</section>
         </div>

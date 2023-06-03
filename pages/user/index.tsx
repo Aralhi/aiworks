@@ -291,6 +291,15 @@ function UserFC({ todayQueryCount, leftQueryCount, inviteList }: InferGetServerS
                   复制邀请码
                 </span>
               </div>
+              {
+                user?.openid && (
+                  <div className="w-full flex-grow">
+                    <span className="font-bold md:w-[120px] inline-block mr-4">
+                    扫码绑定微信:
+                    </span>
+                  </div>
+                )
+              }
               <div className="flex-grow">
                 <button
                   className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

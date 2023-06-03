@@ -48,3 +48,13 @@ export async function queryInviteUserCount(userCode: string | undefined) {
     return 0
   }
 }
+
+export async function getUserInfoByOpenid(openid: string) {
+  try {
+    await dbConnect()
+    return await User.findOne({ openid })
+  } catch (error) {
+    console.error('getUserInfoByOpenid error', error)
+    return null
+  }
+}
