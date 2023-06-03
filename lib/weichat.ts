@@ -206,7 +206,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
       }),
     })
     const res = await response.json()
-    const completion = res?.choices[0].message
+    const completion = res?.choices[0].message?.content
     console.log('weichat chatGPT response success', completion)
     // 写到缓存，避免微信5s超时无法响应。回复“继续”直接从缓存读取
     cache.put(chatCacheKey, completion, CHAT_CACHE_TIME * 1000)
