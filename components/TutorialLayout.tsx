@@ -41,7 +41,7 @@ export default function TutorialLayout({
   const router = useRouter()
   let defaultPath = router.pathname.replace('/tutorial/', '').replace('/tutorial', '')
   defaultPath = defaultPath === '' ? 'start' : defaultPath
-  const [mode, setMode] = useState('vertical')
+  const [mode, setMode] = useState<'horizontal' | 'vertical' | 'inline'>('vertical')
   useEffect(() => {
     setMode(isPC() ? 'vertical' : 'horizontal')
   })
