@@ -157,6 +157,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
   const mjCacheKey = getEventCacheKey(FromUserName, 'mj')
   // const chatCache = await redis.get(chatCacheKey)
   const chatCache = await cache.get(chatCacheKey)
+  console.log('...chatCache', chatCache, chatCacheKey)
   if (Content === '/chat') {
     // chatGPT聊天模式开始或结束
     if (chatCache) {
