@@ -188,7 +188,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
       conversationId: chatCacheKey,
       prompt: Content,
       isStream: false,
-      userId: user?._id,
+      userId: user?._id.toString() || '',
       fingerprint: ''
     })
     // 调用接口

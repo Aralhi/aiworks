@@ -52,7 +52,7 @@ export async function queryInviteUserCount(userCode: string | undefined) {
 export async function getUserInfoByOpenid(openid: string) {
   try {
     await dbConnect()
-    return await User.findOne({ openid }).lean()
+    return await User.findOne({ openid }).select({ _id: 1 })
   } catch (error) {
     console.error('getUserInfoByOpenid error', error)
     return null
