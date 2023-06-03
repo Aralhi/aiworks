@@ -178,6 +178,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
     }
     // 聊天模式
     const user = await getUserInfoByOpenid(FromUserName)
+    console.log('wechat chatGPT user', user?._id, user)
     // 查询次数
     const { status, message } = await checkQueryCount(user as UserSession, '')
     if (status !== 'ok') {

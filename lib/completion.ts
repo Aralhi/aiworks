@@ -78,6 +78,7 @@ export async function getPayload({
   fingerprint: string;
   userId: string;
 }) {
+  console.log('getPayload', prompt, isStream, conversationId, fingerprint, userId)
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
