@@ -167,10 +167,11 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
       // 开始聊天模式
       // redis.set(chatCacheKey, 'start', 'EX', CHAT_CACHE_TIME)
       const user = await getUserInfoByOpenid(FromUserName)
-      console.log('wechat chatGPT user', user?._id, user)
-      const conversationId = await createConversation(user?._id, '', Content.slice(0, 20))
-      cache.put(`${user?.id}_userinfo`, user, CHAT_CACHE_TIME * 1000)
-      cache.put(chatCacheKey, `${user?.id}_${conversationId}`, CHAT_CACHE_TIME * 1000)
+      const userId = user?._id.toString()
+      console.log('wechat chatGPT user', userId, user)
+      const conversationId = await createConversation(userId, '', Content.slice(0, 20))
+      cache.put(`${userId}_userinfo`, user, CHAT_CACHE_TIME * 1000)
+      cache.put(chatCacheKey, `${userId}_${conversationId}`, CHAT_CACHE_TIME * 1000)
       return '请输入您的问题'
     }
   } else if (Content?.startsWith('/mj')) {
