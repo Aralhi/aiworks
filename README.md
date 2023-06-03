@@ -88,3 +88,9 @@ WECHAT_PAY_PEM_PRIVATE_KEY 把key.pem的内容配置进去
 
 ## API 校验
 用userId或者fingerprint作为plaintext加密，用crypto-js加密，支持edge环境
+
+## 公众号使用chatGPT及midjourney
+1. 增加教程菜单，打开教程页面
+2. 对于手机号注册的用户，按照openid查不到用户。需要首先在基本信息页做微信号绑定。
+3. 输入`/chat`或`/mj`，后台缓存接口用户消息，有消息过来刷新缓存，五分钟有效，五分钟没有消息过来，提示用户再次输入`/chat`
+4. 特殊说明：由于微信5s返回机制，可能导致过长的文本响应超过，不用担心，回复`继续`即可获取对应的输出。

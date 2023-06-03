@@ -15,7 +15,6 @@ if (!process.env.WX_PUBLIC_TOKEN) {
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     console.log('weichat event req.query', req.url)
-    console.log('weichat event req.body', typeof req.body, req.body)
     // 验证微信消息
     if (req.method === 'GET') {
       const { signature, nonce, timestamp, echostr } = req.query || {}
@@ -52,7 +51,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             break
           // 关注后扫码
           case  'SCAN':
-            resBody.Content = '登录成功'
+            resBody.Content = '登录成功，分享给好友可得丰厚奖励哦，快来看看吧。<a href="https://aiworks.club/user?t=1">https://aiworks.club/user?t=1</a>'
             break
         }
         if(!!EventKey) {
@@ -64,7 +63,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const value = `${userInfo.openid}_scan`
           // 缓存扫码状态，供浏览器轮询扫码状态
           await dbConnect()
-          await WxEvent.findOneAndUpdate({
+          const user = await WxEvent.findOneAndUpdate({
             type: WX_EVENT_TYPE.login_qr,
             key
           }, {
@@ -73,6 +72,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           }, { upsert: true })
         }
       }
+
+      resBody.Content = resBody.Content
       const xml = builder.build({ xml: resBody })
       console.log('weichat event res', xml)
       await dbConnect()
