@@ -1,11 +1,9 @@
-import { message } from 'antd';
-import { saveCompletion } from "@/lib/completion";
+import { CHAT_CONTEXT_PRE, chatContext, saveCompletion } from "@/lib/completion";
 import { sessionOptions } from "@/lib/session";
 import { FINGERPRINT_KEY } from "@/utils/constants";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import cache from 'memory-cache'
-import { CHAT_CONTEXT_PRE, chatContext } from "./check";
 import dbConnect from "@/lib/dbConnect";
 import Settings from "@/models/Settings";
 const CHAT_CONTEXT_CACHE_TIME = 5 * 60 * 1000 // 1小时
