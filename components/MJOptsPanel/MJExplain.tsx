@@ -1,7 +1,5 @@
-import { ArrowDownOutlined } from '@ant-design/icons';
-import { Row, Table, Tag } from 'antd';
+import { Image, Row, Tag } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import Image from 'next/image';
 
 interface DataType {
   arg: string;
@@ -45,23 +43,28 @@ function MJExplain() {
           可以选择不同画家的艺术风格，例如安迪华荷、达芬奇、达利和毕加索等，还能识别特定镜头或摄影术语。
         </span>
       </Row> */}
-      <Row className="mb-8">
+      <Row className="block flex-col flex-1 mb-8">
         <h2 className="text-gray-800 text-lg mb-4 w-full font-medium">如何使用</h2>
         <div className="space-y-2">
           <p>在下方输入框键入你想要生成的图片语句</p>
           <p>
             例如：<Tag>A dog in space</Tag>(只支持全英文输入)，会输出以下结果
-            <ArrowDownOutlined rev="" />
           </p>
-          <Image className="w-full md:w-1/2 lg:w-1/2 xl:w-1/2 rounded-lg shadow-lg" width={300} height={300} src="/case-1.jpg" alt="" />
-          <p>
+          <div className="relative w-full md:w-1/2 lg:w-1/2 xl:w-1/2">
+            <div className="relative m-2 rounded-lg shadow-lg overflow-hidden">
+              <div className="w-full pt-[100%]" />
+              <div className="absolute top-0 left-0 w-full h-full bg-[url('/case-1.jpg')] bg-center bg-cover bg-no-repeat " />
+            </div>
+          </div>
+          {/* <p>
             也可以输入更多生成参数，例如：<Tag>A dog in space --v 4</Tag>，其中<Tag>--v 4</Tag>为使用模型V4版本
-          </p>
+          </p> */}
           {/* <p>
             更多参数可参考以下表格
-            <ArrowDownOutlined rev="" />
           </p>
           <Table pagination={false} bordered columns={columns} dataSource={data}></Table> */}
+          <p>进一步操作图片</p>
+          <img className="rounded-sm shadow-lg h-16" src="/opts.png"></img>
           <p>
             <Tag>U1 ~ U4</Tag>选项说明：选定图1 - 4任意一张输出图片
           </p>
@@ -85,7 +88,7 @@ function MJExplain() {
               <div className="absolute top-0 left-0 w-full h-full bg-[url('/style-2.jpg')] bg-center bg-cover bg-no-repeat " />
             </div>
           </div>
-          <div className="relative w-full md:w-1/2 lg:w-1/2 xl:w-1/2">
+          {/* <div className="relative w-full md:w-1/2 lg:w-1/2 xl:w-1/2">
             <div className="relative m-2 rounded-lg shadow-lg overflow-hidden">
               <div className="w-full pt-[100%]" />
               <div className="absolute top-0 left-0 w-full h-full bg-[url('/style-3.jpg')] bg-center bg-cover bg-no-repeat " />
@@ -96,7 +99,7 @@ function MJExplain() {
               <div className="w-full pt-[100%]" />
               <div className="absolute top-0 left-0 w-full h-full bg-[url('/style-4.jpg')] bg-center bg-cover bg-no-repeat " />
             </div>
-          </div>
+          </div> */}
         </div>
       </Row>
     </div>
