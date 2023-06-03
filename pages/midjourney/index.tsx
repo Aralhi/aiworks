@@ -34,13 +34,26 @@ function getMatchValue(str: string, key: string) {
   return lastUri;
 }
 
-function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function Midjourney() {
   const [inputValue, setInputValue] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
-  const [messages, setMessages] = useState<Partial<MidjourneyMessage>[]>(historyList);
+  const [canShowEmpty, setShowEmpty] = useState(false);
+  const [messages, setMessages] = useState<Partial<MidjourneyMessage>[]>([]);
   const [args, setArgs] = useState<MJArgsType[]>([]);
 
   const router = useRouter();
+
+  useEffect(() => {
+    getHistoryList();
+  }, []);
+
+  const getHistoryList = async () => {
+    const res = await fetchJson<CustomResponseType>('/api/mj/list', {
+      method: 'GET',
+    });
+    setMessages((state) => [...res.data, ...state]);
+    setShowEmpty(true);
+  };
 
   const fetchMJ = async (type: MJMessageType, payload: Record<string, any>, newItem: Partial<MidjourneyMessage>) => {
     const checkRes = await fetch('/api/mj/check', {
@@ -64,7 +77,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
     if (checkResult && checkResult.status === 'ok' && checkResult.data.plaintext) {
       setMessages([...messages, newItem]);
       const token = checkRes.headers.get('Authorization');
-      const resp = await fetch(`http://47.242.197.46:3000/api/mj/${type}`, {
+      const resp = await fetch(`https://api.aiworks.club/api/mj/${type}`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -113,7 +126,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
 
         /** 服务代理请求图片返回数据流 */
         if (mjUri) {
-          const { data } = await fetchJson<CustomResponseType>(`http://47.242.197.46:3000/api/mj/image`, {
+          const { data } = await fetchJson<CustomResponseType>(`http://8.218.156.105:3000/api/mj/image`, {
             method: 'POST',
             headers: {
               Authorization: `${token}`,
@@ -263,7 +276,7 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
         dataSource={messages}
         renderItem={renderMessage}
         locale={{
-          emptyText: <MJExplain />,
+          emptyText: canShowEmpty ? <MJExplain /> : <></>,
         }}
       />
       <div className="relative w-full md:w-3/4 lg:w-4/5 xl:w-3/5 mx-auto pb-5 pt-3">
@@ -299,24 +312,3 @@ function Midjourney({ historyList }: InferGetServerSidePropsType<typeof getServe
 }
 
 export default Midjourney;
-
-export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
-  try {
-    await dbConnect();
-    console.time('数据请求时间')
-    const historyList = await MJMessageSchema.find({ userId: req.session.user?._id }).sort({ createAt: 1 }).lean();
-    console.timeEnd('数据请求时间')
-    return {
-      props: {
-        historyList: JSON.parse(JSON.stringify(historyList)) as IMJMessage[],
-      },
-    };
-  } catch (e) {
-    console.error('getServerSideProps error', e);
-    return {
-      props: {
-        historyList: [],
-      },
-    };
-  }
-}, sessionOptions);

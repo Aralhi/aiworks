@@ -8,9 +8,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { user: { isLoggedIn, _id, fingerprint } = {} } = req.session;
   console.log(fingerprint);
   if (!isLoggedIn || !_id || !fingerprint) {
-    return res
-      .status(400)
-      .json({ status: "failed", message: "您无法做此操作，请先登录" });
+    return res.json({ status: "ok", data: [] });
   }
   if (req.method === "GET") {
     try {
