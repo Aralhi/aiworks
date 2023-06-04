@@ -17,7 +17,7 @@ headlessui
 
 - 尊享版：一个月200次，根据用户ID判断
 
-- 季卡版：会员期上线9999次，根据用户ID判断，支持设置[temperature](https://platform.openai.com/docs/api-reference/completions/create#completions/create-temperature)，[max_token](https://platform.openai.com/docs/api-reference/completions/create#completions/create-max_tokens)等参数
+- 季卡版：会员期上线8000次，根据用户ID判断，支持设置[temperature](https://platform.openai.com/docs/api-reference/completions/create#completions/create-temperature)，[max_token](https://platform.openai.com/docs/api-reference/completions/create#completions/create-max_tokens)等参数
 
 PRICING_PLAN: 套餐信息
 
