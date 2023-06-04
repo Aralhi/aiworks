@@ -30,7 +30,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             let url = item.img;
             /** 历史数据兼容 */
             if (item.img.includes(process.env.OSS_ENDPOINT)) {
-              const regex = /\/([^/]+)\/(\d+\.png)/;
+              const regex = /\/([^/]+)\/(\d+\.[a-zA-Z]+)/;
               const match = regex.exec(item.img);
               if (match) {
                 const extractedString1 = match[1];
