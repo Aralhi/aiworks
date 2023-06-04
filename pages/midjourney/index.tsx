@@ -130,7 +130,7 @@ function Midjourney() {
              * 失败了马上尝试下一张图
              * 完成后的图片是一直可访问的
              * */
-            const { data } = await fetchJson<CustomResponseType>(`https://api.aiworks.club/api/mj/image`, {
+            const imgResp = await fetch(`https://api.aiworks.club/api/mj/image`, {
               method: 'POST',
               mode: 'cors',
               headers: {
@@ -141,10 +141,13 @@ function Midjourney() {
               },
               body: JSON.stringify({ url: mjUri }),
             });
-            ossUrl = data.url;
+            const response = await imgResp.json();
+            console.log(response, response.data.url);
+            ossUrl = response.data.url;
           } catch (e) {
             console.log('图片转存失败', e);
           }
+          console.log(ossUrl);
           setMessages((state) => {
             const { progress, msgHash, prompt, msgId, img } = state[messageIdx];
             state[messageIdx] = {
@@ -235,9 +238,6 @@ function Midjourney() {
   };
 
   const renderMessage = ({ prompt, content, img, msgHash, progress, msgId, type }: Partial<MidjourneyMessage>) => {
-    if (process.env.NEXT_PUBLIC_IMAGE_PREFIX) {
-      img = img?.replace('https://cdn.discordapp.com/', process.env.NEXT_PUBLIC_IMAGE_PREFIX);
-    }
     return (
       <List.Item
         className="flex flex-col text-white"
