@@ -27,7 +27,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       list = await Promise.all(
         list.map(async (item) => {
           if (item.img) {
-            item.img = await client.signatureUrl(item.img, {
+            let url = item.img;
+            /** 历史数据兼容 */
+            if (item.img.includes(process.env.OSS_ENDPOINT)) {
+              const regex = /\/([^/]+)\/(\d+)\.png/;
+              const match = regex.exec(item.img);
+              if (match) {
+                const extractedString1 = match[1];
+                const extractedString2 = match[2];
+                url = `${extractedString1}/${extractedString2}`;
+              }
+            }
+            item.img = await client.signatureUrl(url, {
               expires: EXPIRES_TIME,
             });
           }
