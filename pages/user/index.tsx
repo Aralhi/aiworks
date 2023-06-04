@@ -188,7 +188,7 @@ function UserFC() {
           </li>
         </ul>
       </div>
-      <div id="user-info" className="h-screen w-full overflow-x-hidden">
+      <div id="user-info" className="w-full overflow-x-hidden">
         {currentIndex === '1' && (
           <div className="p-4">
             <h1 className="text-2xl">套餐</h1>
@@ -362,7 +362,7 @@ function UserFC() {
                     <input className="py-4 text-gray-950 outline-none pl-2 w-full" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
                     <div className="flex py-4 items-center flex-row justify-center gap-4 text-white cursor-pointer" style={{ backgroundColor: '#212b36', width: '140px', lineHeight: '40px', userSelect: 'none' }}
                       onClick={copyUrl}>
-                      <CopyFilled rev='' />复制
+                      <CopyFilled style={{ fontSize: '16px' }} rev='' />复制
                     </div>
                   </div>
                   <Card>

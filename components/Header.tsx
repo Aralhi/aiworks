@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { AVATARS } from '@/utils/constants';
 import Image from 'next/image';
 import { isPC } from '../utils';
+import { Dropdown, MenuProps } from 'antd';
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
@@ -21,6 +22,17 @@ export default function Header() {
   function avatarClick() {
     setShowMenu(!showMenu);
   }
+
+  const items: MenuProps['items'] = [
+    {
+      label: <div onClick={userInfoClick}>{user?.isLoggedIn ? '用户信息' : '注册'}</div>,
+      key: '0',
+    },
+    {
+      label: <div onClick={logout}>登出</div>,
+      key: '1',
+    },
+  ]
 
   function userInfoClick() {
     setShowMenu(false);
@@ -66,27 +78,13 @@ export default function Header() {
             <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/pricing', query }}>价格</Link>
             </li>
-            {!isMobile && <li className="relative z-50" onClick={avatarClick}>
-              <a href="#">
-                <img src={user?.avatarUrl || AVATARS[0]} alt="Avatar" className="rounded-full w-8 h-8" />
-              </a>
-              {showMenu && (
-                <div className="absolute bg-black text-white mt-2 translate-x-[-50%]">
-                  <div
-                    className="w-20 h-10 text-center flex flex-col justify-center border-b border-gray-200 dark:border-gray-800 cursor-pointer"
-                    onClick={userInfoClick}
-                  >
-                    用户中心
-                  </div>
-                  <div
-                    className="w-20 h-10 text-center flex flex-col justify-center border-b border-gray-200 dark:border-gray-800 cursor-pointer"
-                    onClick={logout}
-                  >
-                    登出
-                  </div>
-                </div>
-              )}
-            </li>}
+            <li className='flex items-center'>
+              <Dropdown menu={{ items }} trigger={['click']}>
+                <a href="#">
+                  <img src={user?.avatarUrl || AVATARS[0]} alt="Avatar" className="rounded-full w-8 h-8" />
+                </a>
+              </Dropdown>
+            </li>
           </ul>
         </div>
       </nav>
