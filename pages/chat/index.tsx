@@ -196,11 +196,11 @@ function Chat() {
         console.error('fetch failed', e)
       }
     } else {
-      const { label, message } = checkResult
+      const { label } = checkResult
       if (label === 'login') {
         Modal.confirm({
           title: '次数已用完',
-          content: <p>{message}</p>,
+          content: <p>{checkResult.message}</p>,
           okText: '注册',
           cancelText: '取消',
           onOk: () => {
@@ -213,7 +213,7 @@ function Chat() {
       } else if (label === 'pricing') {
         Modal.confirm({
           title: '免费次数已用完',
-          content: <p>{message}</p>,
+          content: <p>{checkResult.message}</p>,
           okText: '购买',
           cancelText: '取消',
           onOk: () => {
@@ -223,8 +223,9 @@ function Chat() {
             })
           }
         })
+      } else {
+        return message.error(checkResult.message)
       }
-      return message.error(message)
     }
   }
 
