@@ -119,17 +119,11 @@ function Midjourney() {
         const mjContent = getMatchValue(chunkValue, 'content');
 
         let ossUrl: string | undefined;
+        let imgName: string | undefined;
 
         /** 服务代理请求图片返回数据流 */
         if (mjUri) {
           try {
-            /**
-             * 由于midjourney图片是有有效期的
-             * 下一张图更新的时候上一张图可能就无法访问了
-             * 不能阻塞流程
-             * 失败了马上尝试下一张图
-             * 完成后的图片是一直可访问的
-             * */
             const imgResp = await fetch(`https://api.aiworks.club/api/mj/image`, {
               method: 'POST',
               mode: 'cors',
@@ -142,12 +136,12 @@ function Midjourney() {
               body: JSON.stringify({ url: mjUri }),
             });
             const response = await imgResp.json();
-            console.log(response, response.data.url);
-            ossUrl = response.data.url;
+            const { url, originUrl } = response.data;
+            ossUrl = url;
+            imgName = originUrl;
           } catch (e) {
             console.log('图片转存失败', e);
           }
-          console.log(ossUrl);
           setMessages((state) => {
             const { progress, msgHash, prompt, msgId, img } = state[messageIdx];
             state[messageIdx] = {
@@ -162,10 +156,10 @@ function Midjourney() {
           });
         }
         /** 更新数据 */
-        fetchJson(`/api/mj/update?id=${record._id}`, {
+        await fetchJson(`/api/mj/update?id=${record._id}`, {
           method: 'PATCH',
           body: JSON.stringify({
-            img: ossUrl,
+            img: imgName,
             originImg: mjUri,
             content: mjContent,
             msgId: mjId,
