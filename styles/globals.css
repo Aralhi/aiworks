@@ -282,3 +282,6 @@ table {
   line-height: 1.2;
   margin: 0;
 }
+.ant-message-notice-content svg {
+  font-size: 16px !important;
+}
