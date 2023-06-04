@@ -9,8 +9,10 @@ export interface IMJMessage {
   index?: number;
   msgId?: string;
   msgHash?: string;
-  /** oss图片地址 */
+  /** oss图片访问地址 */
   img?: string;
+  /** oss图片路径 */
+  imgPath?: string;
   /** 原图 */
   originImg?: string;
   content?: string;
@@ -40,6 +42,9 @@ const MJMessageSchema = new Schema<IMJMessage>({
     required: [true, "Please provide a type."],
   },
   img: {
+    type: String,
+  },
+  imgPath: {
     type: String,
   },
   originImg: {

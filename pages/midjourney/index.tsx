@@ -61,10 +61,12 @@ function Midjourney() {
     });
     const checkResult = await checkRes.json();
 
+    /** 未登录跳转登陆页面 */
     if (checkRes.status === 400) {
       router.push({ pathname: 'login', query: Object.assign({}, router.query, { originUrl: router.pathname }) });
       return;
     }
+    /** 没有次数跳转套餐页面 */
     if (checkResult.status !== 'ok') {
       message.warning(checkResult.message);
       router.push({ pathname: 'pricing', query: Object.assign({}, router.query, { originUrl: router.pathname }) });
@@ -101,6 +103,7 @@ function Midjourney() {
         msgHash: newItem.msgHash,
       };
 
+      /** 请求发起入库 */
       const recordResult = await fetchJson<CustomResponseType>('/api/mj/record', {
         method: 'POST',
         body: JSON.stringify(mjMessage),
@@ -119,7 +122,7 @@ function Midjourney() {
         const mjContent = getMatchValue(chunkValue, 'content');
 
         let ossUrl: string | undefined;
-        let imgName: string | undefined;
+        let imgPath: string | undefined;
 
         /** 服务代理请求图片返回数据流 */
         if (mjUri) {
@@ -136,9 +139,9 @@ function Midjourney() {
               body: JSON.stringify({ url: mjUri }),
             });
             const response = await imgResp.json();
-            const { url, originUrl } = response.data;
+            const { url, originPath } = response.data;
             ossUrl = url;
-            imgName = originUrl;
+            imgPath = originPath;
           } catch (e) {
             console.log('图片转存失败', e);
           }
@@ -159,7 +162,8 @@ function Midjourney() {
         await fetchJson(`/api/mj/update?id=${record._id}`, {
           method: 'PATCH',
           body: JSON.stringify({
-            img: imgName,
+            img: ossUrl,
+            imgPath,
             originImg: mjUri,
             content: mjContent,
             msgId: mjId,
