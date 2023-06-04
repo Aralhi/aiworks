@@ -286,7 +286,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
           </p>
           <p className="flex items-center">
             <CheckCircleFilled rev='' className="w-4 h-4 float-left mr-2 text-green-500" />
-            <span className="font-bold mr-1">9999</span>
+            <span className="font-bold mr-1">8000</span>
             <span style={{ color: "#000000a6" }}>次查询</span>
           </p>
           <p className="flex items-center">

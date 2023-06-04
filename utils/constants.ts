@@ -21,7 +21,7 @@ export const PRICING_PLAN = [
     id: '3',
     type: 'chatGPT',
     name: '荣耀季卡',
-    queryCount: 9999,
+    queryCount: 8000,
     price: 99,
     days: 90,
     label: '季度'
