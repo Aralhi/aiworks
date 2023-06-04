@@ -224,6 +224,7 @@ function Chat() {
           }
         })
       }
+      return message.error(message)
     }
   }
 
