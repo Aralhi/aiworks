@@ -88,4 +88,4 @@ export const WX_EVENT_TYPE = {
   login_qr: 'login_qr',
   pay_notify: 'pay_notify'
 }
-export const PRICING_VOUCHER_UNIT = 0.5
+export const PRICING_VOUCHER_UNIT = 1

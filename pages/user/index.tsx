@@ -1,7 +1,7 @@
 import useUser from "@/lib/userUser";
 import { useState, ChangeEvent, useEffect } from "react";
 import PriceCard from "@/components/PriceCard";
-import { AVATARS, USERNAME_LENGTH } from "@/utils/constants";
+import { AVATARS, PRICING_VOUCHER_UNIT, USERNAME_LENGTH } from "@/utils/constants";
 import fetchJson, { CustomResponseType } from "@/lib/fetchJson";
 import { formatUTCTime, isPC } from "@/utils/index";
 import { Button, Card, Divider, QRCode, Table, message } from "antd";
@@ -120,7 +120,7 @@ function UserFC() {
 
   async function copyUrl() {
     try {
-      await navigator.clipboard.writeText(`${inviteUrl} 发现一个不错的AI平台，有GPT、AIGC等工具，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！`)
+      await navigator.clipboard.writeText(`${inviteUrl} 发现一个不错的AI平台，有GPT、AIGC等工具，邀请一个用户即可得${PRICING_VOUCHER_UNIT}元奖励，最高可享五折优惠，快来提升自己的生产力！`)
       message.success('复制成功')
     } catch (err) {
       console.error('Failed to copy: ', err)
@@ -352,8 +352,8 @@ function UserFC() {
               <div className="items-center flex flex-row gap-5 justify-center mt-4">
                 <p className="flex-1 text-center">通过邀请链接邀请好友</p>
                 <p className="flex-1 text-center">好友注册账户</p>
-                {isMobile && <p className="flex-1 text-center">获得0.5元奖励，最高享五折</p>}
-                {!isMobile && <p className="flex-1 text-center">您将获得0.5元奖励，下次订阅时使用，最高享五折</p>}
+                {isMobile && <p className="flex-1 text-center">获得<strong className="text-red-500">{PRICING_VOUCHER_UNIT}元</strong>奖励，最高享五折</p>}
+                {!isMobile && <p className="flex-1 text-center">您将获得<strong className="text-red-500">{PRICING_VOUCHER_UNIT}元</strong>奖励，下次订阅时使用，最高享五折</p>}
               </div>
               <Divider />
               <div className="flex flex-col md:flex-row justify-between items-center">
@@ -366,7 +366,7 @@ function UserFC() {
                     </div>
                   </div>
                   <Card>
-                    <p>{inviteUrl} 发现一个不错的AI平台，有chatAI、AIGC等工具，邀请一个用户即可得0.5元奖励，最高可享五折优惠，快来提升自己的生产力！</p>
+                    <p>{inviteUrl} 发现一个不错的AI平台，有chatAI、AIGC等工具，邀请一个用户即可得<strong className="text-red-500">{PRICING_VOUCHER_UNIT}元</strong>奖励，最高可享五折优惠，快来提升自己的生产力！</p>
                   </Card>
                 </div>
                 <div id="myqrcode" className="flex flex-col justify-start items-center md:w-1/2 w-full gap-4">
