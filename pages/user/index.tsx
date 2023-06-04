@@ -55,8 +55,14 @@ function UserFC() {
     getTodayQueryCount()
     getInviteList()
     setIsMobile(isPC() ? false : true)
-    setCurrentIndex((router.query.t as string) || '1')
   }, [])
+
+  useEffect(() => {
+    const index = router.query.t as string
+    if (index) {
+      setCurrentIndex(index)
+    }
+  }, [router.query.t])
 
   useEffect(() => {
     // 规避第一次user为空的情况
@@ -303,7 +309,7 @@ function UserFC() {
                   复制邀请码
                 </span>
               </div>
-              {
+              {/* {
                 user?.openid && (
                   <div className="w-full flex-grow">
                     <span className="font-bold md:w-[120px] inline-block mr-4">
@@ -311,7 +317,7 @@ function UserFC() {
                     </span>
                   </div>
                 )
-              }
+              } */}
               <div className="flex-grow">
                 <button
                   className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

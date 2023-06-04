@@ -34,7 +34,7 @@ export default function Header() {
       }
       return;
     }
-    router.push({ pathname: 'user', query });
+    router.push({ pathname: '/user', query });
   }
 
   async function logout() {
@@ -60,9 +60,9 @@ export default function Header() {
             <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/midjourney', query }}>Midjourney</Link>
             </li>
-            {!isMobile && <li className="mr-2 md:mr-6 flex items-center">
+            {/* {!isMobile && <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/tutorial', query }}>教程</Link>
-            </li>}
+            </li>} */}
             <li className="mr-2 md:mr-6 flex items-center">
               <Link href={{ pathname: '/pricing', query }}>价格</Link>
             </li>
