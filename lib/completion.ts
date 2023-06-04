@@ -3,10 +3,11 @@ import { getTodayTime } from "../utils";
 import dbConnect from "./dbConnect";
 import cache from 'memory-cache'
 import User, { UserPricing } from "@/models/User";
-import { LOGIN_MAX_QUERY_COUNT, MAX_TOKEN, UNLOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
+import { LOGIN_MAX_QUERY_COUNT, MAX_CONVERSATION_COUNT, MAX_TOKEN, UNLOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
 import { UserSession } from "pages/api/user/user";
 import Settings from "@/models/Settings";
 import { encrypt } from "./crypto";
+import Conversation from "@/models/Conversation";
 
 const COMPLETION_COUNT_CACHE_TIME = 1000 * 60 * 60 * 24 // 1小时
 
@@ -209,4 +210,24 @@ export async function checkQueryCount(user: UserSession, fingerprint: string = '
     }
   }
   return { status: 'ok'}
+}
+
+export async function createConversation(userId: string, conversationId: string, conversationName: string) {
+  // 登录了才创建会话
+  if (userId && !conversationId && conversationName) {
+    // 查询历史会话格式
+    const count = await Conversation.countDocuments({ userId })
+    if (count < MAX_CONVERSATION_COUNT) {
+      try {
+        const newDoc = await Conversation.create({
+          userId,
+          name: conversationName,
+        })
+        console.log('insert conversation success:', newDoc)
+        return newDoc._id.toString()
+      } catch (error) {
+        console.log('insert conversation error:', error)
+      }
+    }
+  }
 }

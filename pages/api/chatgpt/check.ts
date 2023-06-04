@@ -1,9 +1,8 @@
 import { withIronSessionApiRoute } from 'iron-session/next';
 import { sessionOptions } from "@/lib/session";
 import { NextApiRequest, NextApiResponse } from "next";
-import Conversation from '@/models/Conversation';
-import { FINGERPRINT_KEY, MAX_CONVERSATION_COUNT } from '@/utils/constants';
-import { checkQueryCount, getPayload } from '@/lib/completion';
+import { FINGERPRINT_KEY } from '@/utils/constants';
+import { checkQueryCount, createConversation, getPayload } from '@/lib/completion';
 import { UserSession } from '../user/user';
 
 if (!process.env.OPENAI_API_KEY) {
@@ -24,24 +23,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(200).json({ status, message })
   }
   // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
-  let newConversationId
-  // 登录了才创建会话
-  if (userId && !conversationId && conversationName) {
-    // 查询历史会话格式
-    const count = await Conversation.countDocuments({ userId })
-    if (count < MAX_CONVERSATION_COUNT) {
-      try {
-        const newDoc = await Conversation.create({
-          userId,
-          name: conversationName,
-        })
-        console.log('insert conversation success:', newDoc)
-        newConversationId = newDoc._id
-      } catch (error) {
-        console.log('insert conversation error:', error)
-      }
-    }
-  }
+  const newConversationId = await createConversation(userId, conversationId, conversationName)
   const { payload, plaintext, token } = await getPayload({
     prompt,
     conversationId: conversationId || newConversationId,

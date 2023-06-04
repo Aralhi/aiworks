@@ -272,10 +272,6 @@ table {
   padding-top: 2.5rem;
   scroll-margin-top: 11px;
 }
-.prose :where(p):not(:where([class~=not-prose] *)) {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
-}
 
 .tutorial code {
   padding: 0.12em 0.25em;
