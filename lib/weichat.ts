@@ -232,6 +232,8 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
     } catch (e) {
       console.error('wechat chatGPT exception', e)
     }
+  } else {
+    return '请输入 /chat 开始聊天模式'
   }
 }
 
