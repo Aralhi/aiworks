@@ -170,7 +170,7 @@ export async function handleWechatTextMsg(message: WXtEventMessage) {
       const user = await getUserInfoByOpenid(FromUserName)
       const userId = user?._id.toString()
       console.log('wechat chatGPT user', userId, user)
-      const conversationId = await createConversation(userId, '', `微信聊天${+new Date()}}`)
+      const conversationId = await createConversation(userId, '', `微信聊天${+new Date()}`)
       cache.put(`${userId}_userinfo`, user, CHAT_CACHE_TIME * 1000)
       cache.put(chatCacheKey, `${userId}_${conversationId}`, CHAT_CACHE_TIME * 1000)
       return '请输入您的问题'
