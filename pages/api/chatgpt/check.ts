@@ -18,9 +18,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { _id: userId } = user
   const fingerprint = req.headers[FINGERPRINT_KEY] as string
   // 校验queryCount
-  const { status, message } = await checkQueryCount(user, fingerprint)
+  const { status, message, label } = await checkQueryCount(user, fingerprint)
   if (status !== 'ok') {
-    return res.status(200).json({ status, message })
+    return res.status(200).json({ status, message, label })
   }
   // 没conversationId先创建一条conversation，后续的completion都关联到这个conversation
   const newConversationId = await createConversation(userId, conversationId, conversationName)

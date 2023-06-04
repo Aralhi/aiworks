@@ -196,7 +196,34 @@ function Chat() {
         console.error('fetch failed', e)
       }
     } else {
-      return message.error(checkResult.message)
+      const { label, message } = checkResult
+      if (label === 'login') {
+        Modal.confirm({
+          title: '次数已用完',
+          content: <p>{message}</p>,
+          okText: '注册',
+          cancelText: '取消',
+          onOk: () => {
+            router.push({
+              pathname: '/login',
+              query: router.query
+            })
+          }
+        })
+      } else if (label === 'pricing') {
+        Modal.confirm({
+          title: '免费次数已用完',
+          content: <p>{message}</p>,
+          okText: '购买',
+          cancelText: '取消',
+          onOk: () => {
+            router.push({
+              pathname: '/pricing',
+              query: router.query
+            })
+          }
+        })
+      }
     }
   }
 
