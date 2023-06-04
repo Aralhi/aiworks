@@ -247,7 +247,7 @@ function Midjourney() {
         {progress === 'done' && type !== 'upscale' && (
           <>
             <Tags data={['U1', 'U2', 'U3', 'U4']} onItemClick={(tagNum) => upscale(String(content), String(msgId), String(msgHash), tagNum)} />
-            <Tags data={['V1', 'V2', 'V3', 'V4']} onItemClick={(tagNum) => variation(String(content), String(msgId), String(msgHash), tagNum)} />
+            {/* <Tags data={['V1', 'V2', 'V3', 'V4']} onItemClick={(tagNum) => variation(String(content), String(msgId), String(msgHash), tagNum)} /> */}
           </>
         )}
       </List.Item>

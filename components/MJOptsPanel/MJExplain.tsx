@@ -68,9 +68,9 @@ function MJExplain() {
           <p>
             <Tag>U1 ~ U4</Tag>选项说明：选定图1 - 4任意一张输出图片
           </p>
-          <p>
+          {/* <p>
             <Tag>V1 ~ V4</Tag>选项说明：选定图1 - 4任意一张为变化参考继续生成
-          </p>
+          </p> */}
         </div>
       </Row>
       <Row className="block flex-col flex-1">
