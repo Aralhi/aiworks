@@ -14,13 +14,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ status: "NO_LOGIN" });
   }
 
-  const count = await getQueryCount(user, "midjourney", MJMessage);
+  // const count = await getQueryCount(user, "midjourney", MJMessage);
 
-  if (!count) {
-    return res
-      .status(200)
-      .json({ status: "failed", message: "您的套餐内查询次数已用完" });
-  }
+  // if (!count) {
+  //   return res
+  //     .status(200)
+  //     .json({ status: "failed", message: "您的套餐内查询次数已用完" });
+  // }
 
   const plaintext = user?._id || fingerprint;
   const auth = encrypt(plaintext);
