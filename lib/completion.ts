@@ -107,13 +107,11 @@ export async function queryTodayCompletionCount(userId: string = '', fingerprint
   try {
     await dbConnect()
     const [todayStartCST, todayEndCST] = getTodayTime()
+    const filter = userId ? { userId } : { fingerprint }
     const result = await Completion.aggregate([
       {
         $match: {
-          $or: [
-            { userId },
-            { fingerprint }
-          ],
+          ...filter,
           createAt: {
             $gte: new Date(todayStartCST),
             $lte: new Date(todayEndCST),
@@ -194,7 +192,6 @@ export async function checkQueryCount(user: UserSession, fingerprint: string = '
   const { isLoggedIn, pricings, _id: userId } = user || {}
   const pricing: UserPricing | undefined = pricings?.find((item: UserPricing) => item.name === 'chatGPT' && item.endAt > Date.now())
   const count = await queryTodayCompletionCount(userId, fingerprint)
-  console.log('get completion count', count, fingerprint)
   // 未登录用户最大查询三次
   if (!isLoggedIn && count >= UNLOGIN_MAX_QUERY_COUNT) {
     return { status: 'failed', message: "未登录用户最多查询三次", label: 'login' }
