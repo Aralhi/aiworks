@@ -130,7 +130,7 @@ function Midjourney() {
              * 失败了马上尝试下一张图
              * 完成后的图片是一直可访问的
              * */
-            const { data } = await fetchJson<CustomResponseType>(`https://api.aiworks.club/api/mjcl/image`, {
+            const { data } = await fetchJson<CustomResponseType>(`https://api.aiworks.club/api/mj/image`, {
               method: 'POST',
               mode: 'cors',
               headers: {
