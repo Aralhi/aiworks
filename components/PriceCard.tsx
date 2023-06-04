@@ -463,8 +463,8 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
       </p>}
       <div className='w-full flex justify-center items-center'>
         <Radio.Group name="radiogroup" defaultValue={payType} className='flex justify-center items-center px-4 py-2' id="pay-type-radio" onChange={e => { setPayType(e.target.value) }}>
-          <Radio value={1}><WechatOutlined className='text-lg mr-2 text-green-600' rev='' />微信支付</Radio>
-          <Radio value={2} disabled><AlipayCircleOutlined className='text-lg mr-2 text-blue-500' rev='' />支付宝支付</Radio>
+          <Radio value={1}><WechatOutlined className='text-lg mr-2 text-green-600 max-w-[30px]' style={{ fontSize: '20px' }} rev='' />微信支付</Radio>
+          <Radio value={2} disabled><AlipayCircleOutlined className='text-lg mr-2 text-blue-500 max-w-[30px]' style={{ fontSize: '20px' }} rev='' />支付宝支付</Radio>
         </Radio.Group>
       </div>
       {selected === 'chatGPT' && chatPricing}
