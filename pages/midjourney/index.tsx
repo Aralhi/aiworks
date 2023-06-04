@@ -122,21 +122,35 @@ function Midjourney() {
 
         /** 服务代理请求图片返回数据流 */
         if (mjUri) {
-          const { data } = await fetchJson<CustomResponseType>(`http://8.218.156.105:3000/api/mj/image`, {
-            method: 'POST',
-            headers: {
-              Authorization: `${token}`,
-              'x-salai-plaintext': checkResult.data.plaintext,
-              [FINGERPRINT_KEY]: await getFingerprint(),
-            },
-            body: JSON.stringify({ url: mjUri }),
-          });
-          ossUrl = data.url;
+          try {
+            /**
+             * 由于midjourney图片是有有效期的
+             * 下一张图更新的时候上一张图可能就无法访问了
+             * 不能阻塞流程
+             * 失败了马上尝试下一张图
+             * 完成后的图片是一直可访问的
+             * */
+            const { data } = await fetchJson<CustomResponseType>(`http://8.218.156.105:3000/api/mj/image`, {
+              method: 'POST',
+              mode: 'cors',
+              headers: {
+                Authorization: `${token}`,
+                'x-salai-plaintext': checkResult.data.plaintext,
+                'Content-Type': 'application/json',
+                [FINGERPRINT_KEY]: await getFingerprint(),
+              },
+              body: JSON.stringify({ url: mjUri }),
+            });
+            ossUrl = data.url;
+          } catch (e) {
+            console.log('图片转存失败', e);
+          }
           setMessages((state) => {
-            const { progress, msgHash, prompt, msgId } = state[messageIdx];
+            const { progress, msgHash, prompt, msgId, img } = state[messageIdx];
             state[messageIdx] = {
               ...state[messageIdx],
-              progress: data.url ?? progress,
+              img: ossUrl ?? img,
+              progress: mjProgress ?? progress,
               msgId: mjId ?? msgId,
               msgHash: mjHash ?? msgHash,
               content: mjContent ?? prompt,
