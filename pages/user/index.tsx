@@ -358,11 +358,11 @@ function UserFC() {
               <Divider />
               <div className="flex flex-col md:flex-row justify-between items-center">
                 <div className="flex flex-col justify-center items-center gap-4 md:w-1/2 w-full">
-                  <div className="bg-white flex h-[40px] w-full mt-6" style={{ border: '1px solid #212b36', borderRadius: '8px' }}>
-                    <input className="py-4 text-gray-950 outline-none pl-2 w-full" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
-                    <div className="flex py-4 items-center flex-row justify-center gap-4 text-white cursor-pointer" style={{ backgroundColor: '#212b36', width: '140px', lineHeight: '40px', userSelect: 'none' }}
+                  <div className="bg-white flex h-[40px] w-full mt-6">
+                    <input className="py-4 text-gray-950 outline-none pl-2 w-full bg-white" disabled style={{ color: '#212b36', lineHeight: '40px' }} value={inviteUrl}/>
+                    <div className="flex items-center flex-row justify-center gap-4 cursor-pointer" style={{ width: '60px', lineHeight: '40px', userSelect: 'none' }}
                       onClick={copyUrl}>
-                      <CopyFilled style={{ fontSize: '16px' }} rev='' />复制
+                      <CopyFilled style={{ fontSize: '18px', color: '#000' }} rev='' />
                     </div>
                   </div>
                   <Card>
