@@ -232,7 +232,9 @@ table {
   border-radius: 12px;
   background-color: #353459;
 }
-
+.dark p {
+  color: white;
+}
 :where(.css-dev-only-do-not-override-w8mnev).ant-btn-primary {
   background-color: #1677ff !important;
 }

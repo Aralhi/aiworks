@@ -34,6 +34,9 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
   };
 
   async function buy (planId: number) {
+    if (!user?.isLoggedIn) {
+      router.push('/login?originUrl=/pricing')
+    }
     setPaying(true)
     try {
       if (payType === 1) {
