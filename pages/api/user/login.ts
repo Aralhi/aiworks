@@ -11,7 +11,7 @@ import { FINGERPRINT_KEY } from "@/utils/constants";
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { phone, code, inviteCode } = req.body || {};
   if (!checkCode(phone, code)) {
-    res.status(400).json({ status: 'failed', message: "验证码错误" });
+    res.status(200).json({ status: 'failed', message: "验证码错误" });
   }
   try {
     await dbConnect()
