@@ -36,7 +36,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     status: 'ok',
     data: {
       payload,
-      conversationId: newConversationId,
+      conversationId: newConversationId, // 只返回新的conversationId，前端判断有新的conversationId就更新会话列表
       plaintext
     }
   })

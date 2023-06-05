@@ -159,7 +159,7 @@ function Chat() {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        if (!conversationId) {
+        if (conversationId) {
           // 默认没有conversationId会在调chatgpt时创建，此处获取更新会话列表
           getConversationList()
         }
@@ -334,9 +334,6 @@ function Chat() {
     const res: CustomResponseType = await fetchJson('/api/conversation')
     if (res && res.status === 'ok') {
       setConversations(res?.data || [])
-      if (!conversationId && res?.data?.[0]?._id) {
-        setConversationId(res?.data?.[0]?._id)
-      }
     } else {
       res.message && message.error(res.message)
     }
