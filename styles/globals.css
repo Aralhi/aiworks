@@ -4,6 +4,9 @@
 html, html body {
   font-family: var(--font-sans,var(--font-sans-fallback));
 }
+.ant-btn-primary {
+  background-color: #1677ff !important;
+}
 .btn {
   align-items: center;
   border-color: transparent;
