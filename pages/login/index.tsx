@@ -21,6 +21,7 @@ const Login = () => {
   const [qr, setQr] = useState('');
   const [ticket, setTicket] = useState('');
   const [qrStatus, setQrStatus] = useState('');
+  const [tab, setTab] = useState('weixin');
   const router = useRouter();
   const inviteCode = router.query?.c
   const countdownRef = useRef<HTMLElement>(null);
@@ -66,7 +67,7 @@ const Login = () => {
 
   useEffect(() => {
     document.title = '登录 | AI works';
-    if (ticket && qr) {
+    if (ticket && qr && tab === 'weixin') {
       // 生成二维码成功，轮询二维码扫码状态
       const checkLogin = async () => {
         const res: CustomResponseType = await fetchJson(`/api/weichat/checkLogin?ticket=${ticket}&inviteCode=${inviteCode || ''}`, {
@@ -88,7 +89,7 @@ const Login = () => {
       const timerId = setInterval(checkLogin, 1500); // 每隔1秒钟重新获取一次数据
       return () => clearInterval(timerId); // 卸载组件时清除定时器
     }
-  }, [qr])
+  }, [qr, tab])
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -255,7 +256,7 @@ const Login = () => {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">AI works，让AI触手可及 </h2>
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Tabs items={tabItems} centered size={'large'}/>
+        <Tabs items={tabItems} centered size={'large'} defaultValue={tab} onChange={(e) => setTab(e)}/>
       </div>
     </div>
   );
