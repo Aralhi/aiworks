@@ -27,6 +27,7 @@ interface Chat {
 
 const COPY_CODE = 'Copy code'
 const COPIED = 'Copied'
+const textareaLineHeight = 24; // 每行的高度
 
 function Chat() {
   const { user } = useUser()
@@ -77,18 +78,21 @@ function Chat() {
   
   function handleContentChange(e: ChangeEvent<HTMLTextAreaElement>) {
     setPrompt(e.target.value || '')
-    calculateHeight(e.target.value)
+    calculateHeight(e)
   }
 
-  function calculateHeight(value?: string) {
+  function calculateHeight(e: ChangeEvent<HTMLTextAreaElement>) {
+    const value = e.target.value
     if ((!value || value === '') && textareaRef.current) {
       textareaRef.current.style.height = '24px';
       return
     }
-    const lines = (value || prompt).split('\n');
-    const newHeight = Math.max(lines.length * 24, 24);
-    if (textareaRef.current && newHeight <= 200) {
-      textareaRef.current.style.height = newHeight + 'px';
+    const previousRows = e.target.rows;
+    e.target.rows = 1; // 重置行数以计算内容高度
+    const currentRows = Math.ceil(e.target.scrollHeight / textareaLineHeight);
+    if (currentRows !== previousRows) {
+      e.target.rows = currentRows;
+      e.target.style.height = `${currentRows * textareaLineHeight}px`; // 设置高度
     }
   }
 
@@ -96,7 +100,7 @@ function Chat() {
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();
       setPrompt(prompt + '\n');
-      calculateHeight(prompt + '\n');
+      e.target.style.height = `${e.target.scrollHeight + textareaLineHeight}px`; // 设置高度
       handleFocus()
       return
     }
@@ -600,7 +604,8 @@ function Chat() {
                     tabIndex={0}
                     data-id="root"
                     style={{
-                      minHeight: "24px",
+                      minHeight: `${textareaLineHeight}px`,
+                      maxHeight: "96px",
                       height: "auto",
                       overflowY: "hidden",
                     }}
