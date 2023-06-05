@@ -19,23 +19,23 @@ function MJTags({ tags, onAdd, onRemote }: IMJTagsProps) {
           >
             <span className="flex items-center bg-white bg-opacity-20 text-white pt-1 pb-1 pl-2 pr-2 mr-2">{item.label}</span>
             <span>{Array.isArray(item.value) ? item.value.join(' ') : item.value}</span>
-            <CloseOutlined
+            {/* <CloseOutlined
               rev=""
               className="ml-2 text-[10px] cursor-pointer opacity-30 hover:opacity-100 transition-opacity"
               onClick={() => {
                 onRemote(item, index);
               }}
-            />
+            /> */}
           </Row>
         );
       })}
-      <Row
+      {/* <Row
         className="flex items-center justify-center border border-white border-opacity-20 text-[#D4D7DA] text-xs rounded border-dashed cursor-pointer pl-2 mb-2"
         onClick={onAdd}
       >
         <PlusOutlined rev="" className="text-[10px]" />
         <span className="pt-1 pb-1 pl-2 pr-2">参数设置</span>
-      </Row>
+      </Row> */}
     </Row>
   );
 }

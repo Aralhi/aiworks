@@ -247,7 +247,7 @@ function Midjourney() {
         <Text className="text-white opacity-90 mb-1">
           <strong>{prompt}</strong> {`(${progress})`}
         </Text>
-        <Image className="max-w-full rounded-lg" width={350} height={350} src={img || defaultImg} />
+        <Image className="rounded-lg" width={350} height={350} src={img} fallback={defaultImg} />
         {progress === 'done' && type !== 'upscale' && (
           <>
             <Tags data={['U1', 'U2', 'U3', 'U4']} onItemClick={(tagNum) => upscale(String(content), String(msgId), String(msgHash), tagNum)} />
@@ -288,7 +288,7 @@ function Midjourney() {
         }}
       />
       <div className="fixed bottom-0 bg-[#303338] left-1/2 -translate-x-1/2 px-4 w-full">
-        <div className="mx-auto w-full md:w-3/4 lg:w-4/5 xl:w-3/5 pb-5 pt-3">
+        <div className="relative mx-auto w-full md:w-3/4 lg:w-4/5 xl:w-3/5 pb-5 pt-3">
           <MJOptsPanel onArgsChange={setArgs} />
           <TextArea
             className="w-full rounded-lg bg-[#373A3F] border-none text-white leading-5 pt-2 pb-2 pr-10 placeholder:text-white placeholder:text-opacity-50"

@@ -1,7 +1,7 @@
 import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { argsOption } from './config';
-import { Checkbox, Drawer, Input, InputNumber, Popover, Row, Select } from 'antd';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+// import { Checkbox, Drawer, Input, InputNumber, Popover, Row, Select } from 'antd';
+// import { QuestionCircleOutlined } from '@ant-design/icons';
 import MJTags from './MJTags';
 
 type OptType<T = any> = (typeof argsOption)[number] & {
@@ -97,7 +97,7 @@ function MJOptsPanel({ onArgsChange }: PropsWithChildren<IMJOptsPanelProps>) {
         }}
         onRemote={handleRemoveTag}
       />
-      <Drawer title="Midjourney生成参数" open={open} onClose={handleDrawerClose}>
+      {/* <Drawer title="Midjourney生成参数" open={open} onClose={handleDrawerClose}>
         {opts.map((item, index) => {
           return (
             <Row key={item.key} className="align-middle mb-4">
@@ -155,7 +155,7 @@ function MJOptsPanel({ onArgsChange }: PropsWithChildren<IMJOptsPanelProps>) {
             </Row>
           );
         })}
-      </Drawer>
+      </Drawer> */}
     </>
   );
 }
