@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import { AVATARS } from '@/utils/constants';
 import Image from 'next/image';
 import { isPC } from '../utils';
-import { Dropdown, MenuProps } from 'antd';
+import { Divider, Dropdown, MenuProps } from 'antd';
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
@@ -65,19 +65,22 @@ export default function Header() {
           <Image width={120} height={32} alt="logo" src="/aiworks-long.png" />
         </Link>
         <div className="navigation text-white">
-          <ul className="flex">
-            <li className="mr-2 md:mr-6 flex items-center">
+          <ul className="flex pr-3">
+            <li className="flex items-center">
               <Link href={{ pathname: '/chat', query }}>Chat</Link>
             </li>
-            <li className="mr-2 md:mr-6 flex items-center">
+            <Divider className='h-[32px]' type='vertical' style={{ borderInlineStart: '1px solid white' }}/>
+            <li className="flex items-center">
               <Link href={{ pathname: '/midjourney', query }}>Midjourney</Link>
             </li>
-            {/* {!isMobile && <li className="mr-2 md:mr-6 flex items-center">
+            <Divider className='h-[32px]' type='vertical' style={{ borderInlineStart: '1px solid white' }}/>
+            {/* {!isMobile && <li className="flex items-center">
               <Link href={{ pathname: '/tutorial', query }}>教程</Link>
             </li>} */}
-            <li className="mr-2 md:mr-6 flex items-center">
+            <li className="flex items-center">
               <Link href={{ pathname: '/pricing', query }}>价格</Link>
             </li>
+            <Divider className='h-[32px]' type='vertical' style={{ borderInlineStart: '1px solid white' }}/>
             <li className='flex items-center'>
               <Dropdown menu={{ items }} trigger={['click']}>
                 <a href="#">

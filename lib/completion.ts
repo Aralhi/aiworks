@@ -107,13 +107,11 @@ export async function queryTodayCompletionCount(userId: string = '', fingerprint
   try {
     await dbConnect()
     const [todayStartCST, todayEndCST] = getTodayTime()
+    const filter = userId ? { userId } : { fingerprint }
     const result = await Completion.aggregate([
       {
         $match: {
-          $or: [
-            { userId },
-            { fingerprint }
-          ],
+          ...filter,
           createAt: {
             $gte: new Date(todayStartCST),
             $lte: new Date(todayEndCST),
@@ -194,19 +192,18 @@ export async function checkQueryCount(user: UserSession, fingerprint: string = '
   const { isLoggedIn, pricings, _id: userId } = user || {}
   const pricing: UserPricing | undefined = pricings?.find((item: UserPricing) => item.name === 'chatGPT' && item.endAt > Date.now())
   const count = await queryTodayCompletionCount(userId, fingerprint)
-  console.log('get completion count', count, fingerprint)
   // 未登录用户最大查询三次
   if (!isLoggedIn && count >= UNLOGIN_MAX_QUERY_COUNT) {
-    return { status: 'failed', message: "未登录用户最大查询三次" }
+    return { status: 'failed', message: "未登录用户最多查询三次", label: 'login' }
   } else if (isLoggedIn && !pricing && count >= LOGIN_MAX_QUERY_COUNT) {
     // 登录未购买chatGPT用户最大查询100次
-    return { status: 'failed', message: "您的免费次数已用完" }
+    return { status: 'failed', message: "您的免费次数已用完", label: 'pricing' }
   } else if (isLoggedIn && pricing && userId) {
     //TODO 付费用户查询额度
     const count = await queryPricingCompletionCount(userId)
     if (count >= pricing.queryCount) {
       // 超出购买用户最大查询额度
-      return { status: 'failed', message: "您的套餐内查询次数已用完" }
+      return { status: 'failed', message: "您的套餐内查询次数已用完", label: 'pricing' }
     }
   }
   return { status: 'ok'}
