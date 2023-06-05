@@ -75,7 +75,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   } catch (e) {
     console.error(e);
     res.json({
-      succes: false,
+      success: false,
       message: e
     })
   }
