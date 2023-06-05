@@ -46,6 +46,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
         setPayInfo(payInfo);
         if (payInfo.tradeNo) {
           if (type === 'jsapi') {
+            alert(JSON.stringify(payInfo.prePayParams));
             WeixinJSBridge.invoke('getBrandWCPayRequest', {
               ...payInfo.prePayParams,
             },
