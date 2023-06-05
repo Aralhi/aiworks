@@ -457,7 +457,7 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
             <img src="/wx_group_1.png" alt="aiworks club" className='w-[250px] h-[250px]' />
           </div>
       </Modal>
-      {inviteCount > 0 && <p className='w-full flex justify-center items-center'>
+      {inviteCount > 0 && <p className='w-full flex justify-center items-center reward'>
         <span>邀请了</span>
         <span className='text-lg text-red-500 mx-2 font-bold'>{inviteCount}</span>
         <span>个用户购买，可抵扣</span>

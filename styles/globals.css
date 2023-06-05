@@ -232,7 +232,7 @@ table {
   border-radius: 12px;
   background-color: #353459;
 }
-.dark p {
+.dark p.reward {
   color: white;
 }
 :where(.css-dev-only-do-not-override-w8mnev).ant-btn-primary {
