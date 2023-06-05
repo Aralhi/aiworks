@@ -1,7 +1,7 @@
 import { ChangeEvent, useState, useEffect, useRef } from 'react';
 import fetchJson, { CustomResponseType } from '@/lib/fetchJson';
 import { useRouter } from 'next/router';
-import { Tabs, Checkbox, Input, message } from 'antd';
+import { Tabs, Checkbox, Input, message, Button } from 'antd';
 import type { TabsProps } from 'antd';
 import Link from 'next/link';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
@@ -9,7 +9,6 @@ import React from 'react';
 import { MP_WX_API } from '@/utils/constants';
 
 const SMS_TIMEOUT = process.env.NODE_ENV === 'development' ? 5 : 60;
-let protocolChecked = false;
 
 const Login = () => {
   const [phone, setPhone] = useState('');
@@ -22,6 +21,7 @@ const Login = () => {
   const [ticket, setTicket] = useState('');
   const [qrStatus, setQrStatus] = useState('');
   const [tab, setTab] = useState('weixin');
+  const [protocolChecked, setProtocolChecked] = useState(false);
   const router = useRouter();
   const inviteCode = router.query?.c
   const countdownRef = useRef<HTMLElement>(null);
@@ -141,7 +141,7 @@ const Login = () => {
   }
 
   function protocolClick (e: CheckboxChangeEvent) {
-    protocolChecked = e.target.checked;
+    setProtocolChecked(e.target.checked)
   }
 
   const handleLogin = async () => {
@@ -234,16 +234,16 @@ const Login = () => {
               addonBefore={<span>邀请码</span>}
             />}
           <div>
-            <Checkbox onChange={protocolClick} defaultChecked={protocolChecked} value={protocolChecked}>阅读并同意</Checkbox>
+            <Checkbox onChange={protocolClick} defaultChecked={protocolChecked} checked={protocolChecked}>阅读并同意</Checkbox>
             <Link className='text-blue-500' href={'/protocol'} target='_blank'>《用户协议与隐私政策》</Link>
           </div>
           <div>
-            <button
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            <Button
+              className="w-full flex justify-center border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={handleLogin}
               disabled={loading || !phoneCheck || !codeCheck}
             >登录
-            </button>
+            </Button>
           </div>
         </div>
       </div>
