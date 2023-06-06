@@ -14,9 +14,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     res.status(200).json({ status: 'failed', message: "验证码错误" });
   }
   try {
-    await dbConnect()
+    await dbConnect();
     // 查询数据库用户是否存在
-    let user = await User.findOne({ phone })
+    let user = await User.findOne({ phone });
     if (user) {
       // 登录过直接返回
       req.session.user = {
@@ -25,39 +25,43 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         phone: user.phone,
         name: user.name,
         userCode: user.userCode,
-        fingerprint: req.headers[FINGERPRINT_KEY]
-      } as UserSession
-      await req.session.save()
-      console.log('old user login success:', user)
-      res.status(200).json({ status: 'ok', message: "登录成功" });
-      return
+        createAt: user.createAt,
+        fingerprint: req.headers[FINGERPRINT_KEY],
+      } as UserSession;
+      await req.session.save();
+      console.log("old user login success:", user);
+      res.status(200).json({ status: "ok", message: "登录成功" });
+      return;
     }
-    let userInfo = generateUserInfo()
+    let userInfo = generateUserInfo();
     // 新建用户记录
-    const newDoc = await new User(Object.assign({}, userInfo, {
-      registerType: 'phone',
-      phone,
-      inviteCode
-    })).save()
-    console.log('new phone user login success:', newDoc)
+    const newDoc = await new User(
+      Object.assign({}, userInfo, {
+        registerType: "phone",
+        phone,
+        inviteCode,
+      })
+    ).save();
+    console.log("new phone user login success:", newDoc);
     const newSession: UserSession = {
       _id: newDoc._id,
       isLoggedIn: true,
       phone,
       name: userInfo.name,
       userCode: userInfo.userCode,
-      fingerprint: req.headers[FINGERPRINT_KEY] as string
-    }
-    req.session.user = newSession
-    await req.session.save()
+      createAt: userInfo.createAt,
+      fingerprint: req.headers[FINGERPRINT_KEY] as string,
+    };
+    req.session.user = newSession;
+    await req.session.save();
     res.status(200).json({
-      status: 'ok',
-      message: "登录成功"
-    })
+      status: "ok",
+      message: "登录成功",
+    });
   } catch (e) {
-    console.error('login error:', e)
-    res.status(500).json({ status: 'failed', message: "登录失败" });
+    console.error("login error:", e);
+    res.status(500).json({ status: "failed", message: "登录失败" });
   }
 }
 
-export default withIronSessionApiRoute(handler, sessionOptions)
+export default withIronSessionApiRoute(handler, sessionOptions);

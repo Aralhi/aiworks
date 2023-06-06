@@ -43,8 +43,8 @@ function MJExplain() {
           可以选择不同画家的艺术风格，例如安迪华荷、达芬奇、达利和毕加索等，还能识别特定镜头或摄影术语。
         </span>
       </Row> */}
-      <Row className="block flex-col flex-1 mb-8">
-        <h2 className="text-gray-800 text-lg mb-4 w-full font-medium">如何使用</h2>
+      <Row className="block flex-col flex-1">
+        {/* <h2 className="text-gray-800 text-lg mb-4 w-full font-medium">如何使用</h2> */}
         <div className="space-y-2">
           <p>在下方输入框键入你想要生成的图片语句</p>
           <p>
@@ -73,7 +73,7 @@ function MJExplain() {
           </p> */}
         </div>
       </Row>
-      <Row className="block flex-col flex-1">
+      {/* <Row className="block flex-col flex-1">
         <h2 className="text-gray-800 text-lg mb-4 w-full font-medium">社区案例</h2>
         <div className="relative flex items-center justify-center flex-wrap">
           <div className="relative w-full md:w-1/2 lg:w-1/2 xl:w-1/2">
@@ -88,7 +88,7 @@ function MJExplain() {
               <div className="absolute top-0 left-0 w-full h-full bg-[url('/style-2.jpg')] bg-center bg-cover bg-no-repeat " />
             </div>
           </div>
-          {/* <div className="relative w-full md:w-1/2 lg:w-1/2 xl:w-1/2">
+          <div className="relative w-full md:w-1/2 lg:w-1/2 xl:w-1/2">
             <div className="relative m-2 rounded-lg shadow-lg overflow-hidden">
               <div className="w-full pt-[100%]" />
               <div className="absolute top-0 left-0 w-full h-full bg-[url('/style-3.jpg')] bg-center bg-cover bg-no-repeat " />
@@ -99,9 +99,9 @@ function MJExplain() {
               <div className="w-full pt-[100%]" />
               <div className="absolute top-0 left-0 w-full h-full bg-[url('/style-4.jpg')] bg-center bg-cover bg-no-repeat " />
             </div>
-          </div> */}
+          </div>
         </div>
-      </Row>
+      </Row> */}
     </div>
   );
 }
