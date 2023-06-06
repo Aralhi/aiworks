@@ -1,5 +1,6 @@
 import { sessionOptions } from "@/lib/session";
 import MJMessage, { IMJMessage } from "@/models/MJMessage";
+import { FINGERPRINT_KEY } from "@/utils/constants";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -7,8 +8,10 @@ type MJUpdatePayloadType = Partial<IMJMessage>;
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
-  const { user: { _id, isLoggedIn, fingerprint } = {} } = req.session;
-  if (!isLoggedIn || !_id || !fingerprint) {
+  const { user: { isLoggedIn, _id, fingerprint: sessionFingerprint } = {} } =
+    req.session;
+  const fingerprint = req.headers[FINGERPRINT_KEY] as string;
+  if (!isLoggedIn && !_id && !(sessionFingerprint || fingerprint)) {
     return res
       .status(400)
       .json({ status: "failed", message: "您无法做此操作，请先登录" });

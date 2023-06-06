@@ -62,7 +62,8 @@ function Midjourney() {
     const checkResult = await checkRes.json();
 
     /** 未登录跳转登陆页面 */
-    if (checkRes.status === 400) {
+    if (checkRes.status === 400 || checkResult.status === 'UNLOGIN_NO_QUERY_TIMES') {
+      message.warning(checkResult.message);
       router.push({ pathname: 'login', query: Object.assign({}, router.query, { originUrl: router.pathname }) });
       return;
     }
@@ -88,7 +89,11 @@ function Midjourney() {
       });
       const data = resp.body;
 
-      if (!data) return;
+      console.log(resp);
+      if (!data || !resp || resp.status >= 400) {
+        message.error('请求失败，请稍后重试');
+        return;
+      }
 
       const reader = data.getReader();
       const decoder = new TextDecoder();
