@@ -44,7 +44,7 @@ function MJExplain() {
         </span>
       </Row> */}
       <Row className="block flex-col flex-1">
-        <h2 className="text-gray-800 text-lg mb-4 w-full font-medium">如何使用</h2>
+        {/* <h2 className="text-gray-800 text-lg mb-4 w-full font-medium">如何使用</h2> */}
         <div className="space-y-2">
           <p>在下方输入框键入你想要生成的图片语句</p>
           <p>
