@@ -8,7 +8,12 @@ import Completion from "@/models/Completion";
 import MJMessage from "@/models/MJMessage";
 import dbConnect from "./dbConnect";
 import { getTodayTime } from "../utils";
-import { LOGIN_MAX_QUERY_COUNT } from "@/utils/constants";
+import {
+  LOGIN_MAX_QUERY_COUNT,
+  LOGIN_MJ_MAX_QUERY_COUNT,
+  UNLOGIN_MAX_QUERY_COUNT,
+  UNLOGIN_MJ_MAX_QUERY_COUNT,
+} from "@/utils/constants";
 
 type ModelType = "chatGPT" | "midjourney";
 type SchemaModel = typeof Completion | typeof MJMessage;
@@ -20,7 +25,7 @@ type QueryParams = {
   model: SchemaModel;
 };
 
-const COMPLETION_COUNT_CACHE_TIME = 1000 * 60 * 60 * 24; // 1小时
+const COMPLETION_COUNT_CACHE_TIME = 1000 * 60 * 60 * 24; // 1天
 
 export function getCompletionCountCacheKey(userId: string, type: ModelType) {
   return `completion_${type}_count_${userId}`;
@@ -31,12 +36,11 @@ async function getQueryCount(
   type: ModelType,
   model: SchemaModel
 ) {
-  const { pricings, _id, fingerprint } = user;
-  const cacheKey = getCompletionCountCacheKey(_id, type);
+  const { pricings, _id: userId, fingerprint, isLoggedIn } = user;
+  const cacheKey = getCompletionCountCacheKey(userId, type);
   const cacheCount = cache.get(cacheKey);
 
   let pricing: UserPricing | undefined;
-  let userInfo: IUser;
 
   /** 先从缓存中读取次数 */
   if (cacheCount || cacheCount === 0) {
@@ -56,34 +60,54 @@ async function getQueryCount(
   } else {
     /** session中查不到套餐信息，查库 */
     await dbConnect();
-    const user = await User.findOne<IUser>({ _id });
-    if (user) userInfo = user;
+    const user = await User.findOne<IUser>({ userId });
     pricing = getPricing(user?.pricings);
   }
 
-  let extraCount = 0;
+  /**
+   * ***********************************************
+   * ***************** 免费次数逻辑 ******************
+   * ***********************************************
+   */
+  let freeCount = 0;
 
-  /** gpt有登录时的每日查询次数 */
-  if (type === "chatGPT") {
-    const todayQueryCount = await queryTodayCompletionCount(_id, fingerprint);
-    extraCount = LOGIN_MAX_QUERY_COUNT - todayQueryCount;
+  const unLoginFreeCount =
+    type === "chatGPT" ? UNLOGIN_MAX_QUERY_COUNT : UNLOGIN_MJ_MAX_QUERY_COUNT;
+  const loginFreeCount =
+    type === "chatGPT" ? LOGIN_MAX_QUERY_COUNT : LOGIN_MJ_MAX_QUERY_COUNT;
+  const todayQueryCount = await queryTodayQueryCount(
+    userId,
+    fingerprint,
+    Completion
+  );
+  if (isLoggedIn) {
+    /** 已登陆用户每日可免费查询次数 */
+    freeCount = loginFreeCount - todayQueryCount;
+  } else {
+    /** 未登陆用户每日可免费查询次数 */
+    freeCount = unLoginFreeCount - todayQueryCount;
   }
+  /**
+   * ***********************************************
+   * ***************** 免费次数逻辑 ******************
+   * ***********************************************
+   */
 
-  /** 获取次数 */
+  /** 套餐剩余次数 */
   if (pricing) {
     const count = await queryPricingCount({
-      userId: _id,
+      userId,
       fingerprint,
       model,
       pricing,
     });
     cache.put(cacheKey, count, COMPLETION_COUNT_CACHE_TIME);
-    return count + extraCount;
-  } else {
-    return 0;
+    return count + freeCount;
   }
+  return freeCount;
 }
 
+/** 获取套餐剩剩余查询次数 */
 const queryPricingCount = async ({
   userId,
   fingerprint,
@@ -126,9 +150,11 @@ const getQueryRecordCount = async ({
   return (result?.[0]?.count as number) ?? 0;
 };
 
-const queryTodayCompletionCount = async (
+/** 查询今日已使用服务次数 */
+const queryTodayQueryCount = async (
   userId: string,
-  fingerprint: string
+  fingerprint: string,
+  model: SchemaModel
 ) => {
   try {
     const [todayStartCST, todayEndCST] = getTodayTime();
@@ -137,7 +163,7 @@ const queryTodayCompletionCount = async (
       fingerprint,
       startAt: new Date(todayStartCST),
       endAt: new Date(todayEndCST),
-      model: Completion,
+      model,
     });
     return count;
   } catch (e) {
