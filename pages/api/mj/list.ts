@@ -20,7 +20,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           if (item.img.includes('?')) {
             item.img = item.img.split('?')[0];
           }
-          if (/^http/.test(item.img)) {
+          if (!/^http/.test(item.img)) {
             item.img = `https://${process.env.OSS_BUCKET}.${process.env.OSS_ENDPOINT}/${item.img}`;
           }
         }
