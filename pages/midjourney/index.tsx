@@ -139,9 +139,9 @@ function Midjourney() {
               body: JSON.stringify({ url: mjUri }),
             });
             const response = await imgResp.json();
-            const { url, originPath } = response.data;
+            const { url, originUrl } = response.data;
             ossUrl = url;
-            imgPath = originPath;
+            imgPath = originUrl;
           } catch (e) {
             console.log('图片转存失败', e);
           }
