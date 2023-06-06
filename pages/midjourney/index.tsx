@@ -60,6 +60,8 @@ function Midjourney() {
       },
     });
     const checkResult = await checkRes.json();
+    /** 用于MJ通讯服务完成时的更新对应数据的标识 */
+    const unionId = checkResult.data.plaintext + Date.now();
 
     /** 未登录跳转登陆页面 */
     if (checkRes.status === 400 || checkResult.status === 'UNLOGIN_NO_QUERY_TIMES') {
@@ -85,7 +87,7 @@ function Midjourney() {
           'Content-Type': 'application/json',
           [FINGERPRINT_KEY]: await getFingerprint(),
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, unionId }),
       });
       const data = resp.body;
 
@@ -106,6 +108,7 @@ function Midjourney() {
         progress: newItem.progress,
         msgId: newItem.msgId,
         msgHash: newItem.msgHash,
+        unionId,
       };
 
       /** 请求发起入库 */

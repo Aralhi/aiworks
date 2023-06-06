@@ -7,6 +7,7 @@ export interface IMJMessage {
   progress?: string;
   type: "imagine" | "upscale" | "variation";
   index?: number;
+  unionId: string;
   msgId?: string;
   msgHash?: string;
   /** oss图片访问地址 */
@@ -34,6 +35,9 @@ const MJMessageSchema = new Schema<IMJMessage>({
     type: String,
   },
   content: {
+    type: String,
+  },
+  unionId: {
     type: String,
   },
   type: {
