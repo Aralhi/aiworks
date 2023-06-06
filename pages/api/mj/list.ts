@@ -27,7 +27,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return item;
       }) });
     } catch (e) {
-      console.error("save midjourney record failed!", e);
+      console.error("get midjourney record failed!", e);
+      return res.status(500).json({ status: 'failed' })
     }
   }
 };
