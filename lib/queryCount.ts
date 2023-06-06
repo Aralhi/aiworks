@@ -43,13 +43,13 @@ async function getQueryCount({
   model: SchemaModel;
 }) {
   const { pricings, _id: userId, isLoggedIn } = user ?? {};
-  const cacheKey = getCompletionCountCacheKey(userId ?? fingerprint, type);
-  const cacheCount = cache.get(cacheKey);
+  // const cacheKey = getCompletionCountCacheKey(userId ?? fingerprint, type);
+  // const cacheCount = cache.get(cacheKey);
 
   /** 先从缓存中读取次数 */
-  if (cacheCount || cacheCount > 0) {
-    return cacheCount as number;
-  }
+  // if (cacheCount || cacheCount > 0) {
+  //   return cacheCount as number;
+  // }
 
   let pricing: UserPricing | undefined;
   let pricingCount = 0;
@@ -132,7 +132,7 @@ async function getQueryCount({
     });
   }
   const totalCount = pricingCount + freeCount;
-  cache.put(cacheKey, totalCount, COMPLETION_COUNT_CACHE_TIME);
+  // cache.put(cacheKey, totalCount, COMPLETION_COUNT_CACHE_TIME);
   return totalCount;
 }
 

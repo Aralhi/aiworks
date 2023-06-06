@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import { insertMessage } from "@/lib/mjMessage";
-import { minusCount } from "@/lib/queryCount";
+// import { minusCount } from "@/lib/queryCount";
 import { sessionOptions } from "@/lib/session";
 import { IMJMessage } from "@/models/MJMessage";
 import { FINGERPRINT_KEY } from "@/utils/constants";
@@ -26,7 +26,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       };
       await dbConnect();
       const result = await insertMessage(message);
-      minusCount(_id ?? fingerprint!, "midjourney");
+      // minusCount(_id ?? fingerprint!, "midjourney");
       return res.status(result.status === "ok" ? 200 : 500).json(result);
     } catch (e) {
       console.error("save midjourney record failed!", e);
