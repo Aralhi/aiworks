@@ -41,6 +41,7 @@ async function getQueryCount(
   const cacheCount = cache.get(cacheKey);
 
   let pricing: UserPricing | undefined;
+  let userInfo: IUser | null = null;
 
   /** 先从缓存中读取次数 */
   if (cacheCount || cacheCount === 0) {
@@ -61,6 +62,7 @@ async function getQueryCount(
     /** session中查不到套餐信息，查库 */
     await dbConnect();
     const user = await User.findOne<IUser>({ userId });
+    userInfo = user;
     pricing = getPricing(user?.pricings);
   }
 
@@ -71,21 +73,36 @@ async function getQueryCount(
    */
   let freeCount = 0;
 
-  const unLoginFreeCount =
-    type === "chatGPT" ? UNLOGIN_MAX_QUERY_COUNT : UNLOGIN_MJ_MAX_QUERY_COUNT;
-  const loginFreeCount =
-    type === "chatGPT" ? LOGIN_MAX_QUERY_COUNT : LOGIN_MJ_MAX_QUERY_COUNT;
-  const todayQueryCount = await queryTodayQueryCount(
-    userId,
-    fingerprint,
-    Completion
-  );
-  if (isLoggedIn) {
-    /** 已登陆用户每日可免费查询次数 */
-    freeCount = loginFreeCount - todayQueryCount;
+  if (type === 'chatGPT') {
+    const todayQueryCount = await queryTodayQueryCount(
+      userId,
+      fingerprint,
+      Completion
+    );
+    if (isLoggedIn) {
+      /** 已登陆用户每日可免费查询次数 */
+      freeCount = LOGIN_MAX_QUERY_COUNT - todayQueryCount;
+    } else {
+      /** 未登陆用户每日可免费查询次数 */
+      freeCount = UNLOGIN_MAX_QUERY_COUNT - todayQueryCount;
+    }
   } else {
-    /** 未登陆用户每日可免费查询次数 */
-    freeCount = unLoginFreeCount - todayQueryCount;
+    const result = await model.aggregate([
+      {
+        $match: {
+          $or: [{ userId }, { fingerprint }]
+        },
+      },
+      {
+        $count: "count",
+      },
+    ]);
+    const mjQueryCount = (result?.[0]?.count as number) ?? 0;
+    if (!userId) {
+      freeCount = UNLOGIN_MJ_MAX_QUERY_COUNT - mjQueryCount;
+    } else {
+      freeCount = LOGIN_MJ_MAX_QUERY_COUNT - mjQueryCount;
+    }
   }
   /**
    * ***********************************************
