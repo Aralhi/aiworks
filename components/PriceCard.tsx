@@ -33,6 +33,12 @@ export default function PriceCard({ payCallback }: { payCallback?: Function }) {
     setSelected(value);
   };
 
+  useEffect(() => {
+    if (router.asPath.includes('midjourney')) {
+      setSelected(PRICING_TYPES[1].value);
+    }
+  }, []);
+
   async function buy (planId: number) {
     if (!user?.isLoggedIn) {
       router.push('/login?originUrl=/pricing')
