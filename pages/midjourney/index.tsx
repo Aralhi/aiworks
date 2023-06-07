@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Input, Button, List, Image, Typography, message, Skeleton } from 'antd';
-import { SendOutlined } from '@ant-design/icons';
+import { Input, Button, List, Image, Typography, message, Row } from 'antd';
+import { EyeOutlined, SendOutlined } from '@ant-design/icons';
 import MJOptsPanel, { MJArgsType } from '@/components/MJOptsPanel';
 import Tags from '@/components/MJOptsPanel/Tags';
 import { IMJMessage } from '@/models/MJMessage';
@@ -35,6 +35,8 @@ function Midjourney() {
   const [inputDisable, setInputDisable] = useState(false);
   const [canShowEmpty, setShowEmpty] = useState(false);
   const [messages, setMessages] = useState<Partial<MidjourneyMessage>[]>([]);
+  const [previewImg, setPreviewImg] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
   const [args, setArgs] = useState<MJArgsType[]>([]);
 
   const router = useRouter();
@@ -252,7 +254,29 @@ function Midjourney() {
         <Text className="text-white opacity-90 mb-1">
           <strong>{prompt}</strong> {`(${progress})`}
         </Text>
-        <Image className="rounded-lg" width={350} height={350} src={img} fallback={defaultImg} />
+        {img && (
+          <Row
+            className="relative w-full sm:w-full md:w-3/5 lg:w-1/2 xl:w-2/5 rounded-lg overflow-hidden"
+            onClick={() => {
+              setPreviewImg(img);
+              setShowPreview(true);
+            }}
+          >
+            <img
+              className="w-full"
+              src={`${img}?x-oss-process=image/resize,w_550/format,webp`}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = defaultImg;
+              }}
+            />
+            <div className="absolute flex flex-col items-center justify-center top-0 left-0 w-full h-full cursor-pointer opacity-0 hover:opacity-100 bg-black bg-opacity-40 transition-opacity text-white">
+              <EyeOutlined rev="" className="text-white" style={{ fontSize: '3rem' }} />
+              <span className="text-sm mt-2">预览图片</span>
+            </div>
+          </Row>
+        )}
+        {/* <Image className="rounded-lg" width={350} height={350} src={img} fallback={defaultImg} /> */}
         {progress === 'done' && type !== 'upscale' && (
           <>
             <Tags data={['U1', 'U2', 'U3', 'U4']} onItemClick={(tagNum) => upscale(String(content), String(msgId), String(msgHash), tagNum)} />
@@ -283,6 +307,17 @@ function Midjourney() {
         height: 'calc(100vh - 60px)',
       }}
     >
+      <Image
+        style={{ display: 'none' }}
+        preview={{
+          visible: showPreview,
+          src: previewImg,
+          scaleStep: 0.5,
+          onVisibleChange: (value) => {
+            setShowPreview(value);
+          },
+        }}
+      />
       <List
         id="mj-list"
         className="mx-auto w-full md:w-3/4 lg:w-4/5 xl:w-3/5 h-full overflow-y-auto"
