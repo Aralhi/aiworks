@@ -15,11 +15,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       await dbConnect();
       let list = await MJMessage.find<IMJMessage>({
-        $or: [{ userId: _id }, { fingerprint }],
+        $or: [{ userId: _id ?? "" }, { fingerprint: fingerprint ?? "" }],
       }).sort({
         createAt: 1,
       });
-      console.log(_id, fingerprint, list.length);
       return res.json({
         status: "ok",
         data: list.map((item) => {
