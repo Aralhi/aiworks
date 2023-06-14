@@ -62,8 +62,7 @@ function Midjourney() {
       },
     });
     const checkResult = await checkRes.json();
-    /** 用于MJ通讯服务完成时的更新对应数据的标识 */
-    const unionId = checkResult.data.plaintext + Date.now();
+    console.log(checkResult);
 
     /** 未登录跳转登陆页面 */
     if (checkRes.status === 400 || checkResult.status === 'UNLOGIN_NO_QUERY_TIMES') {
@@ -78,6 +77,8 @@ function Midjourney() {
       return;
     }
     if (checkResult && checkResult.status === 'ok' && checkResult.data.plaintext) {
+      /** 用于MJ通讯服务完成时的更新对应数据的标识 */
+      const unionId = checkResult.data.plaintext + Date.now();
       setMessages([...messages, newItem]);
       const token = checkRes.headers.get('Authorization');
       const resp = await fetch(`https://api.aiworks.club/api/mj/${type}`, {
