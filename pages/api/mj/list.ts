@@ -6,8 +6,7 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { user: { isLoggedIn, _id, fingerprint: sessionFingerprint } = {} } =
-    req.session;
+  const { user: { isLoggedIn, _id } = {} } = req.session;
   const fingerprint = req.headers[FINGERPRINT_KEY] as string;
   if (!isLoggedIn && !_id && !fingerprint) {
     return res.json({ status: "ok", data: [] });
@@ -16,10 +15,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       await dbConnect();
       let list = await MJMessage.find<IMJMessage>({
-        $or: [
-          { userId: _id },
-          { fingerprint: sessionFingerprint || fingerprint },
-        ],
+        $or: [{ userId: _id }, { fingerprint }],
       }).sort({
         createAt: 1,
       });
