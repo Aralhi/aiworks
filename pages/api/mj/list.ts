@@ -3,6 +3,7 @@ import { sessionOptions } from "@/lib/session";
 import MJMessage, { IMJMessage } from "@/models/MJMessage";
 import { FINGERPRINT_KEY } from "@/utils/constants";
 import { withIronSessionApiRoute } from "iron-session/next";
+import { FilterQuery } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -14,9 +15,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "GET") {
     try {
       await dbConnect();
-      let list = await MJMessage.find<IMJMessage>({
-        $or: [{ userId: _id ?? "" }, { fingerprint: fingerprint ?? "" }],
-      }).sort({
+      const filter: FilterQuery<IMJMessage> = {
+        $or: [],
+      };
+      if (_id) {
+        filter.$or?.push({ userId: _id });
+      }
+      if (fingerprint) {
+        filter.$or?.push({ fingerprint });
+      }
+      let list = await MJMessage.find<IMJMessage>(filter).sort({
         createAt: 1,
       });
       return res.json({
