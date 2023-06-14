@@ -19,6 +19,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }).sort({
         createAt: 1,
       });
+      console.log(_id, fingerprint, list.length);
       return res.json({
         status: "ok",
         data: list.map((item) => {
