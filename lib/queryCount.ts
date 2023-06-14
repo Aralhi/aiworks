@@ -64,10 +64,10 @@ async function getQueryCount({
   if (pricings && pricings.length) {
     /** 从session中查看套餐信息 */
     pricing = getPricing(pricings);
-  } else {
+  } else if (userId) {
     /** session中查不到套餐信息，查库 */
     await dbConnect();
-    const user = await User.findOne<IUser>({ userId });
+    const user = await User.findById<IUser>({ _id: userId });
     pricing = getPricing(user?.pricings);
   }
 
