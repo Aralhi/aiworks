@@ -123,14 +123,14 @@ async function getQueryCount({
    */
 
   /** 套餐剩余次数 */
-  if (pricing) {
-    pricingCount = await queryPricingCount({
-      userId,
-      fingerprint,
-      model,
-      pricing,
-    });
-  }
+  // if (pricing) {
+  //   pricingCount = await queryPricingCount({
+  //     userId,
+  //     fingerprint,
+  //     model,
+  //     pricing,
+  //   });
+  // }
   const totalCount = pricingCount + freeCount;
   // cache.put(cacheKey, totalCount, COMPLETION_COUNT_CACHE_TIME);
   return totalCount;
