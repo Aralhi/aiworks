@@ -34,7 +34,7 @@ async function getUserFromSession(req: NextApiRequest, res: NextApiResponse) {
   if (req.session.user) {
     const { _id = "" } = req.session.user || {};
     await dbConnect();
-    const user = (await User.findOne({ _id })).toJSON();
+    const user = await User.findOne({ _id });
     if (user) {
       return res
         .status(200)
