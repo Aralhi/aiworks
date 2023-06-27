@@ -167,7 +167,7 @@ function Midjourney() {
               msgId: mjId ?? msgId,
               msgHash: mjHash ?? msgHash,
               content: mjContent ?? prompt,
-              flags: mjFlags ? Number(mjFlags) : flags,
+              flags: mjFlags !== undefined ? Number(mjFlags) : flags,
             };
             return [...state];
           });
