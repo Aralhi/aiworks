@@ -14,6 +14,7 @@ export interface IMJMessage {
   img?: string;
   /** oss图片路径 */
   imgPath?: string;
+  flags: number;
   /** 原图 */
   originImg?: string;
   content?: string;
@@ -39,6 +40,9 @@ const MJMessageSchema = new Schema<IMJMessage>({
   },
   unionId: {
     type: String,
+  },
+  flags: {
+    type: Number,
   },
   type: {
     // imagine, upscale, variation

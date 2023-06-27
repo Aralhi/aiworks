@@ -10,11 +10,12 @@ interface MJCallbackPayload {
   msgId: string;
   id: string;
   hash: string;
+  flags: number;
   content: string;
 }
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { unionId, progress, uri, msgId, id, hash, content } =
+  const { unionId, progress, uri, msgId, id, hash, content, flags } =
     req.body as MJCallbackPayload;
   try {
     await dbConnect();
@@ -36,6 +37,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           progress,
           content,
           msgId,
+          flags,
           msgHash: hash,
           img: data.url,
           originImg: uri,

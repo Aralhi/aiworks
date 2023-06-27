@@ -111,6 +111,7 @@ function Midjourney() {
         progress: newItem.progress,
         msgId: newItem.msgId,
         msgHash: newItem.msgHash,
+        flags: newItem.flags,
         unionId,
       };
 
@@ -131,6 +132,7 @@ function Midjourney() {
         const mjHash = getMatchValue(chunkValue, 'hash');
         const mjId = getMatchValue(chunkValue, 'id');
         const mjContent = getMatchValue(chunkValue, 'content');
+        const mjFlags = getMatchValue(chunkValue, 'flags');
 
         let ossUrl: string | undefined;
         let imgPath: string | undefined;
@@ -157,7 +159,7 @@ function Midjourney() {
             console.log('图片转存失败', e);
           }
           setMessages((state) => {
-            const { progress, msgHash, prompt, msgId, img } = state[messageIdx];
+            const { progress, msgHash, prompt, msgId, img, flags } = state[messageIdx];
             state[messageIdx] = {
               ...state[messageIdx],
               img: ossUrl ?? img,
@@ -165,6 +167,7 @@ function Midjourney() {
               msgId: mjId ?? msgId,
               msgHash: mjHash ?? msgHash,
               content: mjContent ?? prompt,
+              flags: mjFlags ? Number(mjFlags) : flags,
             };
             return [...state];
           });
@@ -180,6 +183,7 @@ function Midjourney() {
             msgId: mjId,
             msgHash: mjHash,
             progress: mjProgress,
+            flags: mjFlags,
           }),
         });
       }
